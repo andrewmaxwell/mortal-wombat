@@ -1,0 +1,10 @@
+{
+  "files": {
+    "main.js": "/mortal-wombat/static/js/main.c7d1f877.js",
+    "index.html": "/mortal-wombat/index.html",
+    "main.c7d1f877.js.map": "/mortal-wombat/static/js/main.c7d1f877.js.map"
+  },
+  "entrypoints": [
+    "static/js/main.c7d1f877.js"
+  ]
+}
