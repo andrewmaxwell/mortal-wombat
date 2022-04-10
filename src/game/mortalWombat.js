@@ -40,44 +40,28 @@ class Game {
 let game, renderer;
 const pressing = {};
 
-const colors = {
-  X: 'red',
-  g: 'green',
-  b: 'blue',
-  c: 'cyan',
-  y: 'yellow',
-  m: 'magenta',
-  B: 'black',
-};
-
-const loadFromHash = () => {
-  const data = JSON.parse(decodeURIComponent(location.hash.slice(1)));
-  const rows = data.level.split('\n');
-
-  game.blocks = [];
-  for (let y = 0; y < rows.length; y++) {
-    for (let x = 0; x < rows[y].length; x++) {
-      if (rows[y][x] === 'X') {
-        game.you.x = x;
-        game.you.y = y;
-      } else {
-        const color = colors[rows[y][x]];
-        if (color) game.blocks.push({x, y, color});
-      }
-    }
-  }
-};
-
 const loop = () => {
-  game.iterate(pressing);
-  renderer.render(game);
+  if (document.hasFocus()) {
+    game.iterate(pressing);
+    renderer.render(game);
+  }
   requestAnimationFrame(loop);
 };
 
-export const init = (canvas) => {
+export const init = ({canvas, initialState}) => {
+  if (game) return;
   game = new Game();
-  renderer = new Renderer(canvas);
-  loadFromHash();
+  renderer = new Renderer(canvas, initialState.tiles);
+
+  initialState.world.forEach((row, y) => {
+    row.forEach((code, x) => {
+      if (code === 'w') {
+        game.you.x = x;
+        game.you.y = y;
+      } else if (code?.trim?.()) game.blocks.push({x, y, code});
+    });
+  });
+
   loop();
   return () => cancelAnimationFrame(loop);
 };
@@ -85,4 +69,3 @@ export const init = (canvas) => {
 const keypress = (e) => (pressing[e.code] = e.type === 'keydown');
 window.addEventListener('keydown', keypress);
 window.addEventListener('keyup', keypress);
-window.addEventListener('hashchange', loadFromHash);
