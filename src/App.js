@@ -4,6 +4,7 @@ import {init} from './game/mortalWombat';
 import './App.css';
 import {getData} from './getData';
 import {graphicToCanvas} from './utils/graphicToCanvas';
+import {assocPath} from './utils';
 
 const GameElement = ({initialState}) => {
   const canvasRef = useRef(null);
@@ -21,8 +22,7 @@ export const App = () => {
   useEffect(() => {
     getData().then((data) => {
       for (const t of Object.values(data.tiles)) {
-        t.canvas = graphicToCanvas(t.graphic);
-        t.dataURL = t.canvas.toDataURL();
+        t.canvas = graphicToCanvas(t.graphic); // TODO: do this some other way
       }
       setState(data);
     });
@@ -38,7 +38,12 @@ export const App = () => {
       <div
         style={{position: 'fixed', top: 0, left: '75%', right: 0, bottom: 0}}
       >
-        <Editor initialState={state} />
+        <Editor
+          initialState={state}
+          onChange={(path, value) => {
+            setState((s) => assocPath(path, value, s));
+          }}
+        />
       </div>
     </>
   );

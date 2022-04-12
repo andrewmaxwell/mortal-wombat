@@ -1,17 +1,10 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
+import {assocPath} from '../utils';
 
 /*
 TODO
-Frames
 Undo/Redo
-
 */
-
-const assocPath = ([first, ...rest], val, obj) => {
-  const copy = Array.isArray(obj) ? [...obj] : {...obj};
-  copy[first] = rest.length ? assocPath(rest, val, copy[first]) : val;
-  return copy;
-};
 
 const getColors = (frames) => {
   const vals = frames?.flat().flat();
@@ -24,7 +17,7 @@ const getColors = (frames) => {
     .map((x) => x[0]);
 };
 
-export const TileEditor = ({rows, cellSize, input}) => {
+export const TileEditor = ({rows, cellSize, input, onChange}) => {
   const ref = useRef();
   const [frames, setFrames] = useState([
     new Array(rows).fill(new Array(rows).fill(0)),
@@ -41,6 +34,16 @@ export const TileEditor = ({rows, cellSize, input}) => {
     );
     if (input.colors[0]) setColor(input.colors[0]);
   }, [input]);
+
+  const colors = getColors(frames);
+  // useEffect(() => {
+  //   onChange({
+  //     colors,
+  //     frames: frames.map((f) =>
+  //       f.map((r) => r.map((v) => colors.indexOf(v) + 1))
+  //     ),
+  //   });
+  // }, [frames]);
 
   useEffect(() => {
     const canvas = ref.current;
@@ -106,8 +109,6 @@ export const TileEditor = ({rows, cellSize, input}) => {
     [cellSize, erasing, currentFrame, color]
   );
 
-  const colors = getColors(frames);
-
   return (
     <div style={{border: '1px solid rgba(0,0,0,0.3)', padding: 10}}>
       <h3 style={{margin: 0}}>Tile Editor</h3>
@@ -124,7 +125,7 @@ export const TileEditor = ({rows, cellSize, input}) => {
         onChange={(e) => setColor(e.target.value)}
         style={{width: 32, height: 32, padding: 0}}
       />
-      {getColors(frames)
+      {colors
         .filter((c) => c !== color)
         .map((color) => (
           <button
@@ -197,7 +198,7 @@ export const TileEditor = ({rows, cellSize, input}) => {
           <a onClick={() => setCurrentFrame(i)}>Frame {i + 1}</a>
         </div>
       ))}
-      <textarea
+      {/* <textarea
         readOnly
         value={JSON.stringify({
           colors,
@@ -205,7 +206,7 @@ export const TileEditor = ({rows, cellSize, input}) => {
             f.map((r) => r.map((v) => colors.indexOf(v) + 1))
           ),
         })}
-      />
+      /> */}
     </div>
   );
 };

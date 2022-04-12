@@ -1,7 +1,8 @@
-import {useState} from 'react';
-import {TileEditor} from './TileEditor/TileEditor';
+import {useMemo, useState} from 'react';
+import {graphicToCanvas} from '../utils/graphicToCanvas';
+import {TileEditor} from './TileEditor';
 
-const TileButton = ({dataURL, description, isSelected, select}) => (
+const TileButton = ({tile, isSelected, select}) => (
   <button
     className="tileButton"
     style={{
@@ -10,36 +11,47 @@ const TileButton = ({dataURL, description, isSelected, select}) => (
     }}
     onClick={select}
   >
-    <img src={dataURL} />
-    <div>{description}</div>
+    <img
+      src={useMemo(
+        () => graphicToCanvas(tile.graphic).toDataURL(),
+        [tile.graphic]
+      )}
+    />
+    <div>{tile.description}</div>
   </button>
 );
 
-export const Editor = ({initialState}) => {
+export const Editor = ({initialState, onChange}) => {
   const [selected, setSelected] = useState();
   return (
     initialState && (
       <div style={{padding: 5}}>
         <div>
-          {Object.values(initialState.tiles).map(
-            ({id, description, dataURL}) => (
-              <TileButton
-                key={id}
-                description={description}
-                dataURL={dataURL}
-                isSelected={selected === id}
-                select={() => setSelected(id)}
-              />
-            )
-          )}
+          {Object.entries(initialState.tiles).map(([id, tile]) => (
+            <TileButton
+              key={id}
+              tile={tile}
+              isSelected={selected === id}
+              select={() => setSelected(id)}
+            />
+          ))}
         </div>
 
         {selected && (
           <div style={{margin: '30px 0'}}>
+            <input
+              value={initialState.tiles[selected].description}
+              onChange={(e) =>
+                onChange(['tiles', selected, 'description'], e.target.value)
+              }
+            />
             <TileEditor
               rows={16}
               cellSize={24}
               input={initialState.tiles[selected].graphic}
+              onChange={(newGraphic) =>
+                onChange(['tiles', selected, 'graphic'], newGraphic)
+              }
             />
           </div>
         )}

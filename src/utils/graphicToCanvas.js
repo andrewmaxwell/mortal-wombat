@@ -1,12 +1,3 @@
-// const memoize = (func) => {
-//   const cache = {};
-//   return (...args) => {
-//     const key = JSON.stringify(args);
-//     if (cache[key] === undefined) cache[key] = func(...args);
-//     return cache[key];
-//   };
-// };
-
 export const graphicToCanvas = ({colors, frames}) => {
   const canvas = document.createElement('canvas');
   canvas.width = frames[0][0].length;

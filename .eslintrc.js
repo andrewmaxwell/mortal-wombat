@@ -22,6 +22,7 @@ module.exports = {
     'no-use-before-define': 'warn',
     'react/react-in-jsx-scope': 'off',
     'react/prop-types': 'off',
+    'no-unused-vars': 'warn',
   },
   settings: {react: {version: 'detect'}},
 };
