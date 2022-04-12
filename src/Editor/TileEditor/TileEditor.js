@@ -1,5 +1,4 @@
-import LZString from 'lz-string';
-import {useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 
 /*
 TODO
@@ -14,8 +13,8 @@ const assocPath = ([first, ...rest], val, obj) => {
   return copy;
 };
 
-const getColors = (grid) => {
-  const vals = grid.flat().flat();
+const getColors = (frames) => {
+  const vals = frames?.flat().flat();
   const counts = {};
   for (const x of vals) {
     if (x) counts[x] = (counts[x] || 0) + 1;
@@ -27,40 +26,40 @@ const getColors = (grid) => {
 
 export const TileEditor = ({rows, cellSize, input}) => {
   const ref = useRef();
-  const [grids, setGrids] = useState([
+  const [frames, setFrames] = useState([
     new Array(rows).fill(new Array(rows).fill(0)),
   ]);
-  const [frame] = useState(0);
+  const [currentFrame, setCurrentFrame] = useState(0);
   const [color, setColor] = useState('#000000');
   const [erasing, setErasing] = useState(false);
 
   useEffect(() => {
-    setGrids(input);
-  }, input);
+    setFrames(
+      input.frames.map((f) =>
+        f.map((r) => r.map((v) => (v ? input.colors[v - 1] : v)))
+      )
+    );
+    if (input.colors[0]) setColor(input.colors[0]);
+  }, [input]);
 
   useEffect(() => {
     const canvas = ref.current;
-    canvas.width = rows * cellSize;
-    canvas.height = rows * cellSize;
-  }, [rows, cellSize]);
-
-  useEffect(() => {
-    const canvas = ref.current;
-    const W = rows * cellSize;
-    const H = rows * cellSize;
+    const W = (canvas.width = rows * cellSize);
+    const H = (canvas.height = rows * cellSize);
     const ctx = canvas.getContext('2d');
 
     ctx.clearRect(0, 0, W, H);
 
     for (let i = 0; i < rows; i++) {
       for (let j = 0; j < rows; j++) {
-        if (grids[frame][i][j]) {
-          ctx.fillStyle = grids[frame][i][j];
+        if (frames[currentFrame][i][j]) {
+          ctx.fillStyle = frames[currentFrame][i][j];
           ctx.fillRect(j * cellSize, i * cellSize, cellSize, cellSize);
         }
       }
     }
 
+    // draw cell lines
     ctx.beginPath();
     ctx.strokeStyle = 'white';
     ctx.lineWidth = 0.25;
@@ -72,34 +71,42 @@ export const TileEditor = ({rows, cellSize, input}) => {
       ctx.lineTo(x, H);
     }
     ctx.stroke();
-  }, [grids, frame]);
+  }, [rows, cellSize, frames, currentFrame]);
 
-  const canvasMouseDown = (e) => {
-    const x = Math.floor(e.nativeEvent.offsetX / cellSize);
-    const y = Math.floor(e.nativeEvent.offsetY / cellSize);
-    if (grids[frame][y][x] === color) {
-      setErasing(true);
-      setGrids((g) => assocPath([frame, y, x], 0, g));
-    } else {
-      setGrids((g) => assocPath([frame, y, x], color, g));
-    }
-  };
-
-  const canvasMouseUp = () => {
-    setErasing(false);
-  };
-
-  const canvasMouseMove = (e) => {
-    if (e.nativeEvent.which === 1) {
+  const canvasMouseDown = useCallback(
+    (e) => {
       const x = Math.floor(e.nativeEvent.offsetX / cellSize);
       const y = Math.floor(e.nativeEvent.offsetY / cellSize);
-      if (erasing) {
-        setGrids((g) => assocPath([frame, y, x], 0, g));
+      if (frames[currentFrame][y][x] === color) {
+        setErasing(true);
+        setFrames((g) => assocPath([currentFrame, y, x], 0, g));
       } else {
-        setGrids((g) => assocPath([frame, y, x], color, g));
+        setFrames((g) => assocPath([currentFrame, y, x], color, g));
       }
-    }
-  };
+    },
+    [frames, currentFrame, color, cellSize]
+  );
+
+  const canvasMouseUp = useCallback(() => {
+    setErasing(false);
+  }, []);
+
+  const canvasMouseMove = useCallback(
+    (e) => {
+      if (e.nativeEvent.which === 1) {
+        const x = Math.floor(e.nativeEvent.offsetX / cellSize);
+        const y = Math.floor(e.nativeEvent.offsetY / cellSize);
+        if (erasing) {
+          setFrames((g) => assocPath([currentFrame, y, x], 0, g));
+        } else {
+          setFrames((g) => assocPath([currentFrame, y, x], color, g));
+        }
+      }
+    },
+    [cellSize, erasing, currentFrame, color]
+  );
+
+  const colors = getColors(frames);
 
   return (
     <div style={{border: '1px solid rgba(0,0,0,0.3)', padding: 10}}>
@@ -117,30 +124,88 @@ export const TileEditor = ({rows, cellSize, input}) => {
         onChange={(e) => setColor(e.target.value)}
         style={{width: 32, height: 32, padding: 0}}
       />
-      {getColors(grids)
+      {getColors(frames)
         .filter((c) => c !== color)
         .map((color) => (
           <button
             key={color}
-            style={{
-              background: color,
-              width: 20,
-              height: 20,
-              border: 0,
-              margin: 2,
-            }}
+            className="colorButton"
+            style={{background: color}}
             onClick={() => setColor(color)}
           />
         ))}
-      <div>
-        Copy and paste this into the &quot;Graphic&quot; column of the
-        &quot;Tiles&quot; sheet to save it:
-        <textarea
-          style={{width: '100%', height: 50}}
-          readOnly
-          value={LZString.compressToBase64(JSON.stringify(grids))}
-        ></textarea>
-      </div>
+      {frames.map((f, i) => (
+        <div
+          key={i}
+          style={{
+            background: currentFrame === i ? 'blue' : 'none',
+            cursor: currentFrame === i ? 'inherit' : 'pointer',
+          }}
+        >
+          {currentFrame === i && (
+            <div style={{float: 'right'}}>
+              {i > 0 && (
+                <a
+                  onClick={() => {
+                    setFrames((f) => {
+                      const copy = [...f];
+                      [copy[i], copy[i - 1]] = [copy[i - 1], copy[i]];
+                      return copy;
+                    });
+                    setCurrentFrame(i - 1);
+                  }}
+                >
+                  move up
+                </a>
+              )}
+              {i < frames.length - 1 && (
+                <a
+                  onClick={() => {
+                    setFrames((f) => {
+                      const copy = [...f];
+                      [copy[i], copy[i + 1]] = [copy[i + 1], copy[i]];
+                      return copy;
+                    });
+                    setCurrentFrame(i + 1);
+                  }}
+                >
+                  move down
+                </a>
+              )}
+              <a
+                onClick={() => {
+                  setFrames((f) =>
+                    f.flatMap((x, j) => (i === j ? [x, x] : [x]))
+                  );
+                  setCurrentFrame(i + 1);
+                }}
+              >
+                copy
+              </a>
+              {frames.length > 1 && (
+                <a
+                  onClick={() => {
+                    setFrames((f, j) => i !== j);
+                    setCurrentFrame(0);
+                  }}
+                >
+                  delete
+                </a>
+              )}
+            </div>
+          )}
+          <a onClick={() => setCurrentFrame(i)}>Frame {i + 1}</a>
+        </div>
+      ))}
+      <textarea
+        readOnly
+        value={JSON.stringify({
+          colors,
+          frames: frames.map((f) =>
+            f.map((r) => r.map((v) => colors.indexOf(v) + 1))
+          ),
+        })}
+      />
     </div>
   );
 };

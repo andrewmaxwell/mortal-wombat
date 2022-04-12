@@ -53,14 +53,12 @@ export const init = ({canvas, initialState}) => {
   game = new Game();
   renderer = new Renderer(canvas, initialState.tiles);
 
-  initialState.world.forEach((row, y) => {
-    row.forEach((code, x) => {
-      if (code === 'w') {
-        game.you.x = x;
-        game.you.y = y;
-      } else if (code?.trim?.()) game.blocks.push({x, y, code});
-    });
-  });
+  for (const b of initialState.world) {
+    if (b.code === 'w') {
+      game.you.x = b.x;
+      game.you.y = b.y;
+    } else game.blocks.push(b);
+  }
 
   loop();
   return () => cancelAnimationFrame(loop);
