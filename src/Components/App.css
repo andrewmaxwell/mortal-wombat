@@ -1,0 +1,70 @@
+nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #111;
+    height: 32px;
+    width: 100%;
+    padding: 5px 20px;
+    z-index: 10;
+}
+
+nav button, nav a.button {
+    margin: 0 8px;
+}
+button.active {
+    background: blue;
+    box-shadow: 0 0 5px white;
+}
+
+.chatContainer {
+    top: 50%;
+    bottom: 0;
+    right: 0;
+    width: 200px;
+}
+
+header {
+    margin: 1px 0 3px 2px;
+}
+
+header a {
+    float: right;
+}
+
+.todosContainer {
+    bottom: 0;
+    right: 210px;
+}
+
+.debugContainer {
+    left: 0;
+    top: 50px;
+    bottom: 100px;
+    right: 0;
+    width: 30%;
+}
+.debugContainer textarea {
+    width: 100%;
+    height: 100%;
+    background: none;
+    color: white;
+    font-size: 11px;
+}
+
+.gameContainer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0
+}
+
+.toolContainer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.25);
+}

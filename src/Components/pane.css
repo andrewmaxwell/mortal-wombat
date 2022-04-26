@@ -1,0 +1,8 @@
+.pane {
+  position: fixed;
+  background: rgba(255, 255, 255, 0.2);
+  font-size: 0.8em;
+  opacity: 0.8;
+  z-index: 10;
+  padding: 3px 0;
+}

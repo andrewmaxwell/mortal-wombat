@@ -1,49 +1,65 @@
-const SCALE = 16;
-const PIXEL_SIZE = 4;
+const SCALE = 32;
 
 export class Renderer {
-  constructor(canvas, tiles) {
+  constructor(canvas) {
     this.canvas = canvas;
-    this.tiles = tiles;
-    canvas.style.width = '100%';
-    canvas.style.height = '100%';
-    canvas.style.imageRendering = 'pixelated';
     this.ctx = canvas.getContext('2d', {antialias: false, depth: false});
     this.resize();
     window.addEventListener('resize', () => this.resize());
   }
   resize() {
     const {canvas} = this;
-    this.width = canvas.width = canvas.parentNode.clientWidth / PIXEL_SIZE;
-    this.height = canvas.height = canvas.parentNode.clientHeight / PIXEL_SIZE;
+    this.width = canvas.width = innerWidth;
+    this.height = canvas.height = innerHeight;
   }
   render({you, blocks}) {
-    const {ctx, width, height, tiles} = this;
+    const {ctx, width, height} = this;
 
     ctx.clearRect(0, 0, width, height);
     ctx.save();
     ctx.translate(
-      Math.round(width / 2 - you.x * SCALE - SCALE / 2),
-      Math.round(height / 2 - you.y * SCALE - SCALE / 2)
+      width / 2 - you.x * SCALE - SCALE / 2,
+      height / 2 - you.y * SCALE - SCALE / 2
     );
 
-    ctx.fillStyle = 'blue';
-    for (const {x, y, code} of blocks) {
-      if (tiles[code]) ctx.drawImage(tiles[code].canvas, x * SCALE, y * SCALE);
-      else ctx.fillRect(x * SCALE, y * SCALE, SCALE, SCALE);
+    for (const {x, y, type} of Object.values(blocks)) {
+      ctx.fillStyle = type.color;
+      ctx.fillRect(x * SCALE, y * SCALE, SCALE, SCALE);
     }
 
-    if (tiles.w) {
-      ctx.drawImage(
-        tiles.w.canvas,
-        Math.round(you.x * SCALE),
-        Math.round(you.y * SCALE)
-      );
-    } else {
-      ctx.fillStyle = 'red';
-      ctx.fillRect(you.x * SCALE, you.y * SCALE, SCALE, SCALE);
-    }
+    ctx.fillStyle = 'red';
+    ctx.fillRect(you.x * SCALE, you.y * SCALE, SCALE, SCALE);
+    const angle = Math.atan2(you.dirY, you.dirX);
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo((you.x + 0.5) * SCALE, (you.y + 0.5) * SCALE);
+    ctx.lineTo(
+      (you.x + 0.5) * SCALE + (Math.cos(angle) * SCALE) / 2,
+      (you.y + 0.5) * SCALE + (Math.sin(angle) * SCALE) / 2
+    );
+    ctx.stroke();
 
     ctx.restore();
+
+    // HUD
+    if (you.health > 0) {
+      ctx.strokeStyle = 'white';
+      ctx.fillStyle = you.health > 30 ? 'green' : 'red';
+      ctx.fillRect(10, 10, you.health * 5, 20);
+      ctx.strokeRect(10, 10, 100 * 5, 20);
+      ctx.fillStyle = 'white';
+      ctx.textBaseline = 'top';
+      ctx.font = '18px sans-serif';
+      ctx.fillText(Math.round(you.health) + '%', 12, 11);
+    } else {
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'center';
+      ctx.font = '120px sans-serif';
+      ctx.fillStyle = 'black';
+      ctx.fillText('you dead', innerWidth / 2 + 5, innerHeight / 2 + 5);
+      ctx.fillStyle = 'red';
+      ctx.fillText('you dead', innerWidth / 2, innerHeight / 2);
+    }
   }
 }

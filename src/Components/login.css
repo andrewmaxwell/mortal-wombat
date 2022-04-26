@@ -1,0 +1,17 @@
+.login {
+  width: 300px;
+  margin: 0 auto;
+  margin-top: 50px;
+  color: #222
+}
+
+.login h3 {
+  margin: 0
+}
+
+.login input {
+  display: block;
+  font-size: 1.5em;
+  margin: 5px 0;
+  width: 100%;
+}

@@ -1,0 +1,19 @@
+.world {
+  width: 100vw;
+  height: calc(100vh - 32px);
+  overflow: hidden;
+}
+
+.world .tile {
+  border-radius: 3px;
+  position: absolute;
+  width: var(--scale);
+  height: var(--scale);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.1);
+}
+
+.world .ghost {
+  transition: all 0.1s;
+  opacity: 0.5;
+  outline: 2px dashed white;
+}

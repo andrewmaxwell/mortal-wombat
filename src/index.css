@@ -1,0 +1,44 @@
+* {
+  box-sizing: border-box;
+  transition: all 0.5s;
+}
+
+body {
+  color: white;
+  background: #222;
+  margin: 0;
+  font-family: sans-serif;
+}
+
+a {
+  color: inherit;
+  cursor: pointer;
+  margin: 0 3px;
+  opacity: 0.5;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+button,
+a.button {
+  background: #444;
+  color: white;
+  border: 0;
+  border-radius: 5px;
+  padding: 2px 5px;
+  box-shadow: 1px 1px 5px black;
+  margin: 3px 0;
+  opacity: 1;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 0.9em;
+}
+button:hover, a.button:hover {
+  filter:brightness(150%)
+}
+
+textarea {
+  font: inherit;
+}

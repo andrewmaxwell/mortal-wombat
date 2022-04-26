@@ -1,0 +1,38 @@
+.toolBar .tileType {
+  display: inline-block;
+  margin-right: 10px;
+  position: relative;
+  width: 48px;
+  height: 48px;
+  cursor: pointer;
+  border-radius: 3px
+}
+
+.toolBar .tileType:hover:not(.selected) {
+  filter: brightness(125%)
+}
+
+.toolBar .tileType label {
+  position: absolute;
+  bottom: -6px;
+  right: 2px;
+  color: white;
+  font-size: 0.8em;
+  text-shadow: 0 0 1px black;
+  background: rgba(0,0,0,0.3)
+}
+
+.toolBar .tileType.selected {
+  outline: 2px dashed white
+}
+
+.toolBar .tileType.selected label {
+  bottom: 0;
+}
+
+.toolBar i,
+.world .ghost i {
+  font-style: inherit;
+  font-size: 1.5em;
+  position: absolute;
+}
