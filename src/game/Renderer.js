@@ -58,6 +58,8 @@ export class Renderer {
       ctx.fillStyle = 'white';
       ctx.textBaseline = 'top';
       ctx.font = '18px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
       ctx.fillText(Math.round(health) + '%', 12, 11);
     } else {
       ctx.textBaseline = 'middle';
