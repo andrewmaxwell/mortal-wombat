@@ -1,8 +1,8 @@
-const TextField = ({value, onChange}) => (
+const TextField = ({value = '', onChange}) => (
   <input type="text" value={value} onChange={(e) => onChange(e.target.value)} />
 );
 
-const NumberField = ({value, onChange}) => (
+const NumberField = ({value = '', onChange}) => (
   <input
     type="number"
     value={value}

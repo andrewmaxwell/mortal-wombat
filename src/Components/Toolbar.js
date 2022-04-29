@@ -2,18 +2,18 @@ import './toolbar.css';
 import {getBackground} from './WorldEditor';
 
 export const Toolbar = ({
-  tileTypeIndex,
+  tileTypes,
   selectedTileTypeId,
   setSelectedTileTypeId,
   showTileTypeEditor,
   setShowTileTypeEditor,
 }) => (
   <div className="toolBar">
-    {Object.values(tileTypeIndex)
+    {Object.values(tileTypes)
       .sort((a, b) => a.order - b.order)
       .map((type) => (
         <div
-          key={type.key}
+          key={type.label}
           className={
             'tileType' + (selectedTileTypeId === type.id ? ' selected' : '')
           }

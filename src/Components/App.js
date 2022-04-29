@@ -8,7 +8,7 @@ import {useUser} from '../hooks/useUser';
 import {useUserIndex} from '../hooks/useUserIndex';
 import {Toolbar} from './Toolbar';
 import {WorldEditor} from './WorldEditor';
-import {useTileTypeIndex} from '../hooks/useTileTypeIndex';
+import {useTileTypes} from '../hooks/useTileTypes';
 import {useCoords} from '../hooks/useCoords';
 import {Todos} from './Todos';
 import {useStatePersist} from '../hooks/useStatePersist';
@@ -27,7 +27,7 @@ const paneConfigs = [
   {key: 'todos', label: 'Todos', icon: 'list-check'},
   {
     key: 'gameConfig',
-    label: 'Game Config',
+    label: 'Config',
     icon: 'toolbox',
   },
   {key: 'tte', label: 'Tile Type Editor', hideButton: true},
@@ -40,13 +40,13 @@ export const App = () => {
   // firebase state
   const user = useUser();
   const userIndex = useUserIndex(onError);
-  const tileTypeIndex = useTileTypeIndex(onError);
+  const tileTypes = useTileTypes(onError);
   const world = useWorld(onError);
 
   // local state
   const [selectedTileTypeId, setSelectedTileTypeId] = useState();
   const {xCoord, yCoord, setXCoord, setYCoord} = useCoords(16, 4);
-  const [scale, setScale] = useStatePersist('scale', 48);
+  const [scale, setScale] = useStatePersist('scale', 32);
 
   // pane toggles
   const Panes = makePanes(paneConfigs);
@@ -97,46 +97,55 @@ export const App = () => {
             />
           </Panes.debug.pane>
 
-          {tileTypeIndex[selectedTileTypeId] && (
-            <Panes.tte.pane>
-              <TileTypeEditor
-                selectedTileType={tileTypeIndex[selectedTileTypeId]}
-                user={user}
-                onError={onError}
-              />
-            </Panes.tte.pane>
-          )}
+          {selectedTileTypeId &&
+            tileTypes &&
+            Object.values(tileTypes).some(
+              (t) => t.id === selectedTileTypeId
+            ) && (
+              <Panes.tte.pane>
+                <TileTypeEditor
+                  selectedTileTypeId={selectedTileTypeId}
+                  tileTypes={tileTypes}
+                  user={user}
+                  onError={onError}
+                />
+              </Panes.tte.pane>
+            )}
 
           <Panes.gameConfig.pane>
             <GameConfig onError={onError} user={user} />
           </Panes.gameConfig.pane>
 
-          <div className="toolContainer">
-            <Toolbar
-              {...{
-                tileTypeIndex,
-                selectedTileTypeId,
-                setSelectedTileTypeId,
-                showTileTypeEditor: Panes.tte.show,
-                setShowTileTypeEditor: Panes.tte.setShow,
-              }}
-            />
-          </div>
+          {tileTypes && (
+            <div className="toolContainer">
+              <Toolbar
+                {...{
+                  tileTypes,
+                  selectedTileTypeId,
+                  setSelectedTileTypeId,
+                  showTileTypeEditor: Panes.tte.show,
+                  setShowTileTypeEditor: Panes.tte.setShow,
+                }}
+              />
+            </div>
+          )}
 
-          <div className="worldEditorContainer">
-            <WorldEditor
-              {...{
-                selectedTileType: tileTypeIndex[selectedTileTypeId],
-                world,
-                tileTypeIndex,
-                onError,
-                xCoord,
-                yCoord,
-                scale,
-                user,
-              }}
-            />
-          </div>
+          {world && tileTypes && (
+            <div className="worldEditorContainer">
+              <WorldEditor
+                {...{
+                  world,
+                  selectedTileTypeId,
+                  tileTypes,
+                  onError,
+                  xCoord,
+                  yCoord,
+                  scale,
+                  user,
+                }}
+              />
+            </div>
+          )}
         </div>
       ) : (
         <Login onError={onError} />

@@ -1,4 +1,5 @@
 import {updateWithHistory} from '../firebase';
+import {objToArr} from '../utils';
 import {FormThing} from './FormThing';
 import './tileTypeEditor.css';
 
@@ -44,18 +45,31 @@ const fields = [
   // {prop: 'movement', label: 'Movement', type: 'select', }
 ];
 
-export const TileTypeEditor = ({selectedTileType, user, onError}) => (
-  <div className="tileTypeEditor">
-    <FormThing
-      fields={fields}
-      data={selectedTileType}
-      onChange={(value, prop) => {
-        updateWithHistory(
-          {[`tileTypes/${selectedTileType.key}/${prop}`]: value},
-          user,
-          onError
-        );
-      }}
-    />
-  </div>
-);
+export const TileTypeEditor = ({
+  selectedTileTypeId,
+  tileTypes,
+  user,
+  onError,
+}) => {
+  const selectedTileType = objToArr(tileTypes).find(
+    (el) => el.id === selectedTileTypeId
+  );
+
+  return (
+    selectedTileType && (
+      <div className="tileTypeEditor">
+        <FormThing
+          fields={fields}
+          data={selectedTileType}
+          onChange={(value, prop) => {
+            updateWithHistory(
+              {[`tileTypes/${selectedTileType.key}/${prop}`]: value},
+              user,
+              onError
+            );
+          }}
+        />
+      </div>
+    )
+  );
+};

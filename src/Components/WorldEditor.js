@@ -1,10 +1,11 @@
-import {useRef} from 'react';
+import {useMemo, useRef} from 'react';
 import {updateWithHistory} from '../firebase';
+import {indexBy, objToArr} from '../utils';
 import './worldEditor.css';
 
 const placeTile = (x, y, id, user, onError) =>
   updateWithHistory(
-    {[`world/${x}_${y}`]: id ? {x, y, tileType: id} : null},
+    {[`world/${x}_${y}`]: id === '_delete' ? null : {x, y, tileType: id}},
     user,
     onError
   );
@@ -22,8 +23,8 @@ export const getBackground = (type) => ({
 
 export const WorldEditor = ({
   world,
-  selectedTileType,
-  tileTypeIndex,
+  tileTypes,
+  selectedTileTypeId,
   onError,
   xCoord,
   yCoord,
@@ -33,10 +34,19 @@ export const WorldEditor = ({
   // using a ref is much more performant than keeping mouse coords in state
   const ghostRef = useRef();
 
+  const tileTypeIndex = useMemo(
+    () => indexBy((t) => t.id, objToArr(tileTypes)),
+    [tileTypes]
+  );
+
   const onClick = (e) => {
     const {x, y} = getCoords(e, scale, xCoord, yCoord);
-    if (world[`${x}_${y}`]?.tileType !== selectedTileType.id) {
-      placeTile(x, y, selectedTileType.id, user, onError);
+    const currentType = world[`${x}_${y}`]?.tileType;
+    if (
+      (currentType || selectedTileTypeId !== '_delete') &&
+      currentType !== selectedTileTypeId
+    ) {
+      placeTile(x, y, selectedTileTypeId, user, onError);
     }
   };
 
@@ -54,19 +64,14 @@ export const WorldEditor = ({
   return (
     <div
       className="world"
-      onClick={selectedTileType ? onClick : undefined}
-      onMouseMove={selectedTileType ? onMouseMove : undefined}
+      onClick={selectedTileTypeId ? onClick : undefined}
+      onMouseMove={selectedTileTypeId ? onMouseMove : undefined}
     >
-      <div
-        className="viewBox"
-        style={{
-          transform: `translate(${cx}px,${cy}px)`,
-        }}
-      >
+      <div style={{transform: `translate(${cx}px,${cy}px)`}}>
         {Object.entries(world)
           .filter(([key, t]) => {
             if (!tileTypeIndex[t.tileType]) {
-              console.log('>>>', key, t); // TODO: delete the ones that get logged out here
+              console.log('BAD DATA', key, t); // TODO: delete the ones that get logged out here
               return false;
             }
             return true;
@@ -83,11 +88,11 @@ export const WorldEditor = ({
             />
           ))}
 
-        {selectedTileType && (
+        {selectedTileTypeId && (
           <div
             ref={ghostRef}
             className="ghost tile"
-            style={getBackground(selectedTileType)}
+            style={getBackground(tileTypeIndex[selectedTileTypeId])}
           ></div>
         )}
       </div>

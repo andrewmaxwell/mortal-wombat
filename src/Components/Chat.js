@@ -41,8 +41,10 @@ export const Chat = ({onError, user, userIndex}) => {
       listenToMessages((newMessages) => {
         setMessages(newMessages);
         setTimeout(() => {
-          scrollBoxRef.current.scrollTop = scrollBoxRef.current.scrollHeight;
-        }, 10);
+          if (scrollBoxRef.current) {
+            scrollBoxRef.current.scrollTop = scrollBoxRef.current.scrollHeight;
+          }
+        }, 1);
       }, onError),
     []
   );

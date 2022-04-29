@@ -16,9 +16,10 @@ export const Nav = ({user, setScale, zoomAmt, userIndex, children}) => (
           target="_blank"
           rel="noreferrer"
         >
-          <i className="fa-solid fa-play"></i> Play Game
+          <i className="fa-solid fa-play"></i> Play
         </a>
-        Hello, {userIndex[user.email]?.name} (<a onClick={logOut}>log out</a>)
+        Hi, {userIndex[user.email]?.name || user.email}! (
+        <a onClick={logOut}>log out</a>)
       </div>
     )}
     <b>Game Editor</b>

@@ -38,3 +38,6 @@ Debug Pane
 Error Banner
 Log Out
 
+
+Which features should I focus on next?
+What's the best way to report bugs and ask for new features? (Slack?)
