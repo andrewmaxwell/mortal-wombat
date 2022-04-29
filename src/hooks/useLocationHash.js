@@ -20,7 +20,6 @@ export const useLocationHash = ({
 
   useEffect(() => {
     const onHashChange = () => {
-      console.log(location.hash);
       const match = location.hash?.match(/^#(\d+)\/(\d+)\/(\d+)$/);
       if (!match) return;
       const [, x, y, scale] = match.map(Number);
@@ -30,7 +29,7 @@ export const useLocationHash = ({
     };
     window.addEventListener('hashchange', onHashChange);
     return () => {
-      window.removeEventListener('hashChange', onHashChange);
+      window.removeEventListener('hashchange', onHashChange);
     };
   }, []);
 };
