@@ -1,4 +1,5 @@
-import {useEffect, useState} from 'react';
+import {useEffect} from 'react';
+import {useStatePersist} from './useStatePersist';
 
 const mapping = {
   KeyS: 'down',
@@ -14,8 +15,8 @@ const mapping = {
 const MOVE_AMOUNT = 4;
 
 export const useCoords = (initialX = 0, initialY = 0) => {
-  const [xCoord, setXCoord] = useState(initialX);
-  const [yCoord, setYCoord] = useState(initialY);
+  const [xCoord, setXCoord] = useStatePersist('xCoord', initialX);
+  const [yCoord, setYCoord] = useStatePersist('yCoord', initialY);
 
   useEffect(() => {
     const onkeyDown = (e) => {

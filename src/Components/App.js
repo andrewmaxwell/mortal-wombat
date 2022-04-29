@@ -1,9 +1,8 @@
-import './App.css';
 import {ErrorBanner} from './ErrorBanner';
 import {Chat} from './Chat';
 import {useErrors} from '../hooks/useErrors';
 import {useEffect, useState} from 'react';
-import {listen, logOut} from '../firebase';
+
 import {Login} from './Login';
 import {useUser} from '../hooks/useUser';
 import {useUserIndex} from '../hooks/useUserIndex';
@@ -12,27 +11,45 @@ import {WorldEditor} from './WorldEditor';
 import {useTileTypeIndex} from '../hooks/useTileTypeIndex';
 import {useCoords} from '../hooks/useCoords';
 import {Todos} from './Todos';
-import {Pane} from './Pane';
+import {useStatePersist} from '../hooks/useStatePersist';
+import {useWorld} from '../hooks/useWorld';
+import {Nav} from './Nav';
+import {TileTypeEditor} from './TileTypeEditor';
+import {makePanes} from '../utils/makePanes';
+import {GameConfig} from './GameConfig';
+import './App.css';
 
 const zoomAmt = 1.25;
 
+const paneConfigs = [
+  {key: 'chat', label: 'Chat', icon: 'message', defaultOpen: true},
+  {key: 'todos', label: 'Todos', icon: 'list-check', defaultOpen: true},
+  {
+    key: 'gameConfig',
+    label: 'Game Config',
+    icon: 'toolbox',
+    defaultOpen: 'false',
+  },
+  {key: 'tte', label: 'Tile Type Editor', defaultOpen: false, hideButton: true},
+  {key: 'debug', label: 'Debug', icon: 'bug', defaultOpen: false},
+];
+
 export const App = () => {
   const [errors, onError, clearError] = useErrors();
+
+  // firebase state
   const user = useUser();
   const userIndex = useUserIndex(onError);
   const tileTypeIndex = useTileTypeIndex(onError);
+  const world = useWorld(onError);
 
-  const [selectedTileType, setSelectedTileType] = useState();
-
-  const [world, setWorld] = useState({});
-  useEffect(() => listen('world', setWorld, onError), []);
-
+  // local state
+  const [selectedTileTypeId, setSelectedTileTypeId] = useState();
   const {xCoord, yCoord} = useCoords(16, 4);
-  const [scale, setScale] = useState(48);
+  const [scale, setScale] = useStatePersist('scale', 48);
 
-  const [showChat, setShowChat] = useState(true);
-  const [showTodos, setShowTodos] = useState(true);
-  const [showDebug, setShowDebug] = useState(false);
+  // pane toggles
+  const Panes = makePanes(paneConfigs);
 
   useEffect(() => {
     // syncronize scale in css as var(--scale)
@@ -41,117 +58,81 @@ export const App = () => {
 
   return (
     <>
-      <nav>
-        {user && (
-          <div style={{float: 'right'}}>
-            <button onClick={() => setScale(Math.round(scale * zoomAmt))}>
-              <i className="fa-solid fa-magnifying-glass-plus"></i> Zoom In
-            </button>
-            <button onClick={() => setScale(Math.round(scale / zoomAmt))}>
-              <i className="fa-solid fa-magnifying-glass-minus"></i> Zoom Out
-            </button>
-            <a
-              className="button"
-              href={location.href.replace(/\?.*/, '')}
-              target="_blank"
-              rel="noreferrer"
-            >
-              <i className="fa-solid fa-play"></i> Play Game
-            </a>
-            Hello, {userIndex[user.email]?.name} (
-            <a onClick={logOut}>log out</a>)
-          </div>
-        )}
-        <b>Game Editor</b>
+      <Nav {...{user, scale, setScale, zoomAmt, userIndex}}>
+        {Object.values(Panes).map(({button}) => button)}
+      </Nav>
 
-        <button
-          className={showChat ? 'active' : ''}
-          onClick={() => setShowChat((s) => !s)}
-        >
-          <i className="fa-solid fa-message"></i> Chat
-        </button>
-
-        <button
-          className={showTodos ? 'active' : ''}
-          onClick={() => setShowTodos((s) => !s)}
-        >
-          <i className="fa-solid fa-list-check"></i> Todos
-        </button>
-
-        <button
-          className={showDebug ? 'active' : ''}
-          onClick={() => setShowDebug((s) => !s)}
-        >
-          <i className="fa-solid fa-bug"></i> Debug
-        </button>
-      </nav>
       <ErrorBanner errors={errors} clearError={clearError} />
+
       {user ? (
         <div className="appContainer">
-          {showChat && (
-            <Pane
-              label="Chat"
-              className="chatContainer"
-              hide={() => setShowChat(false)}
-            >
-              <Chat onError={onError} user={user} userIndex={userIndex} />
-            </Pane>
-          )}
+          <Panes.chat.pane>
+            <Chat onError={onError} user={user} userIndex={userIndex} />
+          </Panes.chat.pane>
 
-          {showTodos && (
-            <Pane
-              label="Shared To Do List"
-              className="todosContainer"
-              hide={() => setShowTodos(false)}
-            >
-              <Todos onError={onError} />
-            </Pane>
-          )}
+          <Panes.todos.pane>
+            <Todos onError={onError} />
+          </Panes.todos.pane>
 
-          {showDebug && (
-            <Pane
-              label="Debug"
-              className="debugContainer"
-              hide={() => setShowDebug(false)}
-            >
-              <textarea
-                readOnly
-                value={JSON.stringify(
-                  {
-                    xCoord,
-                    yCoord,
-                    scale,
-                    user,
-                    selectedTileType,
-                    userIndex,
-                    errors,
-                    tileTypeIndex,
-                    world,
-                  },
-                  null,
-                  2
-                )}
+          <Panes.debug.pane>
+            <textarea
+              readOnly
+              value={JSON.stringify(
+                {
+                  xCoord,
+                  yCoord,
+                  scale,
+                  selectedTileTypeId,
+                  errors,
+                  user,
+                  // tileTypeIndex,
+                  // userIndex,
+                  // world,
+                },
+                null,
+                2
+              )}
+            />
+          </Panes.debug.pane>
+
+          {tileTypeIndex[selectedTileTypeId] && (
+            <Panes.tte.pane>
+              <TileTypeEditor
+                selectedTileType={tileTypeIndex[selectedTileTypeId]}
+                user={user}
+                onError={onError}
               />
-            </Pane>
+            </Panes.tte.pane>
           )}
 
-          <div className="gameContainer">
+          <Panes.gameConfig.pane>
+            <GameConfig onError={onError} user={user} />
+          </Panes.gameConfig.pane>
+
+          <div className="toolContainer">
+            <Toolbar
+              {...{
+                tileTypeIndex,
+                selectedTileTypeId,
+                setSelectedTileTypeId,
+                showTileTypeEditor: Panes.tte.show,
+                setShowTileTypeEditor: Panes.tte.setShow,
+              }}
+            />
+          </div>
+
+          <div className="worldEditorContainer">
             <WorldEditor
               {...{
-                selectedTileType,
+                selectedTileType: tileTypeIndex[selectedTileTypeId],
                 world,
                 tileTypeIndex,
                 onError,
                 xCoord,
                 yCoord,
                 scale,
+                user,
               }}
-            />
-          </div>
-
-          <div className="toolContainer">
-            <Toolbar
-              {...{tileTypeIndex, selectedTileType, setSelectedTileType}}
             />
           </div>
         </div>

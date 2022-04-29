@@ -1,7 +1,12 @@
 .errorBanner {
+  position: fixed;
+  top: 32px;
+  left: 0;
+  right: 0;
   background: #FAA;
   padding: 5px;
   text-align: center;
   color: black;
   font-size: 0.8em;
+  z-index: 20;
 }

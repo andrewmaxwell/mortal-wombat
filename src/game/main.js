@@ -3,7 +3,11 @@ import {Game} from './Game.js';
 import {Renderer} from './Renderer.js';
 
 const init = async () => {
-  const {tileTypes, world} = await loadData(['tileTypes', 'world']);
+  const {tileTypes, world, gameConfig} = await loadData([
+    'tileTypes',
+    'world',
+    'gameConfig',
+  ]);
 
   const typeIndex = {};
   let you;
@@ -20,7 +24,8 @@ const init = async () => {
     }
   }
 
-  const game = new Game(you, world);
+  console.log(gameConfig);
+  const game = new Game(you, world, gameConfig);
 
   const canvas = document.createElement('canvas');
   document.body.append(canvas);

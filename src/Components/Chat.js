@@ -1,7 +1,24 @@
+import {serverTimestamp} from 'firebase/database';
 import {useEffect, useRef, useState} from 'react';
-import {listenToMessages, sendMessage} from '../db/messages';
-import {groupBy, objToArr} from '../utils';
+import {listen, update} from '../firebase';
+import {useStatePersist} from '../hooks/useStatePersist';
+import {groupBy, guid, objToArr} from '../utils';
 import './chat.css';
+
+const listenToMessages = (onChange, onError) =>
+  listen('messages', onChange, onError);
+
+const sendMessage = (msg, user, onError) =>
+  update(
+    {
+      [`messages/${guid()}`]: {
+        message: msg.trim(),
+        user: user.email,
+        tstamp: serverTimestamp(),
+      },
+    },
+    onError
+  );
 
 const gapTime = 5 * 60_000; // ten minutes
 
@@ -15,7 +32,7 @@ const getDate = (tstamp) => new Date(tstamp).toLocaleDateString();
 
 export const Chat = ({onError, user, userIndex}) => {
   const [messages, setMessages] = useState({});
-  const [msg, setMsg] = useState('');
+  const [msg, setMsg] = useStatePersist('chatMsg', '');
   const scrollBoxRef = useRef();
   const inputRef = useRef();
 

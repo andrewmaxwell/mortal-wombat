@@ -1,25 +1,27 @@
-const GRASS_HEALTH_AMT = 1;
+const GRASS_HEALTH_AMT = 5;
+const MAGMA_DAMAGE = 2;
 
-const interact = (you, block, pressing) => {
+// if returns true, then delete block
+const interact = (game, you, block, pressing) => {
   if (block.type.collectible) {
     you.jewels++;
     return true;
   }
 
   if (block.type.deadly) {
-    you.health--;
+    game.health = Math.max(0, game.health - MAGMA_DAMAGE);
   }
 
   if (block.type.edible && pressing.Space) {
     if (block.eaten === undefined) block.eaten = 1;
-    block.eaten -= you.eatSpeed;
-    you.health = Math.min(100, you.health + GRASS_HEALTH_AMT * you.eatSpeed);
+    block.eaten -= game.eatSpeed;
+    game.health = Math.min(100, game.health + GRASS_HEALTH_AMT * game.eatSpeed);
     if (block.eaten <= 0) return true;
   }
 
   if (block.type.diggable && pressing.Space) {
     if (block.dug === undefined) block.dug = 1;
-    block.dug -= you.digSpeed;
+    block.dug -= game.digSpeed;
     if (block.dug <= 0) return true;
   }
 
@@ -36,7 +38,9 @@ const interact = (you, block, pressing) => {
 };
 
 export class Game {
-  constructor(youPos, blocks) {
+  constructor(youPos, blocks, config) {
+    this.blocks = blocks;
+    this.frame = 0;
     this.you = {
       x: 0,
       y: 0,
@@ -44,36 +48,49 @@ export class Game {
       ys: 0,
       dirX: 1,
       dirY: 0,
-      jumpPower: 0.11,
-      moveSpeed: 0.015,
-      health: 100,
       jewels: 0,
-      eatSpeed: 0.05,
-      digSpeed: 0.05,
       ...youPos,
     };
+
+    // these can all be overridden by config
+    this.digSpeed = 0.05;
+    this.eatSpeed = 0.05;
     this.gravity = 0.005;
-    this.blocks = blocks;
+    this.health = 100;
+    this.jumpPower = 0.11;
+    this.magmaDelay = 30;
+    this.moveSpeed = 0.015;
+    this.moveDeceleration = 0.3;
+
+    for (const x in config) {
+      if (!isNaN(config[x])) this[x] = Number(config[x]); // because editing them turns them into strings, yayyyy
+    }
   }
   iterate(pressing) {
+    this.iterateYou(pressing);
+    if (this.frame % this.magmaDelay === 0) this.iterateBlocks();
+    this.frame++;
+  }
+  iterateYou(pressing) {
     const {you, blocks, gravity} = this;
-    if (you.health <= 0) return;
+
+    if (this.health <= 0) return;
 
     if (pressing.KeyA || pressing.KeyD || pressing.KeyW || pressing.KeyS) {
       you.dirX = 0;
       you.dirY = 0;
     }
     if (pressing.KeyA) {
-      you.xs -= you.moveSpeed;
+      you.xs -= this.moveSpeed;
       you.dirX--;
     }
     if (pressing.KeyD) {
-      you.xs += you.moveSpeed;
+      you.xs += this.moveSpeed;
       you.dirX++;
     }
     if (pressing.KeyW) {
       if (!you.jumping) {
-        you.ys -= you.jumpPower;
+        you.ys -= this.jumpPower;
         you.jumping = true;
       }
       you.dirY--;
@@ -82,7 +99,7 @@ export class Game {
       you.dirY++;
     }
     you.x += you.xs;
-    you.xs *= 0.7;
+    you.xs *= 1 - this.moveDeceleration;
     you.ys += gravity;
     you.y += you.ys;
 
@@ -93,8 +110,38 @@ export class Game {
       `${Math.ceil(you.x)}_${Math.ceil(you.y)}`,
     ]) {
       if (blocks[key]) {
-        const shouldDelete = interact(you, blocks[key], pressing);
+        const shouldDelete = interact(this, you, blocks[key], pressing);
         if (shouldDelete) delete blocks[key];
+      }
+    }
+  }
+  isEmpty(x, y) {
+    return !this.blocks[`${x}_${y}`];
+  }
+  move(x, y, dx, dy) {
+    const key = `${x}_${y}`;
+    const b = this.blocks[key];
+    delete this.blocks[key];
+    b.x += dx;
+    b.y += dy;
+    this.blocks[`${b.x}_${b.y}`] = b;
+  }
+  iterateBlocks() {
+    for (const b of Object.values(this.blocks)
+      .filter((b) => b.type.movement === 'liquid')
+      .sort((a, b) => (a.y === b.y ? Math.random() - 0.5 : a.y - b.y))) {
+      if (this.isEmpty(b.x, b.y + 1)) {
+        this.move(b.x, b.y, 0, 1);
+      } else {
+        const left = this.isEmpty(b.x - 1, b.y);
+        const right = this.isEmpty(b.x + 1, b.y);
+        if (left && right) {
+          this.move(b.x, b.y, Math.random() < 0.5 ? 1 : -1, 0);
+        } else if (left) {
+          this.move(b.x, b.y, -1, 0);
+        } else if (right) {
+          this.move(b.x, b.y, 1, 0);
+        }
       }
     }
   }

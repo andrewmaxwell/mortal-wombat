@@ -19,7 +19,8 @@
   color: white;
   font-size: 0.8em;
   text-shadow: 0 0 1px black;
-  background: rgba(0,0,0,0.3)
+  background: rgba(0,0,0,0.3);
+  padding: 0 2px;
 }
 
 .toolBar .tileType.selected {

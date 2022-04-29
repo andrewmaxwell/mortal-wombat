@@ -12,7 +12,7 @@ export class Renderer {
     this.width = canvas.width = innerWidth;
     this.height = canvas.height = innerHeight;
   }
-  render({you, blocks}) {
+  render({you, health, blocks}) {
     const {ctx, width, height} = this;
 
     ctx.clearRect(0, 0, width, height);
@@ -43,15 +43,15 @@ export class Renderer {
     ctx.restore();
 
     // HUD
-    if (you.health > 0) {
+    if (health > 0) {
       ctx.strokeStyle = 'white';
-      ctx.fillStyle = you.health > 30 ? 'green' : 'red';
-      ctx.fillRect(10, 10, you.health * 5, 20);
+      ctx.fillStyle = health > 30 ? 'green' : 'red';
+      ctx.fillRect(10, 10, health * 5, 20);
       ctx.strokeRect(10, 10, 100 * 5, 20);
       ctx.fillStyle = 'white';
       ctx.textBaseline = 'top';
       ctx.font = '18px sans-serif';
-      ctx.fillText(Math.round(you.health) + '%', 12, 11);
+      ctx.fillText(Math.round(health) + '%', 12, 11);
     } else {
       ctx.textBaseline = 'middle';
       ctx.textAlign = 'center';

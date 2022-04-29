@@ -1,31 +1,36 @@
 import './toolbar.css';
-
-const extraButtons = [
-  // {key: '__select', label: 'select', icon: '⌖'},
-  {
-    key: '__erase',
-    label: 'erase',
-    icon: <i className="fa-solid fa-eraser"></i>,
-    color: 'black',
-  },
-];
+import {getBackground} from './WorldEditor';
 
 export const Toolbar = ({
   tileTypeIndex,
-  selectedTileType,
-  setSelectedTileType,
+  selectedTileTypeId,
+  setSelectedTileTypeId,
+  showTileTypeEditor,
+  setShowTileTypeEditor,
 }) => (
   <div className="toolBar">
-    {[...extraButtons, ...Object.values(tileTypeIndex)].map((type) => (
-      <div
-        key={type.key}
-        className={'tileType' + (selectedTileType === type ? ' selected' : '')}
-        style={{backgroundColor: type.color}}
-        onClick={() => setSelectedTileType(type)}
-      >
-        {type.icon}
-        <label>{type.label}</label>
-      </div>
-    ))}
+    {Object.values(tileTypeIndex)
+      .sort((a, b) => a.order - b.order)
+      .map((type) => (
+        <div
+          key={type.key}
+          className={
+            'tileType' + (selectedTileTypeId === type.id ? ' selected' : '')
+          }
+          style={getBackground(type)}
+          title={
+            showTileTypeEditor ? '' : 'Double click to edit tile properties.'
+          }
+          onClick={() => {
+            setShowTileTypeEditor(false);
+            setSelectedTileTypeId(type.id);
+          }}
+          onDoubleClick={() =>
+            type.id && !type.id.startsWith('_') && setShowTileTypeEditor(true)
+          }
+        >
+          <label>{type.label}</label>
+        </div>
+      ))}
   </div>
 );

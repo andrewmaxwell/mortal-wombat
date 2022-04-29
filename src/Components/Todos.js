@@ -1,14 +1,33 @@
 import {useEffect, useState} from 'react';
-import {
-  addTodo,
-  changeChecked,
-  changeValue,
-  listenToTodos,
-  move,
-  remove,
-} from '../db/todos';
+import {listen, update} from '../firebase';
+import {guid} from '../utils';
 import {AutoHeightText} from './AutoHeightText';
 import './todos.css';
+
+const listenToTodos = (onChange, onError) => listen('todos', onChange, onError);
+
+const changeValue = (key, value, onError) =>
+  update({[`todos/${key}/value`]: value}, onError);
+
+const remove = (key, onError) => update({[`todos/${key}`]: null}, onError);
+
+const move = (index, arr, dir, onError) => {
+  const [thisKey, {order: thisOrder}] = arr[index];
+  const [nextKey, {order: nextOrder}] = arr[index + dir];
+  update(
+    {
+      [`todos/${thisKey}/order`]: nextOrder,
+      [`todos/${nextKey}/order`]: thisOrder,
+    },
+    onError
+  );
+};
+
+const addTodo = (index, onError) =>
+  update({[`todos/${guid()}`]: {value: 'New item', order: index}}, onError);
+
+const changeChecked = (key, checked, onError) =>
+  update({[`todos/${key}/checked`]: checked}, onError);
 
 export const Todos = ({onError}) => {
   const [todos, setTodos] = useState([]);

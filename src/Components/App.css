@@ -10,9 +10,11 @@ nav {
     z-index: 10;
 }
 
-nav button, nav a.button {
+nav button,
+nav a.button {
     margin: 0 8px;
 }
+
 button.active {
     background: blue;
     box-shadow: 0 0 5px white;
@@ -26,7 +28,7 @@ button.active {
 }
 
 header {
-    margin: 1px 0 3px 2px;
+    margin: 3px 0
 }
 
 header a {
@@ -45,6 +47,7 @@ header a {
     right: 0;
     width: 30%;
 }
+
 .debugContainer textarea {
     width: 100%;
     height: 100%;
@@ -53,7 +56,7 @@ header a {
     font-size: 11px;
 }
 
-.gameContainer {
+.worldEditorContainer {
     position: fixed;
     top: 0;
     left: 0;
@@ -67,4 +70,16 @@ header a {
     bottom: 0;
     padding: 10px;
     background: rgba(0, 0, 0, 0.25);
+    z-index: 10;
 }
+
+.tteContainer {
+    left: 0;
+    bottom: 70px;
+}
+
+.gameConfigContainer {
+    top: 32px;
+    left: 200px;
+}
+

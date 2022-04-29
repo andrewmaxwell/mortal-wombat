@@ -7,12 +7,15 @@ import {
   off,
   get,
   child,
+  serverTimestamp,
 } from 'firebase/database';
 import {
   getAuth,
   signInWithEmailAndPassword,
   onAuthStateChanged,
+  signOut,
 } from 'firebase/auth';
+import {guid} from './utils';
 
 initializeApp({
   apiKey: 'AIzaSyBEserPzSUos4MT3XRO8NKAO2oVk1-LS-I',
@@ -52,6 +55,19 @@ export const update = (updates, onError) => {
   }
 };
 
+export const updateWithHistory = (data, user, onError) =>
+  update(
+    {
+      ...data,
+      [`history/${guid()}`]: {
+        update: JSON.stringify(data),
+        user: user.email,
+        tstamp: serverTimestamp(),
+      },
+    },
+    onError
+  );
+
 export const loadData = async (things) =>
   Object.fromEntries(
     await Promise.all(
@@ -85,7 +101,4 @@ export const logIn = (email, pwd) =>
 
 export const listenUser = (onChange) => onAuthStateChanged(auth, onChange);
 
-export const logOut = () => {
-  // TODO
-  alert('This does not work yet, sorry.');
-};
+export const logOut = () => signOut(auth);
