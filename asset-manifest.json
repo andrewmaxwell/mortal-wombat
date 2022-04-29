@@ -1,10 +1,20 @@
 {
   "files": {
-    "main.js": "/mortal-wombat/static/js/main.c7d1f877.js",
-    "index.html": "/mortal-wombat/index.html",
-    "main.c7d1f877.js.map": "/mortal-wombat/static/js/main.c7d1f877.js.map"
+    "main.js": "/static/js/main.decc5d39.js",
+    "static/css/223.9a74c00f.chunk.css": "/static/css/223.9a74c00f.chunk.css",
+    "static/js/223.3eee0130.chunk.js": "/static/js/223.3eee0130.chunk.js",
+    "static/js/114.7990784f.chunk.js": "/static/js/114.7990784f.chunk.js",
+    "static/js/169.941471a7.chunk.js": "/static/js/169.941471a7.chunk.js",
+    "static/js/329.f37aaf17.chunk.js": "/static/js/329.f37aaf17.chunk.js",
+    "index.html": "/index.html",
+    "main.decc5d39.js.map": "/static/js/main.decc5d39.js.map",
+    "223.9a74c00f.chunk.css.map": "/static/css/223.9a74c00f.chunk.css.map",
+    "223.3eee0130.chunk.js.map": "/static/js/223.3eee0130.chunk.js.map",
+    "114.7990784f.chunk.js.map": "/static/js/114.7990784f.chunk.js.map",
+    "169.941471a7.chunk.js.map": "/static/js/169.941471a7.chunk.js.map",
+    "329.f37aaf17.chunk.js.map": "/static/js/329.f37aaf17.chunk.js.map"
   },
   "entrypoints": [
-    "static/js/main.c7d1f877.js"
+    "static/js/main.decc5d39.js"
   ]
 }
