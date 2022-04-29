@@ -29,6 +29,8 @@ Tile Type Editor
 Game Config
 - Configure Variables in the game (BE CAREFUL)
 
+History of your location on map is saved in URL (use forward and back)
+Can share position/scale on map using URL
 User state persists between sessions
 Pane toggle buttons in nav bar
 Play Game button

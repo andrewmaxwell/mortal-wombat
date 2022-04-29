@@ -3,8 +3,8 @@ import {useStatePersist} from '../hooks/useStatePersist';
 
 export const makePanes = (config) =>
   Object.fromEntries(
-    config.map(({key, label, icon, defaultOpen, hideButton}) => {
-      const [show, setShow] = useStatePersist('show' + label, defaultOpen);
+    config.map(({key, label, icon, hideButton}) => {
+      const [show, setShow] = useStatePersist('show' + label, false);
 
       const button = !hideButton && (
         <button

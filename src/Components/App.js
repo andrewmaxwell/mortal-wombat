@@ -18,20 +18,20 @@ import {TileTypeEditor} from './TileTypeEditor';
 import {makePanes} from '../utils/makePanes';
 import {GameConfig} from './GameConfig';
 import './App.css';
+import {useLocationHash} from '../hooks/useLocationHash';
 
 const zoomAmt = 1.25;
 
 const paneConfigs = [
-  {key: 'chat', label: 'Chat', icon: 'message', defaultOpen: true},
-  {key: 'todos', label: 'Todos', icon: 'list-check', defaultOpen: true},
+  {key: 'chat', label: 'Chat', icon: 'message'},
+  {key: 'todos', label: 'Todos', icon: 'list-check'},
   {
     key: 'gameConfig',
     label: 'Game Config',
     icon: 'toolbox',
-    defaultOpen: 'false',
   },
-  {key: 'tte', label: 'Tile Type Editor', defaultOpen: false, hideButton: true},
-  {key: 'debug', label: 'Debug', icon: 'bug', defaultOpen: false},
+  {key: 'tte', label: 'Tile Type Editor', hideButton: true},
+  {key: 'debug', label: 'Debug', icon: 'bug'},
 ];
 
 export const App = () => {
@@ -45,7 +45,7 @@ export const App = () => {
 
   // local state
   const [selectedTileTypeId, setSelectedTileTypeId] = useState();
-  const {xCoord, yCoord} = useCoords(16, 4);
+  const {xCoord, yCoord, setXCoord, setYCoord} = useCoords(16, 4);
   const [scale, setScale] = useStatePersist('scale', 48);
 
   // pane toggles
@@ -55,6 +55,8 @@ export const App = () => {
     // syncronize scale in css as var(--scale)
     document.documentElement.style.setProperty('--scale', scale + 'px');
   }, [scale]);
+
+  useLocationHash({xCoord, yCoord, scale, setXCoord, setYCoord, setScale});
 
   return (
     <>

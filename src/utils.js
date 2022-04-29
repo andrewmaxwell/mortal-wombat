@@ -31,6 +31,16 @@ export const indexBy = (func, arr) => {
 export const objToArr = (obj = {}) =>
   Object.entries(obj).map(([key, el]) => ({key, ...el}));
 
+export const debounce = (func, delay) => {
+  let timeout;
+  const f = (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), delay);
+  };
+  f.cancel = () => clearTimeout(timeout);
+  return f;
+};
+
 // export const throttle = (func, delay) => {
 //   let prev = 0;
 //   return (...args) => {
