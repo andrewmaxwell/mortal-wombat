@@ -39,32 +39,35 @@ const interact = (game, you, block, pressing) => {
 
 export class Game {
   constructor(youPos, blocks, config) {
-    this.blocks = blocks;
-    this.frame = 0;
-    this.you = {
-      x: 0,
-      y: 0,
-      xs: 0,
-      ys: 0,
-      dirX: 1,
-      dirY: 0,
-      jewels: 0,
-      ...youPos,
+    this.reset = () => {
+      this.blocks = blocks;
+      this.frame = 0;
+      this.you = {
+        x: 0,
+        y: 0,
+        xs: 0,
+        ys: 0,
+        dirX: 1,
+        dirY: 0,
+        jewels: 0,
+        ...youPos,
+      };
+
+      // these can all be overridden by config
+      this.digSpeed = 0.05;
+      this.eatSpeed = 0.05;
+      this.gravity = 0.005;
+      this.health = 100;
+      this.jumpPower = 0.11;
+      this.magmaDelay = 30;
+      this.moveSpeed = 0.015;
+      this.moveDeceleration = 0.3;
+
+      for (const x in config) {
+        if (!isNaN(config[x])) this[x] = Number(config[x]); // because editing them turns them into strings, yayyyy
+      }
     };
-
-    // these can all be overridden by config
-    this.digSpeed = 0.05;
-    this.eatSpeed = 0.05;
-    this.gravity = 0.005;
-    this.health = 100;
-    this.jumpPower = 0.11;
-    this.magmaDelay = 30;
-    this.moveSpeed = 0.015;
-    this.moveDeceleration = 0.3;
-
-    for (const x in config) {
-      if (!isNaN(config[x])) this[x] = Number(config[x]); // because editing them turns them into strings, yayyyy
-    }
+    this.reset();
   }
   iterate(pressing) {
     this.iterateYou(pressing);
@@ -74,7 +77,10 @@ export class Game {
   iterateYou(pressing) {
     const {you, blocks, gravity} = this;
 
-    if (this.health <= 0) return;
+    if (this.health <= 0) {
+      if (pressing.Space) this.reset();
+      return;
+    }
 
     if (pressing.KeyA || pressing.KeyD || pressing.KeyW || pressing.KeyS) {
       you.dirX = 0;

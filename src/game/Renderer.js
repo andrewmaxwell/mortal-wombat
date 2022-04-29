@@ -1,5 +1,12 @@
 const SCALE = 32;
 
+const shadowText = (ctx, text, x, y, color, offset) => {
+  ctx.fillStyle = 'black';
+  ctx.fillText(text, x + offset, y + offset);
+  ctx.fillStyle = color;
+  ctx.fillText(text, x, y);
+};
+
 export class Renderer {
   constructor(canvas) {
     this.canvas = canvas;
@@ -56,10 +63,16 @@ export class Renderer {
       ctx.textBaseline = 'middle';
       ctx.textAlign = 'center';
       ctx.font = '120px sans-serif';
-      ctx.fillStyle = 'black';
-      ctx.fillText('you dead', innerWidth / 2 + 5, innerHeight / 2 + 5);
-      ctx.fillStyle = 'red';
-      ctx.fillText('you dead', innerWidth / 2, innerHeight / 2);
+      shadowText(ctx, 'you dead', innerWidth / 2, innerHeight / 2, 'red', 5);
+      ctx.font = '32px sans-serif';
+      shadowText(
+        ctx,
+        'press space to try again',
+        innerWidth / 2,
+        innerHeight / 2 + 60,
+        '#AFF',
+        3
+      );
     }
   }
 }
