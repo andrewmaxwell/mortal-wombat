@@ -1,4 +1,3 @@
-import {Pane} from '../Components/common/Pane';
 import {useStatePersist} from '../hooks/useStatePersist';
 
 export const makePanes = (config) =>
@@ -16,17 +15,6 @@ export const makePanes = (config) =>
         </button>
       );
 
-      const pane = ({children}) =>
-        show && (
-          <Pane
-            label={label}
-            className={`${key}Container`}
-            hide={() => setShow(false)}
-          >
-            {children}
-          </Pane>
-        );
-
-      return [key, {pane, button, show, setShow}];
+      return [key, {key, label, button, show, setShow}];
     })
   );

@@ -73,13 +73,13 @@ header a {
     z-index: 10;
 }
 
-.tteContainer {
+.tileTypeEditorContainer {
     left: 0;
     bottom: 70px;
 }
 
 .gameConfigContainer {
     top: 32px;
-    left: 200px;
+    left: 50px;
 }
 

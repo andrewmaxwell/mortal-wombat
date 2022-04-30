@@ -1,3 +1,7 @@
+.toolBar * {
+  user-select: none;
+}
+
 .toolBar .tileType {
   display: inline-block;
   margin-right: 10px;

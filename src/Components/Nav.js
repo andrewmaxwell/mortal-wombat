@@ -18,8 +18,8 @@ export const Nav = ({user, setScale, zoomAmt, userIndex, children}) => (
         >
           <i className="fa-solid fa-play"></i> Play
         </a>
-        Hi, {userIndex[user.email]?.name || user.email}! (
-        <a onClick={logOut}>log out</a>)
+        Hi, {userIndex[user.email]?.name || user.email}!
+        <button onClick={logOut}>log out</button>
       </div>
     )}
     <b>Game Editor</b>

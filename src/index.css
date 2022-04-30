@@ -34,6 +34,7 @@ a.button {
   text-decoration: none;
   cursor: pointer;
   font-size: 0.9em;
+  user-select: none;
 }
 button:hover, a.button:hover {
   filter:brightness(150%)

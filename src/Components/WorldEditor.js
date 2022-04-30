@@ -42,11 +42,9 @@ export const WorldEditor = ({
   const onClick = (e) => {
     const {x, y} = getCoords(e, scale, xCoord, yCoord);
     const currentType = world[`${x}_${y}`]?.tileType;
-    if (
-      (currentType || selectedTileTypeId !== '_delete') &&
-      currentType !== selectedTileTypeId
-    ) {
-      placeTile(x, y, selectedTileTypeId, user, onError);
+    const t = e.shiftKey ? '_delete' : selectedTileTypeId;
+    if ((currentType || t !== '_delete') && currentType !== t) {
+      placeTile(x, y, t, user, onError);
     }
   };
 

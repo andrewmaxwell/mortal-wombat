@@ -16,6 +16,8 @@ import {makePanes} from '../utils/makePanes';
 import {GameConfig} from './GameConfig';
 import './App.css';
 import {useLocationHash} from '../hooks/useLocationHash';
+import {Pane} from './common/Pane';
+// import {useCursors} from '../hooks/useCursors';
 
 const zoomAmt = 1.25;
 
@@ -25,7 +27,7 @@ const paneConfigs = [
     label: 'Config',
     icon: 'toolbox',
   },
-  {key: 'tte', label: 'Tile Type Editor', hideButton: true},
+  {key: 'tileTypeEditor', label: 'Tile Type Editor', hideButton: true},
   {key: 'debug', label: 'Debug', icon: 'bug'},
 ];
 
@@ -37,6 +39,7 @@ export const App = () => {
   const userIndex = useUserIndex(onError);
   const tileTypes = useTileTypes(onError);
   const world = useWorld(onError);
+  // const cursors = useCursors(onError);
 
   // local state
   const [selectedTileTypeId, setSelectedTileTypeId] = useState();
@@ -63,46 +66,62 @@ export const App = () => {
 
       {user ? (
         <div className="appContainer">
-          <Panes.debug.pane>
-            <textarea
-              readOnly
-              value={JSON.stringify(
-                {
-                  xCoord,
-                  yCoord,
-                  scale,
-                  selectedTileTypeId,
-                  errors,
-                  user,
-                  // tileTypeIndex,
-                  // userIndex,
-                  // world,
-                },
-                null,
-                2
-              )}
-            />
-          </Panes.debug.pane>
+          {Panes.debug.show && (
+            <Pane
+              label={Panes.debug.label}
+              className="debugContainer"
+              hide={() => Panes.debug.setShow(false)}
+            >
+              <textarea
+                readOnly
+                value={JSON.stringify(
+                  {
+                    xCoord,
+                    yCoord,
+                    scale,
+                    selectedTileTypeId,
+                    errors,
+                    user,
+                    // tileTypeIndex,
+                    // userIndex,
+                    // world,
+                  },
+                  null,
+                  2
+                )}
+              />
+            </Pane>
+          )}
 
           {selectedTileTypeId &&
             tileTypes &&
+            Panes.tileTypeEditor.show &&
             Object.values(tileTypes).some(
               (t) => t.id === selectedTileTypeId
             ) && (
-              <Panes.tte.pane>
+              <Pane
+                label={Panes.tileTypeEditor.label}
+                className={Panes.tileTypeEditor.key + 'Container'}
+                hide={() => Panes.tileTypeEditor.setShow(false)}
+              >
                 <TileTypeEditor
                   selectedTileTypeId={selectedTileTypeId}
                   tileTypes={tileTypes}
                   user={user}
                   onError={onError}
                 />
-              </Panes.tte.pane>
+              </Pane>
             )}
 
-          <Panes.gameConfig.pane>
-            <GameConfig onError={onError} user={user} />
-          </Panes.gameConfig.pane>
-
+          {Panes.gameConfig.show && (
+            <Pane
+              label="Game Config"
+              className="gameConfigContainer"
+              hide={() => Panes.gameConfig.setShow(false)}
+            >
+              <GameConfig onError={onError} user={user} />
+            </Pane>
+          )}
           {tileTypes && (
             <div className="toolContainer">
               <Toolbar
@@ -110,8 +129,8 @@ export const App = () => {
                   tileTypes,
                   selectedTileTypeId,
                   setSelectedTileTypeId,
-                  showTileTypeEditor: Panes.tte.show,
-                  setShowTileTypeEditor: Panes.tte.setShow,
+                  showTileTypeEditor: Panes.tileTypeEditor.show,
+                  setShowTileTypeEditor: Panes.tileTypeEditor.setShow,
                 }}
               />
             </div>
@@ -129,6 +148,7 @@ export const App = () => {
                   yCoord,
                   scale,
                   user,
+                  // cursors,
                 }}
               />
             </div>
