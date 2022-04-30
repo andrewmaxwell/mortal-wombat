@@ -1,4 +1,4 @@
-import {Pane} from '../Components/Pane';
+import {Pane} from '../Components/common/Pane';
 import {useStatePersist} from '../hooks/useStatePersist';
 
 export const makePanes = (config) =>

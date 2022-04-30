@@ -55,12 +55,14 @@ Holes in lava can make you fall through world (but students really like this bug
 Features:
 - To see where people's cursors are in the editor, or where they are looking
 - Protected regions in world so no one accidentally messes up someone else's stuff
-- hoever over a block and see who edited it last
+- hover over a block and see who edited it last
 - Rectangular selection tool for filling, moving, deleting, cut, paste, things in bulk
-- Poop bar, poop blocks, so much poop
 - shift+click to delete
-- fall damage?
 - mini map
 - click where to start when testing
 - editor performance
+
+Game features:
+- Poop bar, poop blocks, so much poop
+- fall damage?
 - gem counter

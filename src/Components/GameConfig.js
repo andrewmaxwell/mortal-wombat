@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
 import {listen, updateWithHistory} from '../firebase';
-import {FormThing} from './FormThing';
+import {FormThing} from './common/FormThing';
 import './gameConfig.css';
 
 const useConfig = (onError) => {

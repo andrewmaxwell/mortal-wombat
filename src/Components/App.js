@@ -1,5 +1,4 @@
 import {ErrorBanner} from './ErrorBanner';
-import {Chat} from './Chat';
 import {useErrors} from '../hooks/useErrors';
 import {useEffect, useState} from 'react';
 
@@ -10,8 +9,6 @@ import {Toolbar} from './Toolbar';
 import {WorldEditor} from './WorldEditor';
 import {useTileTypes} from '../hooks/useTileTypes';
 import {useCoords} from '../hooks/useCoords';
-import {Todos} from './Todos';
-import {useStatePersist} from '../hooks/useStatePersist';
 import {useWorld} from '../hooks/useWorld';
 import {Nav} from './Nav';
 import {TileTypeEditor} from './TileTypeEditor';
@@ -23,8 +20,6 @@ import {useLocationHash} from '../hooks/useLocationHash';
 const zoomAmt = 1.25;
 
 const paneConfigs = [
-  {key: 'chat', label: 'Chat', icon: 'message'},
-  {key: 'todos', label: 'Todos', icon: 'list-check'},
   {
     key: 'gameConfig',
     label: 'Config',
@@ -68,14 +63,6 @@ export const App = () => {
 
       {user ? (
         <div className="appContainer">
-          <Panes.chat.pane>
-            <Chat onError={onError} user={user} userIndex={userIndex} />
-          </Panes.chat.pane>
-
-          <Panes.todos.pane>
-            <Todos onError={onError} />
-          </Panes.todos.pane>
-
           <Panes.debug.pane>
             <textarea
               readOnly

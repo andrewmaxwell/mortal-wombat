@@ -1,6 +1,6 @@
 import {updateWithHistory} from '../firebase';
 import {objToArr} from '../utils';
-import {FormThing} from './FormThing';
+import {FormThing} from './common/FormThing';
 import './tileTypeEditor.css';
 
 const fields = [
