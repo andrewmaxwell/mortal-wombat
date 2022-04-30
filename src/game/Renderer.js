@@ -69,7 +69,7 @@ export class Renderer {
       ctx.font = '32px sans-serif';
       shadowText(
         ctx,
-        'press space to try again',
+        'press R to try again',
         innerWidth / 2,
         innerHeight / 2 + 60,
         '#AFF',

@@ -42,7 +42,7 @@ const fields = [
   },
   {
     prop: 'moveSpeed',
-    label: 'Wombat Walking Speed',
+    label: 'Wombat Acceleration',
     type: 'number',
     info: 'How fast can you move?',
   },

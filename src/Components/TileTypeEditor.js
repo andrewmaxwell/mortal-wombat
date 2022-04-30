@@ -22,6 +22,12 @@ const fields = [
     type: 'text',
     info: 'The color to use if there is no image',
   },
+  {
+    prop: 'healing',
+    label: 'Healing',
+    type: 'number',
+    info: 'How much does it heal (or hurt) when you eat/touch it (per frame)?',
+  },
   {prop: 'edible', label: 'Edible', type: 'checkbox', info: 'Can you eat it?'},
   {
     prop: 'diggable',
@@ -29,12 +35,17 @@ const fields = [
     type: 'checkbox',
     info: 'Can you dig it?',
   },
-  {prop: 'deadly', label: 'Deadly', type: 'checkbox', info: 'Does it hurt?'},
   {
     prop: 'collectible',
     label: 'Collectible',
     type: 'checkbox',
     info: 'Can you collect it?',
+  },
+  {
+    prop: 'movable',
+    label: 'Movable',
+    type: 'checkbox',
+    info: 'Can you push it?',
   },
   {
     prop: 'order',

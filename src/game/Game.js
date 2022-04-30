@@ -1,21 +1,20 @@
-const GRASS_HEALTH_AMT = 5;
-const MAGMA_DAMAGE = 2;
-
-// if returns true, then delete block
-const interact = (game, you, block, pressing) => {
+const onIntersect = (game, you, block, pressing) => {
   if (block.type.collectible) {
     you.jewels++;
     return true;
   }
 
-  if (block.type.deadly) {
-    game.health = Math.max(0, game.health - MAGMA_DAMAGE);
+  if (block.type.healing < 0) {
+    game.health = Math.max(0, game.health + Number(block.type.healing));
   }
 
   if (block.type.edible && pressing.Space) {
     if (block.eaten === undefined) block.eaten = 1;
     block.eaten -= game.eatSpeed;
-    game.health = Math.min(100, game.health + GRASS_HEALTH_AMT * game.eatSpeed);
+    game.health = Math.min(
+      100,
+      game.health + block.type.healing * game.eatSpeed
+    );
     if (block.eaten <= 0) return true;
   }
 
@@ -24,7 +23,11 @@ const interact = (game, you, block, pressing) => {
     block.dug -= game.digSpeed;
     if (block.dug <= 0) return true;
   }
+};
 
+// if returns true, then delete block
+const interact = (game, you, block, pressing) => {
+  if (onIntersect(game, you, block, pressing)) return true;
   const dx = you.x - block.x;
   const dy = you.y - block.y;
   if (Math.abs(dx) > Math.abs(dy)) {
@@ -39,46 +42,43 @@ const interact = (game, you, block, pressing) => {
 
 export class Game {
   constructor(youPos, blocks, config) {
-    this.reset = () => {
-      this.blocks = blocks;
-      this.frame = 0;
-      this.you = {
-        x: 0,
-        y: 0,
-        xs: 0,
-        ys: 0,
-        dirX: 1,
-        dirY: 0,
-        jewels: 0,
-        ...youPos,
-      };
-
-      // these can all be overridden by config
-      this.digSpeed = 0.05;
-      this.eatSpeed = 0.05;
-      this.gravity = 0.005;
-      this.health = 100;
-      this.jumpPower = 0.11;
-      this.magmaDelay = 30;
-      this.moveSpeed = 0.015;
-      this.moveDeceleration = 0.3;
-
-      for (const x in config) {
-        if (!isNaN(config[x])) this[x] = Number(config[x]); // because editing them turns them into strings, yayyyy
-      }
+    this.blocks = blocks;
+    this.frame = 0;
+    this.you = {
+      x: 0,
+      y: 0,
+      xs: 0,
+      ys: 0,
+      dirX: 1,
+      dirY: 0,
+      jewels: 0,
+      ...youPos,
     };
-    this.reset();
+
+    // these can all be overridden by config
+    this.digSpeed = 0.05;
+    this.eatSpeed = 0.05;
+    this.gravity = 0.005;
+    this.health = 100;
+    this.jumpPower = 0.11;
+    this.magmaDelay = 30;
+    this.moveSpeed = 0.015;
+    this.moveDeceleration = 0.3;
+
+    for (const x in config) {
+      if (!isNaN(config[x])) this[x] = Number(config[x]); // because editing them turns them into strings, yayyyy
+    }
   }
   iterate(pressing) {
     this.iterateYou(pressing);
-    if (this.frame % this.magmaDelay === 0) this.iterateBlocks();
+    if (this.frame % this.magmaDelay === 0) this.iterateMagma();
     this.frame++;
   }
   iterateYou(pressing) {
     const {you, blocks, gravity} = this;
 
     if (this.health <= 0) {
-      if (pressing.Space) this.reset();
+      if (pressing.KeyR) location.reload();
       return;
     }
 
@@ -95,7 +95,7 @@ export class Game {
       you.dirX++;
     }
     if (pressing.KeyW) {
-      if (!you.jumping) {
+      if (!you.jumping && !you.ys) {
         you.ys -= this.jumpPower;
         you.jumping = true;
       }
@@ -132,10 +132,12 @@ export class Game {
     b.y += dy;
     this.blocks[`${b.x}_${b.y}`] = b;
   }
-  iterateBlocks() {
-    for (const b of Object.values(this.blocks)
+  iterateMagma() {
+    const magma = Object.values(this.blocks)
       .filter((b) => b.type.movement === 'liquid')
-      .sort((a, b) => (a.y === b.y ? Math.random() - 0.5 : a.y - b.y))) {
+      .sort((a, b) => (a.y === b.y ? Math.random() - 0.5 : a.y - b.y));
+
+    for (const b of magma) {
       if (this.isEmpty(b.x, b.y + 1)) {
         this.move(b.x, b.y, 0, 1);
       } else {
