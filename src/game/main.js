@@ -24,6 +24,14 @@ const init = async () => {
     }
   }
 
+  if (location.hash.length > 1) {
+    try {
+      you = JSON.parse(atob(location.hash.slice(1)));
+    } catch (e) {
+      console.log('bad hash', e);
+    }
+  }
+
   console.log(gameConfig);
   const game = new Game(you, world, gameConfig);
 

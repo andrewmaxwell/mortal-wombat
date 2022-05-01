@@ -43,7 +43,7 @@ export const App = () => {
 
   // local state
   const [selectedTileTypeId, setSelectedTileTypeId] = useState();
-  const {xCoord, yCoord, setXCoord, setYCoord} = useCoords(16, 4);
+  const {xCoord, yCoord, setXCoord, setYCoord} = useCoords(0, 0);
   const [scale, setScale] = useState(32);
 
   // pane toggles

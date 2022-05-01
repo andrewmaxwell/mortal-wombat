@@ -46,13 +46,14 @@ Bug:
 
 Features:
 - DONE shift+click to delete
-- click where to start when testing
+- DONE alt+click where to start when testing
 - To see where people's cursors are in the editor, or where they are looking
 - mini map
 - hover over a block and see who edited it last
 - Rectangular selection tool for filling, moving, deleting, cut, paste, things in bulk
 - editor performance
 - Protected regions in world so no one accidentally messes up someone else's stuff
+- Better animations
 
 Game features:
 - Poop bar, poop blocks, so much poop

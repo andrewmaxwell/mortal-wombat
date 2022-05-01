@@ -10,20 +10,11 @@ export const Nav = ({user, setScale, zoomAmt, userIndex, children}) => (
         <button onClick={() => setScale((s) => Math.round(s / zoomAmt))}>
           <i className="fa-solid fa-magnifying-glass-minus"></i>
         </button>
-        <a
-          className="button"
-          href={location.href.replace(/\?.*/, '')}
-          target="_blank"
-          rel="noreferrer"
-        >
-          <i className="fa-solid fa-play"></i> Play
-        </a>
         Hi, {userIndex[user.email]?.name || user.email}!
         <button onClick={logOut}>log out</button>
       </div>
     )}
     <b>Game Editor</b>
-
     {children}
   </nav>
 );
