@@ -41,16 +41,28 @@ export const debounce = (func, delay) => {
   return f;
 };
 
-// export const throttle = (func, delay) => {
-//   let prev = 0;
-//   return (...args) => {
-//     const now = Date.now();
-//     if (now - prev > delay) {
-//       prev = now;
-//       return func(...args);
-//     }
-//   };
-// };
+export const throttle = (func, delay) => {
+  let timeout;
+  let running = false;
+  let runAgainArgs;
+  const f = (...args) => {
+    if (running) {
+      runAgainArgs = args;
+      return;
+    }
+    running = true;
+    timeout = setTimeout(() => {
+      func(...args);
+      running = false;
+      if (runAgainArgs) {
+        f(...runAgainArgs);
+      }
+      runAgainArgs = undefined;
+    }, delay);
+  };
+  f.cancel = () => clearTimeout(timeout);
+  return f;
+};
 
 // const memoize = (func) => {
 //   const cache = {};

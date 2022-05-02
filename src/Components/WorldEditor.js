@@ -1,6 +1,13 @@
-import {useMemo, useRef} from 'react';
+import {Fragment, useCallback, useMemo, useRef} from 'react';
 import {updateWithHistory} from '../firebase';
+import {
+  getLatestTimestamp,
+  sessionId,
+  sessionTimeOut,
+  setCursor,
+} from '../hooks/useCursors';
 import {indexBy, objToArr} from '../utils';
+import {Cursors} from './Cursors';
 import './worldEditor.css';
 
 const placeTile = (x, y, id, user, onError) =>
@@ -30,6 +37,8 @@ export const WorldEditor = ({
   yCoord,
   scale,
   user,
+  cursors,
+  userIndex,
 }) => {
   // using a ref is much more performant than keeping mouse coords in state
   const ghostRef = useRef();
@@ -57,24 +66,28 @@ export const WorldEditor = ({
     }
   };
 
-  const onMouseMove = (e) => {
-    const {x, y} = getCoords(e, scale, xCoord, yCoord);
-    const s = ghostRef.current?.style;
-    s.left = x * scale + 'px';
-    s.top = y * scale + 'px';
-    if (e.buttons) onClick(e);
-  };
+  const onMouseMove = useCallback(
+    (e) => {
+      const {x, y} = getCoords(e, scale, xCoord, yCoord);
+      if (selectedTileTypeId) {
+        const s = ghostRef.current?.style;
+        s.left = x * scale + 'px';
+        s.top = y * scale + 'px';
+        if (e.buttons) onClick(e);
+      }
+      setCursor(user, x, y, xCoord, yCoord, scale, onError);
+    },
+    [scale, xCoord, yCoord, selectedTileTypeId, user]
+  );
 
   const cx = innerWidth / 2 - xCoord * scale;
   const cy = innerHeight / 2 - yCoord * scale;
 
   return (
-    <div
-      className="world"
-      onClick={onClick}
-      onMouseMove={selectedTileTypeId ? onMouseMove : undefined}
-    >
+    <div className="world" onClick={onClick} onMouseMove={onMouseMove}>
       <div style={{transform: `translate(${cx}px,${cy}px)`}}>
+        <Cursors cursors={cursors} scale={scale} userIndex={userIndex} />
+
         {Object.entries(world)
           .filter(([key, t]) => {
             if (!tileTypeIndex[t.tileType]) {

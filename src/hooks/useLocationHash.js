@@ -20,13 +20,15 @@ export const useLocationHash = ({
 
   useEffect(() => {
     const onHashChange = () => {
-      const match = location.hash?.match(/^#(\d+)\/(\d+)\/(\d+)$/);
-      if (!match) return;
-      const [, x, y, scale] = match.map(Number);
-      setXCoord(x);
-      setYCoord(y);
-      setScale(scale);
+      const parts = location.hash.slice(1).split('/').map(Number);
+      if (parts.length === 3 && parts.every((p) => !isNaN(p))) {
+        const [x, y, scale] = parts;
+        setXCoord(x);
+        setYCoord(y);
+        setScale(scale);
+      }
     };
+    onHashChange();
     window.addEventListener('hashchange', onHashChange);
     return () => {
       window.removeEventListener('hashchange', onHashChange);

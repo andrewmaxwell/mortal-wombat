@@ -83,3 +83,10 @@ header a {
     left: 50px;
 }
 
+.hereNowContainer {
+    top: 32px;
+    left: 50px;
+}
+.hereNowContainer a {
+    margin: 0 10px;
+}

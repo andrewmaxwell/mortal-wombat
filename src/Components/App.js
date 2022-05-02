@@ -17,7 +17,8 @@ import {GameConfig} from './GameConfig';
 import './App.css';
 import {useLocationHash} from '../hooks/useLocationHash';
 import {Pane} from './common/Pane';
-// import {useCursors} from '../hooks/useCursors';
+import {setCursor, useCursors} from '../hooks/useCursors';
+import {HereNow} from './HereNow';
 
 const zoomAmt = 1.25;
 
@@ -28,6 +29,7 @@ const paneConfigs = [
     icon: 'toolbox',
   },
   {key: 'tileTypeEditor', label: 'Tile Type Editor', hideButton: true},
+  {key: 'hereNow', label: 'People', icon: 'person'},
   {key: 'debug', label: 'Debug', icon: 'bug'},
 ];
 
@@ -39,7 +41,7 @@ export const App = () => {
   const userIndex = useUserIndex(onError);
   const tileTypes = useTileTypes(onError);
   const world = useWorld(onError);
-  // const cursors = useCursors(onError);
+  const cursors = useCursors(onError);
 
   // local state
   const [selectedTileTypeId, setSelectedTileTypeId] = useState();
@@ -55,6 +57,10 @@ export const App = () => {
   }, [scale]);
 
   useLocationHash({xCoord, yCoord, scale, setXCoord, setYCoord, setScale});
+
+  useEffect(() => {
+    if (user) setCursor(user, null, null, xCoord, yCoord, scale, onError);
+  }, [user, xCoord, yCoord, scale]);
 
   return (
     <>
@@ -82,6 +88,7 @@ export const App = () => {
                     selectedTileTypeId,
                     errors,
                     user,
+                    cursors,
                     // tileTypeIndex,
                     // userIndex,
                     // world,
@@ -122,6 +129,17 @@ export const App = () => {
               <GameConfig onError={onError} user={user} />
             </Pane>
           )}
+
+          {Panes.hereNow.show && (
+            <Pane
+              label="Using the Editor Right Now"
+              className="hereNowContainer"
+              hide={() => Panes.hereNow.setShow(false)}
+            >
+              <HereNow cursors={cursors} userIndex={userIndex} />
+            </Pane>
+          )}
+
           {tileTypes && (
             <div className="toolContainer">
               <Toolbar
@@ -148,7 +166,8 @@ export const App = () => {
                   yCoord,
                   scale,
                   user,
-                  // cursors,
+                  cursors,
+                  userIndex,
                 }}
               />
             </div>

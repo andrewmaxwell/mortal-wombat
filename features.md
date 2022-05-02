@@ -49,6 +49,7 @@ Features:
 - DONE alt+click where to start when testing
 - To see where people's cursors are in the editor, or where they are looking
 - mini map
+- Multiple worlds
 - hover over a block and see who edited it last
 - Rectangular selection tool for filling, moving, deleting, cut, paste, things in bulk
 - editor performance
