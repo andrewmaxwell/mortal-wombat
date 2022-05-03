@@ -19,7 +19,7 @@ const bar = (ctx, value, maxValue, color, x, y, width, height) => {
   ctx.fillText(Math.floor(value), x + 2, y + 1);
 };
 
-export class Renderer {
+export class CanvasRenderer {
   constructor(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d', {antialias: false, depth: false});

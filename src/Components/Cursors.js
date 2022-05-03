@@ -18,8 +18,7 @@ export const Cursors = ({cursors, scale, userIndex}) => {
           <div
             className="cursorView"
             style={{
-              left: left * scale,
-              top: top * scale,
+              transform: `translate(${left * scale}px, ${top * scale}px)`,
               width: width * scale,
               height: height * scale,
               opacity,
@@ -31,8 +30,9 @@ export const Cursors = ({cursors, scale, userIndex}) => {
             <div
               className="mouseCursor"
               style={{
-                left: (mouseX + 0.5) * scale,
-                top: (mouseY + 0.5) * scale,
+                transform: `translate(${(mouseX + 0.5) * scale}px, ${
+                  (mouseY + 0.5) * scale
+                }px)`,
                 opacity,
               }}
             >

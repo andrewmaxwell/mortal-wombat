@@ -1,5 +1,5 @@
+import {getBackground} from '../utils/getBackground';
 import './toolbar.css';
-import {getBackground} from './WorldEditor';
 
 export const Toolbar = ({
   tileTypes,

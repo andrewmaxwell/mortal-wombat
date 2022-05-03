@@ -1,6 +1,6 @@
 import {loadData} from '../firebase.js';
+import {CanvasRenderer} from './CanvasRenderer.js';
 import {Game} from './Game.js';
-import {Renderer} from './Renderer.js';
 
 const init = async () => {
   const {tileTypes, world, gameConfig} = await loadData([
@@ -36,16 +36,18 @@ const init = async () => {
   const game = new Game(you, world, gameConfig);
 
   const canvas = document.createElement('canvas');
+  const renderer = new CanvasRenderer(canvas);
   document.body.append(canvas);
+
   document.body.style.background = 'black';
   document.body.style.margin = 0;
   document.body.style.overflow = 'hidden';
-  const renderer = new Renderer(canvas);
+
   const pressing = {};
 
   const loop = () => {
     game.iterate(pressing);
-    renderer.render(game, tileTypes);
+    renderer.render(game);
     requestAnimationFrame(loop);
   };
   loop();

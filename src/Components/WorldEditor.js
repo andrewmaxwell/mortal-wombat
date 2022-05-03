@@ -3,8 +3,11 @@ import {memo, useCallback, useMemo, useRef} from 'react';
 import {update} from '../firebase';
 import {setCursor} from '../hooks/useCursors';
 import {indexBy, objToArr} from '../utils';
+import {getBackground} from '../utils/getBackground';
 import {Cursors} from './Cursors';
 import './worldEditor.css';
+
+const CSS_SIZE = 32;
 
 const placeTile = (x, y, id, user, onError) =>
   update(
@@ -22,12 +25,6 @@ const getCoords = (e, scale, xCoord, yCoord) => ({
   y: Math.floor((e.clientY - innerHeight / 2) / scale) + yCoord,
 });
 
-export const getBackground = (type) => ({
-  background: type.image
-    ? `no-repeat center/contain url(${type.image})`
-    : type.color,
-});
-
 const getTitle = (user, tstamp, userIndex) => {
   if (!user || !tstamp) return '';
   const name = userIndex[user]?.name || user;
@@ -35,7 +32,7 @@ const getTitle = (user, tstamp, userIndex) => {
   return `Placed by ${name} on ${date}`;
 };
 
-const Tiles = ({world, tileTypeIndex, scale, userIndex}) =>
+const Tiles = ({world, tileTypeIndex, userIndex}) =>
   Object.entries(world)
     .filter(([key, t]) => {
       if (!tileTypeIndex[t.tileType]) {
@@ -50,8 +47,7 @@ const Tiles = ({world, tileTypeIndex, scale, userIndex}) =>
         className="tile"
         title={getTitle(user, tstamp, userIndex)}
         style={{
-          left: x * scale + 'px',
-          top: y * scale + 'px',
+          transform: `translate(${x * CSS_SIZE}px, ${y * CSS_SIZE}px)`,
           ...getBackground(tileTypeIndex[tileType]),
         }}
       />
@@ -102,8 +98,7 @@ export const WorldEditor = ({
       const {x, y} = getCoords(e, scale, xCoord, yCoord);
       if (selectedTileTypeId) {
         const s = ghostRef.current?.style;
-        s.left = x * scale + 'px';
-        s.top = y * scale + 'px';
+        s.transform = `translate(${x * CSS_SIZE}px, ${y * CSS_SIZE}px)`;
         if (e.buttons) onClick(e);
       }
       setCursor(user, x, y, xCoord, yCoord, scale, onError);
@@ -111,8 +106,8 @@ export const WorldEditor = ({
     [scale, xCoord, yCoord, selectedTileTypeId, user]
   );
 
-  const cx = innerWidth / 2 - xCoord * scale;
-  const cy = innerHeight / 2 - yCoord * scale;
+  const cx = innerWidth / 2 - xCoord * CSS_SIZE;
+  const cy = innerHeight / 2 - yCoord * CSS_SIZE;
 
   return (
     <div
@@ -121,10 +116,15 @@ export const WorldEditor = ({
       onClick={onClick}
       onMouseMove={onMouseMove}
     >
-      <div style={{transform: `translate(${cx}px,${cy}px)`}}>
+      <div
+        style={{
+          transformOrigin: `${innerWidth / 2}px ${innerHeight / 2}px`,
+          transform: `scale(${scale / CSS_SIZE}) translate(${cx}px,${cy}px)`,
+        }}
+      >
         <Cursors cursors={cursors} scale={scale} userIndex={userIndex} />
 
-        <TilesMemo {...{world, tileTypeIndex, scale, userIndex}} />
+        <TilesMemo {...{world, tileTypeIndex, userIndex}} />
 
         {selectedTileTypeId && (
           <div

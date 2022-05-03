@@ -63,11 +63,6 @@ export const App = () => {
   // pane toggles
   const Panes = makeButtons(paneConfigs);
 
-  useEffect(() => {
-    // syncronize scale in css as var(--scale)
-    document.documentElement.style.setProperty('--scale', scale + 'px');
-  }, [scale]);
-
   useLocationHash({xCoord, yCoord, scale, setXCoord, setYCoord, setScale});
 
   useEffect(() => {
