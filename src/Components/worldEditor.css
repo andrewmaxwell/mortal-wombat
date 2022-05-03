@@ -13,9 +13,9 @@
 }
 
 .world .ghost {
-  transition: all 0.1s;
   opacity: 0.5;
   outline: 2px dashed white;
+  pointer-events: none;
 }
 
 .cursorView {
@@ -26,6 +26,7 @@
   border-radius: 3px;
   background: rgba(255, 0, 255, 0.1);
 }
+
 .cursorView span {
   font-size: 0.8em;
   background: magenta;
@@ -36,10 +37,12 @@
 }
 
 .mouseCursor {
+  user-select: none;
   pointer-events: none;
   position: absolute;
   opacity: 0.5;
 }
+
 .mouseCursor span {
   font-size: 0.8em;
 }

@@ -12,8 +12,12 @@ const onIntersect = (game, you, block, pressing) => {
     if (block.eaten === undefined) block.eaten = 1;
     block.eaten -= game.eatSpeed;
     game.health = Math.min(
-      100,
+      game.maxHealth,
       game.health + block.type.healing * game.eatSpeed
+    );
+    game.poop = Math.min(
+      game.maxPoop,
+      game.poop + block.type.makePoop * game.eatSpeed
     );
     if (block.eaten <= 0) return true;
   }
@@ -60,6 +64,9 @@ export class Game {
     this.eatSpeed = 0.05;
     this.gravity = 0.005;
     this.health = 100;
+    this.maxHealth = 100; // TODO
+    this.poop = 0; // TODO
+    this.maxPoop = 10; // TODO
     this.jumpPower = 0.11;
     this.magmaDelay = 30;
     this.moveSpeed = 0.015;

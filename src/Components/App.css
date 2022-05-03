@@ -20,37 +20,18 @@ button.active {
     box-shadow: 0 0 5px white;
 }
 
-.chatContainer {
-    top: 50%;
-    bottom: 0;
-    right: 0;
-    width: 200px;
-}
 
-header {
-    margin: 3px 0
-}
-
-header a {
-    float: right;
-}
-
-.todosContainer {
-    bottom: 0;
-    right: 210px;
-}
 
 .debugContainer {
     left: 0;
     top: 50px;
-    bottom: 100px;
     right: 0;
     width: 30%;
 }
 
 .debugContainer textarea {
     width: 100%;
-    height: 100%;
+    height: 400px;
     background: none;
     color: white;
     font-size: 11px;
@@ -76,17 +57,22 @@ header a {
 .tileTypeEditorContainer {
     left: 0;
     bottom: 70px;
+    width: 300px;
 }
 
 .gameConfigContainer {
     top: 32px;
     left: 50px;
+    width: 325px;
 }
 
 .hereNowContainer {
     top: 32px;
-    left: 50px;
+    right: 0;
 }
-.hereNowContainer a {
-    margin: 0 10px;
+
+.instructionsContainer {
+    top: 32px;
+    left: 100px;
+    width: 300px;
 }

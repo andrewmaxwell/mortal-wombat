@@ -7,7 +7,6 @@ import {
   off,
   get,
   child,
-  serverTimestamp,
 } from 'firebase/database';
 import {
   getAuth,
@@ -15,7 +14,6 @@ import {
   onAuthStateChanged,
   signOut,
 } from 'firebase/auth';
-import {guid} from './utils';
 
 initializeApp({
   apiKey: 'AIzaSyBEserPzSUos4MT3XRO8NKAO2oVk1-LS-I',
@@ -55,18 +53,20 @@ export const update = (updates, onError) => {
   }
 };
 
-export const updateWithHistory = (data, user, onError) =>
-  update(
-    {
-      ...data,
-      [`history/${guid()}`]: {
-        update: JSON.stringify(data),
-        user: user.email,
-        tstamp: serverTimestamp(),
-      },
-    },
-    onError
-  );
+window._update = async (x) => console.log(await _update(dbRef, x));
+
+// export const updateWithHistory = (data, user, onError) =>
+//   update(
+//     {
+//       ...data,
+//       [`history/${guid()}`]: {
+//         update: JSON.stringify(data),
+//         user: user.email,
+//         tstamp: serverTimestamp(),
+//       },
+//     },
+//     onError
+//   );
 
 export const loadData = async (things) =>
   Object.fromEntries(

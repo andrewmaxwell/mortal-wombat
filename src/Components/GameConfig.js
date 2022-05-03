@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {listen, updateWithHistory} from '../firebase';
+import {listen, update} from '../firebase';
 import {FormThing} from './common/FormThing';
 import './gameConfig.css';
 
@@ -60,15 +60,22 @@ const fields = [
   },
 ];
 
-export const GameConfig = ({onError, user}) => {
+export const GameConfig = ({onError}) => {
   const config = useConfig(onError);
   return (
     <div className="gameConfig">
+      <p>
+        <span style={{color: 'orange'}}>
+          <i className="fa-solid fa-triangle-exclamation"></i> WARNING
+        </span>{' '}
+        You can seriously mess up the game if you change these. Please write
+        them down and change them very carefully!
+      </p>
       <FormThing
         fields={fields}
         data={config}
         onChange={(value, prop) => {
-          updateWithHistory({[`gameConfig/${prop}`]: value}, user, onError);
+          update({[`gameConfig/${prop}`]: value}, onError);
         }}
       />
     </div>

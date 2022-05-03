@@ -1,10 +1,25 @@
 .pane {
   position: fixed;
-  background: rgba(255, 255, 255, 0.2);
+  background: #444;
   font-size: 0.8em;
-  opacity: 0.8;
-  padding: 3px;
   z-index: 10;
   max-height: 90vh;
   overflow: auto;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.5);
+}
+
+.paneHeader {
+  margin: 0;
+  padding: 5px;
+  background: rgba(255,255,255, 0.1);
+  user-select: none;
+}
+
+.paneHeader a {
+  float: right;
+}
+
+.paneBody {
+  padding: 5px;
+  height: 100%;
 }

@@ -1,4 +1,4 @@
-import {updateWithHistory} from '../firebase';
+import {update} from '../firebase';
 import {objToArr} from '../utils';
 import {FormThing} from './common/FormThing';
 import './tileTypeEditor.css';
@@ -28,6 +28,12 @@ const fields = [
     type: 'number',
     info: 'How much does it heal (or hurt) when you eat/touch it (per frame)?',
   },
+  {
+    prop: 'makePoop',
+    label: 'Make Poop',
+    type: 'number',
+    info: 'How much poop does it make?',
+  },
   {prop: 'edible', label: 'Edible', type: 'checkbox', info: 'Can you eat it?'},
   {
     prop: 'diggable',
@@ -56,12 +62,7 @@ const fields = [
   // {prop: 'movement', label: 'Movement', type: 'select', }
 ];
 
-export const TileTypeEditor = ({
-  selectedTileTypeId,
-  tileTypes,
-  user,
-  onError,
-}) => {
+export const TileTypeEditor = ({selectedTileTypeId, tileTypes, onError}) => {
   const selectedTileType = objToArr(tileTypes).find(
     (el) => el.id === selectedTileTypeId
   );
@@ -69,13 +70,19 @@ export const TileTypeEditor = ({
   return (
     selectedTileType && (
       <div className="tileTypeEditor">
+        <p>
+          <span style={{color: 'orange'}}>
+            <i className="fa-solid fa-triangle-exclamation"></i> WARNING
+          </span>{' '}
+          You can seriously mess up the game if you change these. Please write
+          them down and change them very carefully!
+        </p>
         <FormThing
           fields={fields}
           data={selectedTileType}
           onChange={(value, prop) => {
-            updateWithHistory(
+            update(
               {[`tileTypes/${selectedTileType.key}/${prop}`]: value},
-              user,
               onError
             );
           }}

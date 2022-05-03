@@ -38,7 +38,7 @@ Debug Pane
 Error Banner
 Log Out
 
-Bug: 
+Bugs: 
 - DONE Inputs in panes flicker and lose focus when world is edited
 - DONE Don't select words when double clicking things
 - Possible to interact with diagonal tiles even when adjacent tiles are solid
@@ -47,10 +47,10 @@ Bug:
 Features:
 - DONE shift+click to delete
 - DONE alt+click where to start when testing
-- To see where people's cursors are in the editor, or where they are looking
-- mini map
+- DONE To see where people's cursors are in the editor, or where they are looking
+- DONE hover over a block and see who edited it last
 - Multiple worlds
-- hover over a block and see who edited it last
+- mini map
 - Rectangular selection tool for filling, moving, deleting, cut, paste, things in bulk
 - editor performance
 - Protected regions in world so no one accidentally messes up someone else's stuff

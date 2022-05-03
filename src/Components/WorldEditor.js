@@ -1,19 +1,19 @@
-import {Fragment, useCallback, useMemo, useRef} from 'react';
-import {updateWithHistory} from '../firebase';
-import {
-  getLatestTimestamp,
-  sessionId,
-  sessionTimeOut,
-  setCursor,
-} from '../hooks/useCursors';
+import {serverTimestamp} from 'firebase/database';
+import {memo, useCallback, useMemo, useRef} from 'react';
+import {update} from '../firebase';
+import {setCursor} from '../hooks/useCursors';
 import {indexBy, objToArr} from '../utils';
 import {Cursors} from './Cursors';
 import './worldEditor.css';
 
 const placeTile = (x, y, id, user, onError) =>
-  updateWithHistory(
-    {[`world/${x}_${y}`]: id === '_delete' ? null : {x, y, tileType: id}},
-    user,
+  update(
+    {
+      [`world/${x}_${y}`]:
+        id === '_delete'
+          ? null
+          : {x, y, tileType: id, user: user.email, tstamp: serverTimestamp()},
+    },
     onError
   );
 
@@ -27,6 +27,37 @@ export const getBackground = (type) => ({
     ? `no-repeat center/contain url(${type.image})`
     : type.color,
 });
+
+const getTitle = (user, tstamp, userIndex) => {
+  if (!user || !tstamp) return '';
+  const name = userIndex[user]?.name || user;
+  const date = new Date(tstamp).toLocaleString();
+  return `Placed by ${name} on ${date}`;
+};
+
+const Tiles = ({world, tileTypeIndex, scale, userIndex}) =>
+  Object.entries(world)
+    .filter(([key, t]) => {
+      if (!tileTypeIndex[t.tileType]) {
+        console.log('BAD DATA', key, t); // TODO: delete the ones that get logged out here
+        return false;
+      }
+      return true;
+    })
+    .map(([key, {x, y, tileType, user, tstamp}]) => (
+      <div
+        key={key}
+        className="tile"
+        title={getTitle(user, tstamp, userIndex)}
+        style={{
+          left: x * scale + 'px',
+          top: y * scale + 'px',
+          ...getBackground(tileTypeIndex[tileType]),
+        }}
+      />
+    ));
+
+const TilesMemo = memo(Tiles);
 
 export const WorldEditor = ({
   world,
@@ -84,29 +115,16 @@ export const WorldEditor = ({
   const cy = innerHeight / 2 - yCoord * scale;
 
   return (
-    <div className="world" onClick={onClick} onMouseMove={onMouseMove}>
+    <div
+      id="worldEditor"
+      className="world"
+      onClick={onClick}
+      onMouseMove={onMouseMove}
+    >
       <div style={{transform: `translate(${cx}px,${cy}px)`}}>
         <Cursors cursors={cursors} scale={scale} userIndex={userIndex} />
 
-        {Object.entries(world)
-          .filter(([key, t]) => {
-            if (!tileTypeIndex[t.tileType]) {
-              console.log('BAD DATA', key, t); // TODO: delete the ones that get logged out here
-              return false;
-            }
-            return true;
-          })
-          .map(([key, {x, y, tileType}]) => (
-            <div
-              key={key}
-              className="tile"
-              style={{
-                left: x * scale + 'px',
-                top: y * scale + 'px',
-                ...getBackground(tileTypeIndex[tileType]),
-              }}
-            />
-          ))}
+        <TilesMemo {...{world, tileTypeIndex, scale, userIndex}} />
 
         {selectedTileTypeId && (
           <div

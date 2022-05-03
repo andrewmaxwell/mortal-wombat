@@ -7,6 +7,18 @@ const shadowText = (ctx, text, x, y, color, offset) => {
   ctx.fillText(text, x, y);
 };
 
+const bar = (ctx, value, maxValue, color, x, y, width, height) => {
+  ctx.fillStyle = color;
+  ctx.fillRect(x, y, (value / maxValue) * width, height);
+  ctx.strokeStyle = 'white';
+  ctx.strokeRect(x, y, width, height);
+  ctx.fillStyle = 'white';
+  ctx.font = '18px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  ctx.fillText(Math.floor(value), x + 2, y + 1);
+};
+
 export class Renderer {
   constructor(canvas) {
     this.canvas = canvas;
@@ -19,7 +31,7 @@ export class Renderer {
     this.width = canvas.width = innerWidth;
     this.height = canvas.height = innerHeight;
   }
-  render({you, health, blocks}) {
+  render({you, health, maxHealth, poop, maxPoop, blocks}) {
     const {ctx, width, height} = this;
 
     ctx.clearRect(0, 0, width, height);
@@ -51,16 +63,17 @@ export class Renderer {
 
     // HUD
     if (health > 0) {
-      ctx.strokeStyle = 'white';
-      ctx.fillStyle = health > 30 ? 'green' : 'red';
-      ctx.fillRect(10, 10, health * 5, 20);
-      ctx.strokeRect(10, 10, 100 * 5, 20);
-      ctx.fillStyle = 'white';
-      ctx.textBaseline = 'top';
-      ctx.font = '18px sans-serif';
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'top';
-      ctx.fillText(Math.round(health) + '%', 12, 11);
+      bar(
+        ctx,
+        health,
+        maxHealth,
+        health > 30 ? 'green' : 'red',
+        10,
+        10,
+        500,
+        20
+      );
+      bar(ctx, poop, maxPoop, 'brown', 10, 40, 500, 20);
     } else {
       ctx.textBaseline = 'middle';
       ctx.textAlign = 'center';
