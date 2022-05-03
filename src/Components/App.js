@@ -149,8 +149,11 @@ export const App = () => {
                 upper right.
               </p>
               <p>
+                Share your URL with other editors to show them what you made.
+              </p>
+              <p>
                 To test what you have made, Alt+Click where you want to start
-                testing.
+                testing. Share your game URL to share your starting point.
               </p>
             </Pane>
           )}

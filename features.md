@@ -53,7 +53,6 @@ Features:
 - mini map
 - Rectangular selection tool for filling, moving, deleting, cut, paste, things in bulk
 - editor performance
-- Protected regions in world so no one accidentally messes up someone else's stuff
 - Better animations
 
 Game features:

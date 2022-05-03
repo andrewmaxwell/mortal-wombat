@@ -9,19 +9,8 @@ body {
   font-family: sans-serif;
 }
 
-a {
-  color: inherit;
-  cursor: pointer;
-  margin: 0 3px;
-  opacity: 0.5;
-}
-
-a:hover {
-  text-decoration: underline;
-}
-
 button,
-a.button {
+a {
   background: #444;
   color: white;
   border: 0;
@@ -35,7 +24,8 @@ a.button {
   font-size: 0.9em;
   user-select: none;
 }
-button:hover, a.button:hover {
+
+button:hover, a:hover {
   filter:brightness(150%)
 }
 

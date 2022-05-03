@@ -8,7 +8,7 @@ export const makeButtons = (config) =>
       const button = !hideButton && (
         <a
           key={key}
-          className={`button${show ? ' active' : ''}`}
+          className={show ? 'active' : ''}
           onClick={() => setShow((s) => !s)}
         >
           <i className={`fa-solid fa-${icon}`} /> {buttonLabel}

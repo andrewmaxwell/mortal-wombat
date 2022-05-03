@@ -17,9 +17,9 @@
 
 .paneHeader a {
   float: right;
+  margin: -2px 0 0 15px;
 }
 
 .paneBody {
   padding: 5px;
-  height: 100%;
 }

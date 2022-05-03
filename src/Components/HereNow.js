@@ -9,11 +9,7 @@ export const HereNow = ({cursors, userIndex}) => {
       <div key={key} style={{margin: 5}}>
         {userIndex[user]?.name || user}
         {mouseX && mouseY && (
-          <a
-            className="button"
-            style={{margin: '0 10px'}}
-            href={`#${mouseX}/${mouseY}/32`}
-          >
+          <a style={{margin: '0 10px'}} href={`#${mouseX}/${mouseY}/32`}>
             go
           </a>
         )}

@@ -10,17 +10,14 @@ nav {
     z-index: 10;
 }
 
-nav button,
-nav a.button {
+nav a {
     margin: 0 8px;
 }
 
-button.active {
+nav a.active {
     background: blue;
     box-shadow: 0 0 5px white;
 }
-
-
 
 .debugContainer {
     left: 0;
