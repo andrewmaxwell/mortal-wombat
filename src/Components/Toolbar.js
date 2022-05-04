@@ -17,7 +17,7 @@ export const Toolbar = ({
           className={
             'tileType' + (selectedTileTypeId === type.id ? ' selected' : '')
           }
-          style={getBackground(type)}
+          style={{background: getBackground(type)}}
           title={
             showTileTypeEditor ? '' : 'Double click to edit tile properties.'
           }

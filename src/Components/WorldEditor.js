@@ -1,5 +1,5 @@
 import {serverTimestamp} from 'firebase/database';
-import {memo, useCallback, useMemo, useRef} from 'react';
+import {memo, useCallback, useEffect, useMemo, useRef} from 'react';
 import {update} from '../firebase';
 import {setCursor} from '../hooks/useCursors';
 import {indexBy, objToArr} from '../utils';
@@ -33,25 +33,17 @@ const getTitle = (user, tstamp, userIndex) => {
 };
 
 const Tiles = ({world, tileTypeIndex, userIndex}) =>
-  Object.entries(world)
-    .filter(([key, t]) => {
-      if (!tileTypeIndex[t.tileType]) {
-        console.log('BAD DATA', key, t); // TODO: delete the ones that get logged out here
-        return false;
-      }
-      return true;
-    })
-    .map(([key, {x, y, tileType, user, tstamp}]) => (
-      <div
-        key={key}
-        className="tile"
-        title={getTitle(user, tstamp, userIndex)}
-        style={{
-          transform: `translate(${x * CSS_SIZE}px, ${y * CSS_SIZE}px)`,
-          ...getBackground(tileTypeIndex[tileType]),
-        }}
-      />
-    ));
+  Object.entries(world).map(([key, {x, y, tileType, user, tstamp}]) => (
+    <div
+      key={key}
+      className="tile"
+      title={getTitle(user, tstamp, userIndex)}
+      style={{
+        transform: `translate(${x * CSS_SIZE}px, ${y * CSS_SIZE}px)`,
+        background: getBackground(tileTypeIndex[tileType]),
+      }}
+    />
+  ));
 
 const TilesMemo = memo(Tiles);
 
@@ -74,6 +66,22 @@ export const WorldEditor = ({
     () => indexBy((t) => t.id, objToArr(tileTypes)),
     [tileTypes]
   );
+
+  // This checks for invalid tiles in the world and outputs them along with an update object
+  // useEffect(() => {
+  //   const badData = Object.entries(world).filter(
+  //     ([, t]) => !tileTypeIndex[t.tileType]
+  //   );
+  //   if (badData.length) {
+  //     console.log(
+  //       'This is bad data',
+  //       badData.map((p) => p[1]),
+  //       JSON.stringify(
+  //         Object.fromEntries(badData.map(([key]) => [`world/${key}`, null]))
+  //       )
+  //     );
+  //   }
+  // }, [world, tileTypeIndex]);
 
   const onClick = (e) => {
     const {x, y} = getCoords(e, scale, xCoord, yCoord);
@@ -130,7 +138,9 @@ export const WorldEditor = ({
           <div
             ref={ghostRef}
             className="ghost tile"
-            style={getBackground(tileTypeIndex[selectedTileTypeId])}
+            style={{
+              background: getBackground(tileTypeIndex[selectedTileTypeId]),
+            }}
           ></div>
         )}
       </div>

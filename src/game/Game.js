@@ -1,52 +1,7 @@
-const onIntersect = (game, you, block, pressing) => {
-  if (block.type.collectible) {
-    you.jewels++;
-    return true;
-  }
-
-  if (block.type.healing < 0) {
-    game.health = Math.max(0, game.health + Number(block.type.healing));
-  }
-
-  if (block.type.edible && pressing.Space) {
-    if (block.eaten === undefined) block.eaten = 1;
-    block.eaten -= game.eatSpeed;
-    game.health = Math.min(
-      game.maxHealth,
-      game.health + block.type.healing * game.eatSpeed
-    );
-    game.poop = Math.min(
-      game.maxPoop,
-      game.poop + block.type.makePoop * game.eatSpeed
-    );
-    if (block.eaten <= 0) return true;
-  }
-
-  if (block.type.diggable && pressing.Space) {
-    if (block.dug === undefined) block.dug = 1;
-    block.dug -= game.digSpeed;
-    if (block.dug <= 0) return true;
-  }
-};
-
-// if returns true, then delete block
-const interact = (game, you, block, pressing) => {
-  if (onIntersect(game, you, block, pressing)) return true;
-  const dx = you.x - block.x;
-  const dy = you.y - block.y;
-  if (Math.abs(dx) > Math.abs(dy)) {
-    you.x = block.x + (you.x < block.x ? -1 : 1);
-    you.xs = 0;
-  } else {
-    if (you.y < block.y) you.jumping = false;
-    you.y = block.y + (you.y < block.y ? -1 : 1);
-    you.ys = 0;
-  }
-};
-
 export class Game {
-  constructor(youPos, blocks, config) {
+  constructor(youPos, blocks, config, typeIndex) {
     this.blocks = blocks;
+    this.typeIndex = typeIndex;
     this.frame = 0;
     this.you = {
       x: 0,
@@ -55,9 +10,9 @@ export class Game {
       ys: 0,
       dirX: 1,
       dirY: 0,
-      jewels: 0,
       ...youPos,
     };
+    this.jewels = 0;
 
     // these can all be overridden by config
     this.digSpeed = 0.05;
@@ -80,6 +35,7 @@ export class Game {
     this.iterateYou(pressing);
     if (this.frame % this.magmaDelay === 0) this.iterateMagma();
     this.frame++;
+    return this;
   }
   iterateYou(pressing) {
     const {you, blocks, gravity} = this;
@@ -123,7 +79,7 @@ export class Game {
       `${Math.ceil(you.x)}_${Math.ceil(you.y)}`,
     ]) {
       if (blocks[key]) {
-        const shouldDelete = interact(this, you, blocks[key], pressing);
+        const shouldDelete = this.interact(you, blocks[key], pressing);
         if (shouldDelete) delete blocks[key];
       }
     }
@@ -158,6 +114,50 @@ export class Game {
           this.move(b.x, b.y, 1, 0);
         }
       }
+    }
+  }
+  // if returns true, then delete block
+  interact(you, block, pressing) {
+    if (this.onIntersect(block, pressing)) return true;
+    const dx = you.x - block.x;
+    const dy = you.y - block.y;
+    if (Math.abs(dx) > Math.abs(dy)) {
+      you.x = block.x + (you.x < block.x ? -1 : 1);
+      you.xs = 0;
+    } else {
+      if (you.y < block.y) you.jumping = false;
+      you.y = block.y + (you.y < block.y ? -1 : 1);
+      you.ys = 0;
+    }
+  }
+  onIntersect(block, pressing) {
+    if (block.type.collectible) {
+      this.jewels++;
+      return true;
+    }
+
+    if (block.type.healing < 0) {
+      this.health = Math.max(0, this.health + Number(block.type.healing));
+    }
+
+    if (block.type.edible && pressing.Space) {
+      if (block.eaten === undefined) block.eaten = 1;
+      block.eaten -= this.eatSpeed;
+      this.health = Math.min(
+        this.maxHealth,
+        this.health + block.type.healing * this.eatSpeed
+      );
+      this.poop = Math.min(
+        this.maxPoop,
+        this.poop + block.type.makePoop * this.eatSpeed
+      );
+      if (block.eaten <= 0) return true;
+    }
+
+    if (block.type.diggable && pressing.Space) {
+      if (block.dug === undefined) block.dug = 1;
+      block.dug -= this.digSpeed;
+      if (block.dug <= 0) return true;
     }
   }
 }
