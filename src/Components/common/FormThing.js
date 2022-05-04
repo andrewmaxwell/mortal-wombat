@@ -25,7 +25,8 @@ const inputs = {
 };
 
 export const FormThing = ({fields, data, onChange}) =>
-  fields.map(({prop, label, type, info}) => {
+  fields.map(({prop, label, type, info, show}) => {
+    if (show && !show(data)) return null;
     const Field = inputs[type];
     return (
       <div key={prop} title={info}>

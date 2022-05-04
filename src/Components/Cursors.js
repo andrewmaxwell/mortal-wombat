@@ -5,7 +5,9 @@ import {
   sessionTimeOut,
 } from '../hooks/useCursors';
 
-export const Cursors = ({cursors, scale, userIndex}) => {
+export const CSS_SIZE = 32;
+
+export const Cursors = ({cursors, userIndex}) => {
   const latestTimestamp = getLatestTimestamp(cursors);
   return Object.entries(cursors).map(
     ([key, {user, left, top, width, height, tstamp, mouseX, mouseY}]) => {
@@ -18,9 +20,9 @@ export const Cursors = ({cursors, scale, userIndex}) => {
           <div
             className="cursorView"
             style={{
-              transform: `translate(${left * scale}px, ${top * scale}px)`,
-              width: width * scale,
-              height: height * scale,
+              transform: `translate(${left * CSS_SIZE}px, ${top * CSS_SIZE}px)`,
+              width: width * CSS_SIZE,
+              height: height * CSS_SIZE,
               opacity,
             }}
           >
@@ -30,8 +32,8 @@ export const Cursors = ({cursors, scale, userIndex}) => {
             <div
               className="mouseCursor"
               style={{
-                transform: `translate(${(mouseX + 0.5) * scale}px, ${
-                  (mouseY + 0.5) * scale
+                transform: `translate(${(mouseX + 0.5) * CSS_SIZE}px, ${
+                  (mouseY + 0.5) * CSS_SIZE
                 }px)`,
                 opacity,
               }}

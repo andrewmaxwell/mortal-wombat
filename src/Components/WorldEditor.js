@@ -4,10 +4,8 @@ import {update} from '../firebase';
 import {setCursor} from '../hooks/useCursors';
 import {indexBy, objToArr} from '../utils';
 import {getBackground} from '../utils/getBackground';
-import {Cursors} from './Cursors';
+import {CSS_SIZE, Cursors} from './Cursors';
 import './worldEditor.css';
-
-const CSS_SIZE = 32;
 
 const placeTile = (x, y, id, user, onError) =>
   update(
@@ -130,7 +128,7 @@ export const WorldEditor = ({
           transform: `scale(${scale / CSS_SIZE}) translate(${cx}px,${cy}px)`,
         }}
       >
-        <Cursors cursors={cursors} scale={scale} userIndex={userIndex} />
+        <Cursors cursors={cursors} userIndex={userIndex} />
 
         <TilesMemo {...{world, tileTypeIndex, userIndex}} />
 

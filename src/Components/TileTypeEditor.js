@@ -28,24 +28,27 @@ const fields = [
     type: 'number',
     info: 'How much does it heal (or hurt) when you eat/touch it (per frame)?',
   },
+  {prop: 'edible', label: 'Edible', type: 'checkbox', info: 'Can you eat it?'},
   {
     prop: 'makePoop',
     label: 'Make Poop',
     type: 'number',
     info: 'How much poop does it make?',
+    show: (data) => data.edible,
   },
-  {prop: 'edible', label: 'Edible', type: 'checkbox', info: 'Can you eat it?'},
   {
     prop: 'diggable',
     label: 'Diggable',
     type: 'checkbox',
     info: 'Can you dig it?',
+    show: (data) => !data.edible,
   },
   {
     prop: 'collectible',
     label: 'Collectible',
     type: 'checkbox',
     info: 'Can you collect it?',
+    show: (data) => !data.edible,
   },
   {
     prop: 'movable',
