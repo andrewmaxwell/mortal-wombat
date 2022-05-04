@@ -18,8 +18,10 @@ export const load = async () => {
     if (tileType === 'w') {
       you = {x, y};
       delete world[key];
-    } else {
+    } else if (typeIndex[tileType]) {
       world[key] = {x, y, type: typeIndex[tileType]};
+    } else {
+      delete world[key];
     }
   }
 

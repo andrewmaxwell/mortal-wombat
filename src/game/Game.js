@@ -1,8 +1,7 @@
 export class Game {
-  constructor(youPos, blocks, config, typeIndex) {
-    this.blocks = blocks;
+  constructor(youPos, world, config, typeIndex) {
+    this.world = world;
     this.typeIndex = typeIndex;
-    this.frame = 0;
     this.you = {
       x: 0,
       y: 0,
@@ -13,18 +12,18 @@ export class Game {
       ...youPos,
     };
     this.jewels = 0;
+    this.frame = 0;
 
     // these can all be overridden by config
-    this.digSpeed = 0.05;
+    this.digSpeed = 0.07;
     this.eatSpeed = 0.05;
     this.gravity = 0.005;
     this.health = 100;
-    this.maxHealth = 100; // TODO
-    this.poop = 0; // TODO
-    this.maxPoop = 10; // TODO
+    this.maxHealth = 100;
+    this.poop = 50;
+    this.maxPoop = 10;
     this.jumpPower = 0.11;
-    this.magmaDelay = 30;
-    this.moveSpeed = 0.015;
+    this.moveSpeed = 0.02;
     this.moveDeceleration = 0.3;
 
     for (const x in config) {
@@ -33,12 +32,12 @@ export class Game {
   }
   iterate(pressing) {
     this.iterateYou(pressing);
-    if (this.frame % this.magmaDelay === 0) this.iterateMagma();
+    this.iterateTiles();
     this.frame++;
     return this;
   }
   iterateYou(pressing) {
-    const {you, blocks, gravity} = this;
+    const {you, world, gravity} = this;
 
     if (this.health <= 0) {
       if (pressing.KeyR) location.reload();
@@ -67,6 +66,7 @@ export class Game {
     if (pressing.KeyS) {
       you.dirY++;
     }
+
     you.x += you.xs;
     you.xs *= 1 - this.moveDeceleration;
     you.ys += gravity;
@@ -78,40 +78,39 @@ export class Game {
       `${Math.floor(you.x)}_${Math.ceil(you.y)}`,
       `${Math.ceil(you.x)}_${Math.ceil(you.y)}`,
     ]) {
-      if (blocks[key]) {
-        const shouldDelete = this.interact(you, blocks[key], pressing);
-        if (shouldDelete) delete blocks[key];
+      if (world[key]) {
+        const shouldDelete = this.interact(you, world[key], pressing);
+        if (shouldDelete) delete world[key];
       }
     }
   }
   isEmpty(x, y) {
-    return !this.blocks[`${x}_${y}`];
+    return (x !== this.you.x || y !== this.you.y) && !this.world[`${x}_${y}`];
   }
-  move(x, y, dx, dy) {
+  moveTile(x, y, dx, dy) {
     const key = `${x}_${y}`;
-    const b = this.blocks[key];
-    delete this.blocks[key];
+    const b = this.world[key];
+    delete this.world[key];
     b.x += dx;
     b.y += dy;
-    this.blocks[`${b.x}_${b.y}`] = b;
+    this.world[`${b.x}_${b.y}`] = b;
   }
-  iterateMagma() {
-    const magma = Object.values(this.blocks)
-      .filter((b) => b.type.movement === 'liquid')
-      .sort((a, b) => (a.y === b.y ? Math.random() - 0.5 : a.y - b.y));
+  iterateTiles() {
+    for (const key in this.world) {
+      const b = this.world[key];
+      if (!b.type.moveDelay || this.frame % b.type.moveDelay > 0) continue;
 
-    for (const b of magma) {
       if (this.isEmpty(b.x, b.y + 1)) {
-        this.move(b.x, b.y, 0, 1);
-      } else {
+        this.moveTile(b.x, b.y, 0, 1);
+      } else if (b.type.liquid) {
         const left = this.isEmpty(b.x - 1, b.y);
         const right = this.isEmpty(b.x + 1, b.y);
         if (left && right) {
-          this.move(b.x, b.y, Math.random() < 0.5 ? 1 : -1, 0);
+          this.moveTile(b.x, b.y, Math.random() < 0.5 ? 1 : -1, 0);
         } else if (left) {
-          this.move(b.x, b.y, -1, 0);
+          this.moveTile(b.x, b.y, -1, 0);
         } else if (right) {
-          this.move(b.x, b.y, 1, 0);
+          this.moveTile(b.x, b.y, 1, 0);
         }
       }
     }
@@ -119,14 +118,22 @@ export class Game {
   // if returns true, then delete block
   interact(you, block, pressing) {
     if (this.onIntersect(block, pressing)) return true;
-    const dx = you.x - block.x;
-    const dy = you.y - block.y;
-    if (Math.abs(dx) > Math.abs(dy)) {
-      you.x = block.x + (you.x < block.x ? -1 : 1);
+    if (Math.abs(you.x - block.x) > Math.abs(you.y - block.y)) {
+      const dx = block.x < you.x ? -1 : 1;
+      if (block.type.movable && this.isEmpty(block.x + dx, block.y)) {
+        this.moveTile(block.x, block.y, dx, 0);
+      } else {
+        you.x = block.x + (you.x < block.x ? -1 : 1);
+      }
       you.xs = 0;
     } else {
       if (you.y < block.y) you.jumping = false;
-      you.y = block.y + (you.y < block.y ? -1 : 1);
+      const dy = block.y < you.y ? -1 : 1;
+      if (block.type.movable && this.isEmpty(block.x, block.y + dy)) {
+        this.moveTile(block.x, block.y, 0, dy);
+      } else {
+        you.y = block.y + (you.y < block.y ? -1 : 1);
+      }
       you.ys = 0;
     }
   }
@@ -158,6 +165,17 @@ export class Game {
       if (block.dug === undefined) block.dug = 1;
       block.dug -= this.digSpeed;
       if (block.dug <= 0) return true;
+    }
+  }
+  makePoop() {
+    if (this.poop < 1) return;
+    const {you, world, typeIndex} = this;
+    const angle = Math.atan2(you.dirY, you.dirX) + Math.PI;
+    const x = Math.round(you.x + Math.cos(angle));
+    const y = Math.round(you.y + Math.sin(angle));
+    if ((x !== you.x || y !== you.y) && !world[`${x}_${y}`]) {
+      world[`${x}_${y}`] = {x, y, type: typeIndex.p};
+      this.poop--;
     }
   }
 }

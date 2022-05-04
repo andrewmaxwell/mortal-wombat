@@ -1,5 +1,5 @@
 import {serverTimestamp} from 'firebase/database';
-import {memo, useCallback, useEffect, useMemo, useRef} from 'react';
+import {memo, useCallback, useMemo, useRef} from 'react';
 import {update} from '../firebase';
 import {setCursor} from '../hooks/useCursors';
 import {indexBy, objToArr} from '../utils';

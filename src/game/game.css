@@ -28,6 +28,11 @@ body {
 .jewelCounter {
   color: cyan;
   font-weight: bold;
+  margin-top: -20px;
+}
+
+.jewelCounter>img{
+  transform: translateY(10px);
 }
 
 .youDead {

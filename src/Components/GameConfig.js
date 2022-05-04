@@ -35,6 +35,24 @@ const fields = [
     info: 'How much health do you start with?',
   },
   {
+    prop: 'maxHealth',
+    label: 'Wombat Max Health',
+    type: 'number',
+    info: 'How much health can you have?',
+  },
+  {
+    prop: 'poop',
+    label: 'Wombat Starting Poop',
+    type: 'number',
+    info: 'How much poop do you start with?',
+  },
+  {
+    prop: 'maxPoop',
+    label: 'Wombat Max Poop',
+    type: 'number',
+    info: 'How much poop can you hold?',
+  },
+  {
     prop: 'jumpPower',
     label: 'Wombat Jumping Power',
     type: 'number',
@@ -51,12 +69,6 @@ const fields = [
     label: 'Wombat Deceleration',
     type: 'number',
     info: 'How fast can you slow down?',
-  },
-  {
-    prop: 'magmaDelay',
-    label: 'Magma Delay',
-    type: 'number',
-    info: 'Number of frames between magma movements',
   },
 ];
 

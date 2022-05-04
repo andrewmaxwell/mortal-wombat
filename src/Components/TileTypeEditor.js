@@ -23,6 +23,25 @@ const fields = [
     info: 'The color to use if there is no image',
   },
   {
+    prop: 'movable',
+    label: 'Movable',
+    type: 'checkbox',
+    info: 'Can you move it?',
+  },
+  {
+    prop: 'moveDelay',
+    label: 'Move Delay',
+    type: 'number',
+    info: 'How many frames does it wait to move? Smaller is faster.',
+    show: (data) => data.movable,
+  },
+  {
+    prop: 'liquid',
+    label: 'Liquid',
+    type: 'checkbox',
+    info: 'Does it flow?',
+  },
+  {
     prop: 'healing',
     label: 'Healing',
     type: 'number',
@@ -48,13 +67,7 @@ const fields = [
     label: 'Collectible',
     type: 'checkbox',
     info: 'Can you collect it?',
-    show: (data) => !data.edible,
-  },
-  {
-    prop: 'movable',
-    label: 'Movable',
-    type: 'checkbox',
-    info: 'Can you push it?',
+    show: (data) => !data.edible && !data.movable,
   },
   {
     prop: 'order',
@@ -62,6 +75,7 @@ const fields = [
     type: 'number',
     info: 'The order it shows up in the toolbar below',
   },
+
   // {prop: 'movement', label: 'Movement', type: 'select', }
 ];
 
