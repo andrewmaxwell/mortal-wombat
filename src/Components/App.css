@@ -19,21 +19,6 @@ nav a.active {
     box-shadow: 0 0 5px white;
 }
 
-.debugContainer {
-    left: 0;
-    top: 50px;
-    right: 0;
-    width: 30%;
-}
-
-.debugContainer textarea {
-    width: 100%;
-    height: 400px;
-    background: none;
-    color: white;
-    font-size: 11px;
-}
-
 .worldEditorContainer {
     position: fixed;
     top: 0;
@@ -72,4 +57,10 @@ nav a.active {
     top: 32px;
     left: 100px;
     width: 300px;
+}
+
+.myWorldsContainer {
+    top: 50px;
+    width: 50%;
+    left: 25%;
 }

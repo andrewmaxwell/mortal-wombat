@@ -9,14 +9,14 @@ Features:
 - DONE alt+click where to start when testing
 - DONE To see where people's cursors are in the editor, or where they are looking
 - DONE hover over a block and see who edited it last
-- HTML based renderer for game
+- DONE HTML based renderer for game
+- DONE editor performance
 - Multiple worlds
 - mini map
 - Rectangular selection tool for filling, moving, deleting, cut, paste, things in bulk
-- editor performance
 - Better animations
 
 Game features:
-- Poop bar, poop blocks, so much poop
+- DONE Poop bar, poop blocks, so much poop
+- DONE gem counter
 - fall damage?
-- gem counter

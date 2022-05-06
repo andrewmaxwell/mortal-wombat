@@ -33,13 +33,13 @@ const fields = [
     label: 'Move Delay',
     type: 'number',
     info: 'How many frames does it wait to move? Smaller is faster.',
-    show: (data) => data.movable,
   },
   {
     prop: 'liquid',
     label: 'Liquid',
     type: 'checkbox',
     info: 'Does it flow?',
+    show: (data) => parseInt(data.moveDelay),
   },
   {
     prop: 'healing',

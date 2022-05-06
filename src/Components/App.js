@@ -19,6 +19,7 @@ import {useLocationHash} from '../hooks/useLocationHash';
 import {Pane} from './common/Pane';
 import {setCursor, useCursors} from '../hooks/useCursors';
 import {HereNow} from './HereNow';
+import {MyWorlds} from './MyWorlds';
 
 const zoomAmt = 2;
 
@@ -42,7 +43,12 @@ const paneConfigs = [
     paneLabel: 'Editing Now',
     icon: 'person',
   },
-  {key: 'debug', buttonLabel: 'Debug', paneLabel: 'Debug', icon: 'bug'},
+  // {
+  //   key: 'myWorlds',
+  //   buttonLabel: 'My Worlds',
+  //   paneLabel: 'My Worlds',
+  //   icon: 'earth-americas',
+  // },
 ];
 
 export const App = () => {
@@ -79,30 +85,6 @@ export const App = () => {
 
       {user ? (
         <div className="appContainer">
-          {Panes.debug.show && (
-            <Pane {...Panes.debug.paneProps}>
-              <textarea
-                readOnly
-                value={JSON.stringify(
-                  {
-                    xCoord,
-                    yCoord,
-                    scale,
-                    selectedTileTypeId,
-                    errors,
-                    user,
-                    cursors,
-                    // tileTypeIndex,
-                    // userIndex,
-                    // world,
-                  },
-                  null,
-                  2
-                )}
-              />
-            </Pane>
-          )}
-
           {selectedTileTypeId &&
             tileTypes &&
             Panes.tileTypeEditor.show &&
@@ -152,6 +134,12 @@ export const App = () => {
               </p>
             </Pane>
           )}
+
+          {/* {Panes.myWorlds.show && (
+            <Pane {...Panes.myWorlds.paneProps}>
+              <MyWorlds />
+            </Pane>
+          )} */}
 
           {tileTypes && (
             <div className="toolContainer">

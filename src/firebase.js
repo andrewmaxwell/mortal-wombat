@@ -26,16 +26,14 @@ initializeApp({
 });
 
 /*
-
 Data:
 https://console.firebase.google.com/project/mortal-wombat-8c76a/database/mortal-wombat-8c76a-default-rtdb/data
 Data Docs: https://firebase.google.com/docs/database/web/read-and-write?hl=en&authuser=0
+List Docs: https://firebase.google.com/docs/database/web/lists-of-data?hl=en&authuser=0
 
 Users:
 https://console.firebase.google.com/project/mortal-wombat-8c76a/authentication/users
 User Docs: https://firebase.google.com/docs/auth/web/manage-users
-
-
 */
 
 const db = getDatabase();
@@ -54,19 +52,6 @@ export const update = (updates, onError) => {
 };
 
 window._update = async (x) => console.log(await _update(dbRef, x));
-
-// export const updateWithHistory = (data, user, onError) =>
-//   update(
-//     {
-//       ...data,
-//       [`history/${guid()}`]: {
-//         update: JSON.stringify(data),
-//         user: user.email,
-//         tstamp: serverTimestamp(),
-//       },
-//     },
-//     onError
-//   );
 
 export const loadData = async (things) =>
   Object.fromEntries(

@@ -85,7 +85,7 @@ export class Game {
     }
   }
   isEmpty(x, y) {
-    return (x !== this.you.x || y !== this.you.y) && !this.world[`${x}_${y}`];
+    return !this.world[`${x}_${y}`] && (x !== this.you.x || y !== this.you.y);
   }
   moveTile(x, y, dx, dy) {
     const key = `${x}_${y}`;
@@ -120,7 +120,12 @@ export class Game {
     if (this.onIntersect(block, pressing)) return true;
     if (Math.abs(you.x - block.x) > Math.abs(you.y - block.y)) {
       const dx = block.x < you.x ? -1 : 1;
-      if (block.type.movable && this.isEmpty(block.x + dx, block.y)) {
+      if (
+        !you.jumping &&
+        !you.ys &&
+        block.type.movable &&
+        this.isEmpty(block.x + dx, block.y)
+      ) {
         this.moveTile(block.x, block.y, dx, 0);
       } else {
         you.x = block.x + (you.x < block.x ? -1 : 1);
@@ -128,12 +133,7 @@ export class Game {
       you.xs = 0;
     } else {
       if (you.y < block.y) you.jumping = false;
-      const dy = block.y < you.y ? -1 : 1;
-      if (block.type.movable && this.isEmpty(block.x, block.y + dy)) {
-        this.moveTile(block.x, block.y, 0, dy);
-      } else {
-        you.y = block.y + (you.y < block.y ? -1 : 1);
-      }
+      you.y = block.y + (you.y < block.y ? -1 : 1);
       you.ys = 0;
     }
   }
