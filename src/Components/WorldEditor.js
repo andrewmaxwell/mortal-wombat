@@ -128,7 +128,7 @@ export const WorldEditor = ({
           transform: `scale(${scale / CSS_SIZE}) translate(${cx}px,${cy}px)`,
         }}
       >
-        <Cursors cursors={cursors} userIndex={userIndex} />
+        <Cursors cursors={cursors} userIndex={userIndex} scale={scale} />
 
         <TilesMemo {...{world, tileTypeIndex, userIndex}} />
 

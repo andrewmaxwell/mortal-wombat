@@ -238,7 +238,7 @@ export class Game {
     const y = Math.round(you.y + Math.sin(angle));
     if ((x !== you.x || y !== you.y) && !world[`${x}_${y}`]) {
       this.addTile({x, y, type: typeIndex.p});
-      this.poop--;
+      this.setPoop(this.poop - 1);
     }
   }
 }

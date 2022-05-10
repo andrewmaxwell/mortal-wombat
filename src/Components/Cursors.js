@@ -7,7 +7,7 @@ import {
 
 export const CSS_SIZE = 32;
 
-export const Cursors = ({cursors, userIndex}) => {
+export const Cursors = ({cursors, userIndex, scale}) => {
   const latestTimestamp = getLatestTimestamp(cursors);
   return Object.entries(cursors).map(
     ([key, {user, left, top, width, height, tstamp, mouseX, mouseY}]) => {
@@ -26,7 +26,9 @@ export const Cursors = ({cursors, userIndex}) => {
               opacity,
             }}
           >
-            <span>{userIndex[user]?.name || user}</span>
+            <span style={{fontSize: (80 * CSS_SIZE) / scale + '%'}}>
+              {userIndex[user]?.name || user}
+            </span>
           </div>
           {mouseX && mouseY ? (
             <div
@@ -34,7 +36,7 @@ export const Cursors = ({cursors, userIndex}) => {
               style={{
                 transform: `translate(${(mouseX + 0.5) * CSS_SIZE}px, ${
                   (mouseY + 0.5) * CSS_SIZE
-                }px)`,
+                }px) scale(${CSS_SIZE / scale}) `,
                 opacity,
               }}
             >

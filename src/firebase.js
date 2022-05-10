@@ -43,7 +43,7 @@ const dbRef = ref(db);
 // {path1: val1, path2: val2}
 export const update = (updates, onError) => {
   try {
-    console.log('updates', updates);
+    // console.log('updates', updates);
     return _update(dbRef, updates);
   } catch (e) {
     console.error(e);
