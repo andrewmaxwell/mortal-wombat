@@ -1,6 +1,17 @@
+import {Hud, TileElement, WorldElement, YouElement} from './elements';
+
+const MAX_RENDER_DIST = 32; // don't move things more than this many tiles away
+const MOVEMENT_THRESHOLD = 0.1; // don't move you or the viewport if you move less than this much of a tile
+
 export class Game {
-  constructor(youPos, world, config, typeIndex) {
-    this.world = world;
+  constructor(youPos, world, config, typeIndex, rootElement) {
+    this.rootElement = rootElement;
+    this.worldElement = new WorldElement(rootElement);
+    this.hud = new Hud(rootElement, typeIndex);
+
+    this.world = {};
+    for (const key in world) this.addTile(world[key]);
+
     this.typeIndex = typeIndex;
     this.you = {
       x: 0,
@@ -10,7 +21,11 @@ export class Game {
       dirX: 1,
       dirY: 0,
       ...youPos,
+      el: new YouElement(this.worldElement.el, typeIndex),
     };
+    for (const key of ['x', 'y', 'dirX', 'dirY']) {
+      this.you['p' + key] = this.you[key];
+    }
     this.jewels = 0;
     this.frame = 0;
 
@@ -29,12 +44,25 @@ export class Game {
     for (const x in config) {
       if (!isNaN(config[x])) this[x] = Number(config[x]); // because editing them turns them into strings, yayyyy
     }
+
+    this.setHealth(this.health);
+    this.setPoop(this.poop);
   }
   iterate(pressing) {
     this.iterateYou(pressing);
     this.iterateTiles();
     this.frame++;
     return this;
+  }
+  addTile(tile) {
+    this.world[`${tile.x}_${tile.y}`] = {
+      ...tile,
+      el: new TileElement(this.worldElement.el, tile),
+    };
+  }
+  deleteTile(tile) {
+    tile.el.destroy();
+    delete this.world[`${tile.x}_${tile.y}`];
   }
   iterateYou(pressing) {
     const {you, world, gravity} = this;
@@ -80,8 +108,23 @@ export class Game {
     ]) {
       if (world[key]) {
         const shouldDelete = this.interact(you, world[key], pressing);
-        if (shouldDelete) delete world[key];
+        if (shouldDelete) this.deleteTile(world[key]);
       }
+    }
+
+    if (
+      Math.abs(you.x - you.px) > MOVEMENT_THRESHOLD ||
+      Math.abs(you.y - you.py) > MOVEMENT_THRESHOLD ||
+      you.dirX !== you.pdirX ||
+      you.dirY !== you.pdirY
+    ) {
+      you.el.update(you);
+      this.worldElement.update(you);
+
+      you.px = you.x;
+      you.py = you.y;
+      you.pdirX = you.dirX;
+      you.pdirY = you.dirY;
     }
   }
   isEmpty(x, y) {
@@ -94,11 +137,17 @@ export class Game {
     b.x += dx;
     b.y += dy;
     this.world[`${b.x}_${b.y}`] = b;
+    b.el.updatePosition(b);
   }
   iterateTiles() {
     for (const key in this.world) {
       const b = this.world[key];
-      if (!b.type.moveDelay || this.frame % b.type.moveDelay > 0) continue;
+      if (
+        !b.type.moveDelay ||
+        this.frame % b.type.moveDelay > 0 ||
+        (this.you.x - b.x) ** 2 + (this.you.y - b.y) ** 2 > MAX_RENDER_DIST ** 2
+      )
+        continue;
 
       if (this.isEmpty(b.x, b.y + 1)) {
         this.moveTile(b.x, b.y, 0, 1);
@@ -122,7 +171,7 @@ export class Game {
       const dx = block.x < you.x ? -1 : 1;
       if (
         !you.jumping &&
-        !you.ys &&
+        Math.abs(you.ys) < 0.1 && // TODO can this be better?
         block.type.movable &&
         this.isEmpty(block.x + dx, block.y)
       ) {
@@ -137,27 +186,41 @@ export class Game {
       you.ys = 0;
     }
   }
+  setHealth(health) {
+    this.health = Math.max(0, Math.min(this.maxHealth, health));
+    this.hud.healthBar.update(
+      this.health,
+      this.maxHealth,
+      this.health > 30 ? 'green' : 'red'
+    );
+    if (health <= 0) {
+      this.rootElement.innerHTML +=
+        '<div class="youDead"><h1>you dead</h1><h2>press R to try again</h2></div>';
+    }
+  }
+  setPoop(poop) {
+    this.poop = Math.max(0, Math.min(this.maxPoop, poop));
+    this.hud.poopBar.update(this.poop, this.maxPoop, 'saddleBrown');
+  }
+  incJewels() {
+    this.jewels++;
+    this.hud.jewelCounter.update(this.jewels);
+  }
   onIntersect(block, pressing) {
     if (block.type.collectible) {
-      this.jewels++;
+      this.incJewels();
       return true;
     }
 
     if (block.type.healing < 0) {
-      this.health = Math.max(0, this.health + Number(block.type.healing));
+      this.setHealth(this.health + Number(block.type.healing));
     }
 
     if (block.type.edible && pressing.Space) {
       if (block.eaten === undefined) block.eaten = 1;
       block.eaten -= this.eatSpeed;
-      this.health = Math.min(
-        this.maxHealth,
-        this.health + block.type.healing * this.eatSpeed
-      );
-      this.poop = Math.min(
-        this.maxPoop,
-        this.poop + block.type.makePoop * this.eatSpeed
-      );
+      this.setHealth(this.health + block.type.healing * this.eatSpeed);
+      this.setPoop(this.poop + block.type.makePoop * this.eatSpeed);
       if (block.eaten <= 0) return true;
     }
 
@@ -174,7 +237,7 @@ export class Game {
     const x = Math.round(you.x + Math.cos(angle));
     const y = Math.round(you.y + Math.sin(angle));
     if ((x !== you.x || y !== you.y) && !world[`${x}_${y}`]) {
-      world[`${x}_${y}`] = {x, y, type: typeIndex.p};
+      this.addTile({x, y, type: typeIndex.p});
       this.poop--;
     }
   }

@@ -1,22 +1,24 @@
 Bugs: 
-- DONE Inputs in panes flicker and lose focus when world is edited
-- DONE Don't select words when double clicking things
 - Possible to interact with diagonal tiles even when adjacent tiles are solid
-- Holes in lava can make you fall through world (but students really like this bug)
+- Game renderer is too slow for old devices
+- Can't see names on cursors (need to multiple by scale)
+- Adjacent lava doesn't hurt you if you don't go toward it, even if it's on top of you
 
-Features:
-- DONE shift+click to delete
-- DONE alt+click where to start when testing
-- DONE To see where people's cursors are in the editor, or where they are looking
-- DONE hover over a block and see who edited it last
-- DONE HTML based renderer for game
-- DONE editor performance
+Editor Features:
 - Multiple worlds
 - mini map
 - Rectangular selection tool for filling, moving, deleting, cut, paste, things in bulk
 - Better animations
+- Screen cursors are different colors for different people
 
 Game features:
-- DONE Poop bar, poop blocks, so much poop
-- DONE gem counter
-- fall damage?
+- fall damage
+- bad guys
+  - Evil Koala
+    - walk back and forth
+    - you attack with Space
+- particles when breaking tiles
+- On-screen buttons
+- items that you can find or be given
+  - 
+- buy stuff with gems

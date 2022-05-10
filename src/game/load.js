@@ -33,5 +33,11 @@ export const load = async () => {
     }
   }
 
-  return new Game(you, world, gameConfig, typeIndex);
+  return new Game(
+    you,
+    world,
+    gameConfig,
+    typeIndex,
+    document.querySelector('#root')
+  );
 };
