@@ -115,9 +115,52 @@ export class Game {
       `${Math.floor(you.x)}_${Math.ceil(you.y)}`,
       `${Math.ceil(you.x)}_${Math.ceil(you.y)}`,
     ]) {
-      if (world[key]) {
-        const shouldDelete = this.interact(you, world[key], pressing);
-        if (shouldDelete) this.deleteTile(world[key]);
+      const block = world[key];
+      if (!block) continue;
+
+      if (block.type.collectible) {
+        this.incJewels();
+        return this.deleteTile(block);
+      } else if (block.type.healing < 0) {
+        this.setHealth(this.health + Number(block.type.healing));
+      }
+
+      if (pressing.Space) {
+        const angle = Math.atan2(you.dirY, you.dirX);
+        const x = Math.round(you.x + Math.cos(angle));
+        const y = Math.round(you.y + Math.sin(angle));
+        const b = this.getTile(x, y);
+        if (b?.type.edible) {
+          if (b.hp === undefined) b.hp = b.type.hp;
+          b.hp -= this.eatSpeed;
+          this.setHealth(this.health + b.type.healing * this.eatSpeed);
+          this.setPoop(this.poop + b.type.makePoop * this.eatSpeed);
+          if (b.hp <= 0) return this.deleteTile(b);
+        }
+        if (b?.type.diggable) {
+          if (b.hp === undefined) b.hp = b.type.hp;
+          b.hp -= this.digSpeed;
+          if (b.hp <= 0) return this.deleteTile(b);
+        }
+      }
+
+      if (Math.abs(you.x - block.x) > Math.abs(you.y - block.y)) {
+        const dx = block.x < you.x ? -1 : 1;
+        if (
+          !you.jumping &&
+          Math.abs(you.ys) < 0.1 && // TODO can this be better?
+          block.type.movable &&
+          this.isEmpty(block.x + dx, block.y)
+        ) {
+          this.moveTile(block.x, block.y, dx, 0);
+        } else {
+          you.x = block.x + (you.x < block.x ? -1 : 1);
+        }
+        you.xs = 0;
+      } else {
+        if (you.y < block.y) you.jumping = false;
+        you.y = block.y + (you.y < block.y ? -1 : 1);
+        you.ys = 0;
       }
     }
 
@@ -136,8 +179,11 @@ export class Game {
       you.pdirY = you.dirY;
     }
   }
+  getTile(x, y) {
+    return this.world[`${x}_${y}`];
+  }
   isEmpty(x, y) {
-    return !this.world[`${x}_${y}`] && (x !== this.you.x || y !== this.you.y);
+    return !this.getTile(x, y);
   }
   moveTile(x, y, dx, dy) {
     const key = `${x}_${y}`;
@@ -160,7 +206,7 @@ export class Game {
 
       if (this.isEmpty(b.x, b.y + 1)) {
         this.moveTile(b.x, b.y, 0, 1);
-      } else if (b.type.liquid) {
+      } else if (b.type.moveStyle === 'liquid') {
         const left = this.isEmpty(b.x - 1, b.y);
         const right = this.isEmpty(b.x + 1, b.y);
         if (left && right) {
@@ -170,29 +216,18 @@ export class Game {
         } else if (right) {
           this.moveTile(b.x, b.y, 1, 0);
         }
+      } else if (b.type.moveStyle === 'patrol') {
+        if (!b.dirX) b.dirX = 1;
+        if (
+          this.isEmpty(b.x + b.dirX, b.y) &&
+          this.getTile(b.x + b.dirX, b.y + 1) &&
+          !this.getTile(b.x + b.dirX, b.y + 1).type.moveDelay
+        ) {
+          this.moveTile(b.x, b.y, b.dirX, 0);
+        } else {
+          b.dirX *= -1;
+        }
       }
-    }
-  }
-  // if returns true, then delete block
-  interact(you, block, pressing) {
-    if (this.onIntersect(block, pressing)) return true;
-    if (Math.abs(you.x - block.x) > Math.abs(you.y - block.y)) {
-      const dx = block.x < you.x ? -1 : 1;
-      if (
-        !you.jumping &&
-        Math.abs(you.ys) < 0.1 && // TODO can this be better?
-        block.type.movable &&
-        this.isEmpty(block.x + dx, block.y)
-      ) {
-        this.moveTile(block.x, block.y, dx, 0);
-      } else {
-        you.x = block.x + (you.x < block.x ? -1 : 1);
-      }
-      you.xs = 0;
-    } else {
-      if (you.y < block.y) you.jumping = false;
-      you.y = block.y + (you.y < block.y ? -1 : 1);
-      you.ys = 0;
     }
   }
   setHealth(health) {
@@ -214,30 +249,6 @@ export class Game {
   incJewels() {
     this.jewels++;
     this.hud.jewelCounter.update(this.jewels);
-  }
-  onIntersect(block, pressing) {
-    if (block.type.collectible) {
-      this.incJewels();
-      return true;
-    }
-
-    if (block.type.healing < 0) {
-      this.setHealth(this.health + Number(block.type.healing));
-    }
-
-    if (block.type.edible && pressing.Space) {
-      if (block.eaten === undefined) block.eaten = 1;
-      block.eaten -= this.eatSpeed;
-      this.setHealth(this.health + block.type.healing * this.eatSpeed);
-      this.setPoop(this.poop + block.type.makePoop * this.eatSpeed);
-      if (block.eaten <= 0) return true;
-    }
-
-    if (block.type.diggable && pressing.Space) {
-      if (block.dug === undefined) block.dug = 1;
-      block.dug -= this.digSpeed;
-      if (block.dug <= 0) return true;
-    }
   }
   makePoop() {
     if (this.poop < 1) return;

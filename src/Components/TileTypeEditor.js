@@ -23,6 +23,12 @@ const fields = [
     info: 'The color to use if there is no image',
   },
   {
+    prop: 'hp',
+    label: 'HP',
+    type: 'number',
+    info: 'How much health does it have?',
+  },
+  {
     prop: 'movable',
     label: 'Movable',
     type: 'checkbox',
@@ -35,10 +41,11 @@ const fields = [
     info: 'How many frames does it wait to move? Smaller is faster.',
   },
   {
-    prop: 'liquid',
-    label: 'Liquid',
-    type: 'checkbox',
-    info: 'Does it flow?',
+    prop: 'moveStyle',
+    label: 'Move Style',
+    type: 'select',
+    info: 'How does it move?',
+    options: ['liquid', 'patrol'],
     show: (data) => parseInt(data.moveDelay),
   },
   {

@@ -21,8 +21,6 @@ export const load = async () => {
   const {tileTypes, gameConfig} = data;
   const world = data[worldKey];
 
-  console.log(world);
-
   const typeIndex = {};
   let you;
   for (const type of Object.values(tileTypes)) {
