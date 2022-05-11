@@ -53,7 +53,9 @@ export const update = (updates, onError) => {
   }
 };
 
-window._update = async (x) => console.log(await _update(dbRef, x));
+if (location.host === 'localhost:3000') {
+  window._update = async (x) => await _update(dbRef, x);
+}
 
 export const loadData = async (things) =>
   Object.fromEntries(

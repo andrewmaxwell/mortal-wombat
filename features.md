@@ -3,7 +3,6 @@ Bugs:
 - Adjacent lava doesn't hurt you if you don't go toward it, even if it's on top of you
 
 Editor Features:
-- Multiple worlds
 - Rectangular selection tool for filling, moving, deleting, cut, paste, things in bulk
 - Better animations
 - Make screen cursors different colors for different people
