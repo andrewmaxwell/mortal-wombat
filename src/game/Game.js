@@ -1,4 +1,10 @@
-import {Hud, TileElement, WorldElement, YouElement} from './elements';
+import {
+  Hud,
+  TileElement,
+  VersionElement,
+  WorldElement,
+  YouElement,
+} from './elements';
 
 const MAX_RENDER_DIST = 32; // don't move things more than this many tiles away
 const MOVEMENT_THRESHOLD = 0.1; // don't move you or the viewport if you move less than this much of a tile
@@ -8,6 +14,7 @@ export class Game {
     this.rootElement = rootElement;
     this.worldElement = new WorldElement(rootElement);
     this.hud = new Hud(rootElement, typeIndex);
+    new VersionElement(rootElement);
 
     this.world = {};
     for (const key in world) this.addTile(world[key]);

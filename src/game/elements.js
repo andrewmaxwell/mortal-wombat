@@ -1,4 +1,5 @@
 import {getBackground} from '../utils/getBackground';
+import packageJSON from '../../package.json';
 
 const scale = 48;
 
@@ -100,5 +101,14 @@ export class Hud {
     this.poopBar = new BarElement(this.el);
     this.jewelCounter = new JewelCounter(this.el, typeIndex);
     parentElement.append(this.el);
+  }
+}
+
+export class VersionElement {
+  constructor(parentElement) {
+    const versionElement = document.createElement('div');
+    versionElement.classList.add('version');
+    versionElement.innerText = 'v' + packageJSON.version;
+    parentElement.append(versionElement);
   }
 }

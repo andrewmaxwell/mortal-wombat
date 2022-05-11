@@ -52,3 +52,11 @@ body {
   font-size: 3em;
   margin-top: -120px;
 }
+
+.version {
+  position: fixed;
+  font-size: 0.7em;
+  z-index: 10;
+  right: 0;
+  top: 0;
+}

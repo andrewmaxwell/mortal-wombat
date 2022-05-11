@@ -1,4 +1,5 @@
 import {logOut} from '../firebase';
+import packageJSON from '../../package.json';
 
 export const Nav = ({user, setScale, zoomAmt, userIndex, children}) => (
   <nav>
@@ -14,7 +15,7 @@ export const Nav = ({user, setScale, zoomAmt, userIndex, children}) => (
         <a onClick={logOut}>log out</a>
       </div>
     )}
-    <b>Game Editor</b>
+    <b>MW Collabitat v{packageJSON.version}</b>
     {children}
   </nav>
 );
