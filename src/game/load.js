@@ -1,12 +1,27 @@
-import {loadData} from '../firebase';
+import {defaultWorldId, loadData} from '../firebase';
+import {isGuid} from '../utils';
 import {Game} from './Game';
 
 export const load = async () => {
-  const {tileTypes, world, gameConfig} = await loadData([
-    'tileTypes',
-    'world',
-    'gameConfig',
-  ]);
+  let hashConfig;
+  if (location.hash.length > 1) {
+    try {
+      hashConfig = JSON.parse(atob(location.hash.slice(1)));
+    } catch (e) {
+      console.log('bad hash', e);
+    }
+  }
+
+  const worldKey = `worlds/${
+    isGuid(hashConfig?.worldId) ? hashConfig.worldId : defaultWorldId
+  }/world`;
+
+  const data = await loadData(['tileTypes', worldKey, 'gameConfig']);
+
+  const {tileTypes, gameConfig} = data;
+  const world = data[worldKey];
+
+  console.log(world);
 
   const typeIndex = {};
   let you;
@@ -25,12 +40,9 @@ export const load = async () => {
     }
   }
 
-  if (location.hash.length > 1) {
-    try {
-      you = JSON.parse(atob(location.hash.slice(1)));
-    } catch (e) {
-      console.log('bad hash', e);
-    }
+  if (hashConfig?.x && hashConfig?.y) {
+    you.x = hashConfig.x;
+    you.y = hashConfig.y;
   }
 
   return new Game(

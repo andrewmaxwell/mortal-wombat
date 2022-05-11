@@ -13,6 +13,8 @@ export const dissoc = (key, obj) => {
 export const guid = () =>
   Date.now().toString(36) + ':' + Math.random().toString(36).slice(2);
 
+export const isGuid = (str) => /^[0-9a-z]{8,}:[0-9a-z]+$/.test(str);
+
 export const groupBy = (func, arr) => {
   const res = {};
   for (const el of arr) {

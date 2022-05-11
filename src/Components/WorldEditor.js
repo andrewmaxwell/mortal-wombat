@@ -1,3 +1,4 @@
+import {getAuth} from 'firebase/auth';
 import {serverTimestamp} from 'firebase/database';
 import {memo, useCallback, useMemo, useRef} from 'react';
 import {update} from '../firebase';
@@ -7,13 +8,15 @@ import {getBackground} from '../utils/getBackground';
 import {CSS_SIZE, Cursors} from './Cursors';
 import './worldEditor.css';
 
-const placeTile = (x, y, id, user, onError) =>
+const placeTile = (worldId, x, y, id, user, onError) =>
   update(
     {
-      [`world/${x}_${y}`]:
+      [`worlds/${worldId}/world/${x}_${y}`]:
         id === '_delete'
           ? null
           : {x, y, tileType: id, user: user.email, tstamp: serverTimestamp()},
+      [`worlds/${worldId}/lastEdited`]: serverTimestamp(),
+      [`worlds/${worldId}/lastEditedBy`]: getAuth().currentUser.email,
     },
     onError
   );
@@ -50,6 +53,7 @@ export const WorldEditor = ({
   tileTypes,
   selectedTileTypeId,
   onError,
+  worldId,
   xCoord,
   yCoord,
   scale,
@@ -85,7 +89,9 @@ export const WorldEditor = ({
     const {x, y} = getCoords(e, scale, xCoord, yCoord);
     if (e.altKey) {
       window.open(
-        location.href.replace(/\?.*/, '') + '#' + btoa(JSON.stringify({x, y})),
+        location.href.replace(/\?.*/, '') +
+          '#' +
+          btoa(JSON.stringify({worldId, x, y})),
         '_blank'
       );
       e.preventDefault();
@@ -94,7 +100,7 @@ export const WorldEditor = ({
       const currentType = world[`${x}_${y}`]?.tileType;
       const t = e.shiftKey ? '_delete' : selectedTileTypeId;
       if ((currentType || t !== '_delete') && currentType !== t) {
-        placeTile(x, y, t, user, onError);
+        placeTile(worldId, x, y, t, user, onError);
       }
     }
   };
@@ -107,9 +113,9 @@ export const WorldEditor = ({
         s.transform = `translate(${x * CSS_SIZE}px, ${y * CSS_SIZE}px)`;
         if (e.buttons) onClick(e);
       }
-      setCursor(user, x, y, xCoord, yCoord, scale, onError);
+      setCursor(user, x, y, worldId, xCoord, yCoord, scale, onError);
     },
-    [scale, xCoord, yCoord, selectedTileTypeId, user]
+    [scale, worldId, xCoord, yCoord, selectedTileTypeId, user]
   );
 
   const cx = innerWidth / 2 - xCoord * CSS_SIZE;

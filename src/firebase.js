@@ -40,6 +40,8 @@ const db = getDatabase();
 const auth = getAuth();
 const dbRef = ref(db);
 
+export const defaultWorldId = 'l31p2np9:dy828s8l3wv';
+
 // {path1: val1, path2: val2}
 export const update = (updates, onError) => {
   try {
@@ -63,7 +65,7 @@ export const loadData = async (things) =>
 export const listen = (pathStr, onChange, onError) => {
   try {
     const r = ref(db, pathStr);
-    onValue(r, (snapshot) => onChange(snapshot.val()));
+    onValue(r, (snapshot) => onChange(snapshot.val() || {}));
     return () => off(r);
   } catch (e) {
     console.error(e);

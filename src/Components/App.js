@@ -1,25 +1,28 @@
-import {ErrorBanner} from './ErrorBanner';
-import {useErrors} from '../hooks/useErrors';
+import './App.css';
 import {useEffect, useState} from 'react';
 
-import {Login} from './Login';
+import {useErrors} from '../hooks/useErrors';
 import {useUser} from '../hooks/useUser';
 import {useUserIndex} from '../hooks/useUserIndex';
-import {Toolbar} from './Toolbar';
-import {WorldEditor} from './WorldEditor';
 import {useTileTypes} from '../hooks/useTileTypes';
 import {useCoords} from '../hooks/useCoords';
 import {useWorld} from '../hooks/useWorld';
+import {useLocationHash} from '../hooks/useLocationHash';
+import {setCursor, useCursors} from '../hooks/useCursors';
+
+import {Pane} from './common/Pane';
+import {makeButtons} from '../utils/makeButtons';
+
+import {ErrorBanner} from './ErrorBanner';
+import {Login} from './Login';
+import {Toolbar} from './Toolbar';
+import {WorldEditor} from './WorldEditor';
 import {Nav} from './Nav';
 import {TileTypeEditor} from './TileTypeEditor';
-import {makeButtons} from '../utils/makeButtons';
 import {GameConfig} from './GameConfig';
-import './App.css';
-import {useLocationHash} from '../hooks/useLocationHash';
-import {Pane} from './common/Pane';
-import {setCursor, useCursors} from '../hooks/useCursors';
 import {HereNow} from './HereNow';
 import {MyWorlds} from './MyWorlds';
+import {defaultWorldId} from '../firebase';
 
 const zoomAmt = 2;
 
@@ -43,37 +46,48 @@ const paneConfigs = [
     paneLabel: 'Editing Now',
     icon: 'person',
   },
-  // {
-  //   key: 'myWorlds',
-  //   buttonLabel: 'My Worlds',
-  //   paneLabel: 'My Worlds',
-  //   icon: 'earth-americas',
-  // },
+  {
+    key: 'myWorlds',
+    buttonLabel: 'Worlds',
+    paneLabel: 'Worlds',
+    icon: 'earth-americas',
+  },
 ];
 
 export const App = () => {
   const [errors, onError, clearError] = useErrors();
 
-  // firebase state
-  const user = useUser();
-  const userIndex = useUserIndex(onError);
-  const tileTypes = useTileTypes(onError);
-  const world = useWorld(onError);
-  const cursors = useCursors(onError);
-
   // local state
+  const [worldId, setWorldId] = useState(defaultWorldId);
   const [selectedTileTypeId, setSelectedTileTypeId] = useState();
   const {xCoord, yCoord, setXCoord, setYCoord} = useCoords(0, 0);
   const [scale, setScale] = useState(32);
 
+  // firebase state
+  const user = useUser();
+  const userIndex = useUserIndex(onError);
+  const tileTypes = useTileTypes(onError);
+  const world = useWorld(onError, worldId);
+  const cursors = useCursors(onError, worldId);
+
   // pane toggles
   const Panes = makeButtons(paneConfigs);
 
-  useLocationHash({xCoord, yCoord, scale, setXCoord, setYCoord, setScale});
+  useLocationHash({
+    worldId,
+    xCoord,
+    yCoord,
+    scale,
+    setWorldId,
+    setXCoord,
+    setYCoord,
+    setScale,
+  });
 
   useEffect(() => {
-    if (user) setCursor(user, null, null, xCoord, yCoord, scale, onError);
-  }, [user, xCoord, yCoord, scale]);
+    if (user)
+      setCursor(user, null, null, worldId, xCoord, yCoord, scale, onError);
+  }, [user, worldId, xCoord, yCoord, scale]);
 
   return (
     <>
@@ -106,9 +120,13 @@ export const App = () => {
             </Pane>
           )}
 
-          {Panes.hereNow.show && (
+          {worldId && Panes.hereNow.show && (
             <Pane {...Panes.hereNow.paneProps}>
-              <HereNow cursors={cursors} userIndex={userIndex} />
+              <HereNow
+                cursors={cursors}
+                userIndex={userIndex}
+                worldId={worldId}
+              />
             </Pane>
           )}
 
@@ -135,11 +153,11 @@ export const App = () => {
             </Pane>
           )}
 
-          {/* {Panes.myWorlds.show && (
+          {Panes.myWorlds.show && (
             <Pane {...Panes.myWorlds.paneProps}>
-              <MyWorlds />
+              <MyWorlds userIndex={userIndex} tileTypes={tileTypes} />
             </Pane>
-          )} */}
+          )}
 
           {tileTypes && (
             <div className="toolContainer">
@@ -155,7 +173,7 @@ export const App = () => {
             </div>
           )}
 
-          {world && tileTypes && (
+          {worldId && tileTypes && (
             <div className="worldEditorContainer">
               <WorldEditor
                 {...{
@@ -163,6 +181,7 @@ export const App = () => {
                   selectedTileTypeId,
                   tileTypes,
                   onError,
+                  worldId,
                   xCoord,
                   yCoord,
                   scale,

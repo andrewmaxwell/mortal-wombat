@@ -47,6 +47,8 @@ export class Game {
 
     this.setHealth(this.health);
     this.setPoop(this.poop);
+    this.you.el.update(this.you);
+    this.worldElement.update(this.you);
   }
   iterate(pressing) {
     this.iterateYou(pressing);

@@ -1,31 +1,36 @@
 import {useEffect} from 'react';
-import {debounce} from '../utils';
+import {debounce, isGuid} from '../utils';
 
 const setHash = debounce((...args) => {
   location.hash = args.join('/');
 }, 1000);
 
 export const useLocationHash = ({
+  worldId,
   xCoord,
   yCoord,
   scale,
+  setWorldId,
   setXCoord,
   setYCoord,
   setScale,
 }) => {
   useEffect(() => {
-    setHash(xCoord, yCoord, scale);
+    setHash(worldId, xCoord, yCoord, scale);
     return setHash.cancel;
-  }, [scale, xCoord, yCoord]);
+  }, [worldId, scale, xCoord, yCoord]);
 
   useEffect(() => {
     const onHashChange = () => {
-      const parts = location.hash.slice(1).split('/').map(Number);
-      if (parts.length === 3 && parts.every((p) => !isNaN(p))) {
-        const [x, y, scale] = parts;
-        setXCoord(x);
-        setYCoord(y);
-        setScale(scale);
+      const [id, x, y, sc] = location.hash.slice(1).split('/');
+      if ((!id || isGuid(id)) && [x, y, sc].every((p) => !isNaN(p))) {
+        setWorldId(id);
+        setXCoord(Number(x));
+        setYCoord(Number(y));
+        setScale(Number(sc));
+      } else {
+        console.log('bad hash');
+        location.hash = [worldId || '', xCoord, yCoord, scale].join('/');
       }
     };
     onHashChange();

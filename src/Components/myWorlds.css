@@ -1,0 +1,39 @@
+.myWorlds {
+  font-size: 1.5em;
+  padding: 10px;
+}
+
+.myWorlds .worldButton {
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+  margin: 5px 0;
+  background: rgba(255,255,255,0.1);
+  padding: 0;
+  overflow: hidden;
+}
+
+.myWorlds .canvasContainer {
+  height: 200px;
+  width: 300px;
+  background: #222;
+  margin-right: 10px;
+}
+
+.myWorlds canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.myWorlds .scrollBox {
+  max-height: 600px;
+  overflow: auto;
+}
+
+.myWorlds .lastEdited {
+  font-size: 0.7em;
+  opacity: 0.5;
+  margin-left: 10px;
+}

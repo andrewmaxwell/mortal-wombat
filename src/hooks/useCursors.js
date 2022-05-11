@@ -14,45 +14,52 @@ export const getLatestTimestamp = (cursors) => {
   return latestTimestamp;
 };
 
-const cullCursors = (cursors, onError) => {
+const cullCursors = (cursors, worldId, onError) => {
   const culledCursors = {};
   const latestTimestamp = getLatestTimestamp(cursors);
   for (const key in cursors) {
     if (latestTimestamp - cursors[key].tstamp > sessionTimeOut) {
-      culledCursors['cursors/' + key] = null;
+      culledCursors[`worlds/${worldId}/cursors/${key}`] = null;
     }
   }
   update(culledCursors, onError);
 };
 
-export const useCursors = (onError) => {
+export const useCursors = (onError, worldId) => {
   const [cursors, setCursors] = useState({});
-  useEffect(() => listen('cursors', setCursors, onError), []);
+  useEffect(() => {
+    if (worldId) {
+      return listen(`worlds/${worldId}/cursors`, setCursors, onError);
+    }
+  }, [worldId]);
 
   useEffect(() => {
     if (Math.random() < 0.01) {
-      cullCursors(cursors, onError);
+      cullCursors(cursors, worldId, onError);
     }
-  }, [cursors]);
+  }, [cursors, worldId]);
   return cursors;
 };
 
 export const setCursor = throttle(
-  (user, mouseX, mouseY, xCoord, yCoord, scale, onError) =>
-    update(
-      {
-        [`cursors/${sessionId}`]: {
-          user: user.email,
-          mouseX,
-          mouseY,
-          left: xCoord - innerWidth / scale / 2,
-          top: yCoord - innerHeight / scale / 2,
-          width: innerWidth / scale,
-          height: innerHeight / scale,
-          tstamp: serverTimestamp(),
+  (user, mouseX, mouseY, worldId, xCoord, yCoord, scale, onError) => {
+    if (worldId) {
+      update(
+        {
+          [`worlds/${worldId}/cursors/${sessionId}`]: {
+            user: user.email,
+            mouseX,
+            mouseY,
+            left: xCoord - innerWidth / scale / 2,
+            top: yCoord - innerHeight / scale / 2,
+            width: innerWidth / scale,
+            height: innerHeight / scale,
+            tstamp: serverTimestamp(),
+          },
         },
-      },
-      onError
-    ),
+        onError
+      );
+    }
+  },
   500
 );
