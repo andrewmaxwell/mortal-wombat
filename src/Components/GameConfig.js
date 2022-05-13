@@ -70,6 +70,18 @@ const fields = [
     type: 'number',
     info: 'How fast can you slow down?',
   },
+  {
+    prop: 'fallDamageMin',
+    label: 'Fall Dmg Threshold',
+    type: 'number',
+    info: 'What is the minimum blocks/frame where landing hurts?',
+  },
+  {
+    prop: 'fallDamageMult',
+    label: 'Fall Dmg Multiplier',
+    type: 'number',
+    info: 'This is multiplied by (your speed - Fall Dmg Threshold) when you land to calculate the damage you take.',
+  },
 ];
 
 export const GameConfig = ({onError}) => {

@@ -8,13 +8,7 @@ Editor Features:
 - Make screen cursors different colors for different people
 
 Game features:
-- fall damage
-- bad guys
-  - Evil Koala
-    - walk back and forth
-    - you attack with Space
 - particles when breaking tiles
 - On-screen buttons
 - items that you can find or be given
-  - 
 - buy stuff with gems

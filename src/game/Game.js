@@ -1,3 +1,4 @@
+import {uniq} from '../utils';
 import {Hud, TileElement, VersionElement, WorldElement} from './elements';
 
 const MAX_RENDER_DIST = 32; // don't move things more than this many tiles away
@@ -45,6 +46,8 @@ export class Game {
     this.jumpPower = 0.11;
     this.moveSpeed = 0.02;
     this.moveDeceleration = 0.3;
+    this.fallDamageMin = 0.2;
+    this.fallDamageMult = 100;
 
     for (const x in config) {
       if (!isNaN(config[x])) this[x] = Number(config[x]); // because editing them turns them into strings, yayyyy
@@ -107,59 +110,14 @@ export class Game {
     you.ys += gravity;
     you.y += you.ys;
 
-    for (const key of [
+    for (const key of uniq([
       `${Math.floor(you.x)}_${Math.floor(you.y)}`,
       `${Math.ceil(you.x)}_${Math.floor(you.y)}`,
       `${Math.floor(you.x)}_${Math.ceil(you.y)}`,
       `${Math.ceil(you.x)}_${Math.ceil(you.y)}`,
-    ]) {
+    ])) {
       const block = world[key];
-      if (!block) continue;
-
-      if (block.type.collectible) {
-        this.incJewels();
-        return this.deleteTile(block);
-      } else if (block.type.healing < 0) {
-        this.setHealth(this.health + Number(block.type.healing));
-      }
-
-      if (pressing.Space) {
-        const angle = Math.atan2(you.dirY, you.dirX);
-        const x = Math.round(you.x + Math.cos(angle));
-        const y = Math.round(you.y + Math.sin(angle));
-        const b = this.getTile(x, y);
-        if (b?.type.edible) {
-          if (b.hp === undefined) b.hp = b.type.hp;
-          b.hp -= this.eatSpeed;
-          this.setHealth(this.health + b.type.healing * this.eatSpeed);
-          this.setPoop(this.poop + b.type.makePoop * this.eatSpeed);
-          if (b.hp <= 0) return this.deleteTile(b);
-        }
-        if (b?.type.diggable) {
-          if (b.hp === undefined) b.hp = b.type.hp;
-          b.hp -= this.digSpeed;
-          if (b.hp <= 0) return this.deleteTile(b);
-        }
-      }
-
-      if (Math.abs(you.x - block.x) > Math.abs(you.y - block.y)) {
-        const dx = block.x < you.x ? -1 : 1;
-        if (
-          !you.jumping &&
-          Math.abs(you.ys) < 0.1 && // TODO can this be better?
-          block.type.movable &&
-          this.isEmpty(block.x + dx, block.y)
-        ) {
-          this.moveTile(block.x, block.y, dx, 0);
-        } else {
-          you.x = block.x + (you.x < block.x ? -1 : 1);
-        }
-        you.xs = 0;
-      } else {
-        if (you.y < block.y) you.jumping = false;
-        you.y = block.y + (you.y < block.y ? -1 : 1);
-        you.ys = 0;
-      }
+      if (block) this.interact(block, pressing);
     }
 
     if (
@@ -175,6 +133,58 @@ export class Game {
       you.py = you.y;
       you.pdirX = you.dirX;
       you.pdirY = you.dirY;
+    }
+  }
+  interact(block, pressing) {
+    const {you} = this;
+    if (block.type.collectible) {
+      this.incJewels();
+      return this.deleteTile(block);
+    } else if (block.type.healing < 0) {
+      this.setHealth(this.health + Number(block.type.healing));
+    }
+
+    if (pressing.Space) {
+      const angle = Math.atan2(you.dirY, you.dirX);
+      const x = Math.round(you.x + Math.cos(angle));
+      const y = Math.round(you.y + Math.sin(angle));
+      const b = this.getTile(x, y);
+      if (b?.type.edible) {
+        if (b.hp === undefined) b.hp = b.type.hp;
+        b.hp -= this.eatSpeed;
+        this.setHealth(this.health + b.type.healing * this.eatSpeed);
+        this.setPoop(this.poop + b.type.makePoop * this.eatSpeed);
+        if (b.hp <= 0) return this.deleteTile(b);
+      }
+      if (b?.type.diggable) {
+        if (b.hp === undefined) b.hp = b.type.hp;
+        b.hp -= this.digSpeed;
+        if (b.hp <= 0) return this.deleteTile(b);
+      }
+    }
+
+    if (Math.abs(you.x - block.x) > Math.abs(you.y - block.y)) {
+      const dx = block.x < you.x ? -1 : 1;
+      if (
+        !you.jumping &&
+        Math.abs(you.ys) < 0.1 && // TODO can this be better?
+        block.type.movable &&
+        this.isEmpty(block.x + dx, block.y)
+      ) {
+        this.moveTile(block.x, block.y, dx, 0);
+      } else {
+        you.x = block.x + (you.x < block.x ? -1 : 1);
+      }
+      you.xs = 0;
+    } else {
+      if (you.y < block.y) you.jumping = false;
+      you.y = block.y + (you.y < block.y ? -1 : 1);
+      if (you.ys > this.fallDamageMin) {
+        this.setHealth(
+          this.health - (you.ys - this.fallDamageMin) * this.fallDamageMult
+        );
+      }
+      you.ys = 0;
     }
   }
   getTile(x, y) {
