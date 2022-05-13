@@ -1,10 +1,4 @@
-import {
-  Hud,
-  TileElement,
-  VersionElement,
-  WorldElement,
-  YouElement,
-} from './elements';
+import {Hud, TileElement, VersionElement, WorldElement} from './elements';
 
 const MAX_RENDER_DIST = 32; // don't move things more than this many tiles away
 const MOVEMENT_THRESHOLD = 0.1; // don't move you or the viewport if you move less than this much of a tile
@@ -28,8 +22,12 @@ export class Game {
       dirX: 1,
       dirY: 0,
       ...youPos,
-      el: new YouElement(this.worldElement.el, typeIndex),
     };
+    this.you.el = new TileElement(this.worldElement.el, {
+      x: this.you.x,
+      y: this.you.y,
+      type: typeIndex.w,
+    });
     for (const key of ['x', 'y', 'dirX', 'dirY']) {
       this.you['p' + key] = this.you[key];
     }
@@ -192,7 +190,7 @@ export class Game {
     b.x += dx;
     b.y += dy;
     this.world[`${b.x}_${b.y}`] = b;
-    b.el.updatePosition(b);
+    b.el.update(b);
   }
   iterateTiles() {
     for (const key in this.world) {

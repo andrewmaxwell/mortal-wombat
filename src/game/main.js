@@ -5,7 +5,12 @@ let game;
 const pressing = {};
 
 const loop = () => {
-  if (game) game.iterate(pressing);
+  if (document.hasFocus() && game) {
+    document.body.style.opacity = 1;
+    game.iterate(pressing);
+  } else {
+    document.body.style.opacity = 0.5;
+  }
   requestAnimationFrame(loop);
 };
 
