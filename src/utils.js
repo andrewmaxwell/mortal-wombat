@@ -66,11 +66,6 @@ export const throttle = (func, delay) => {
   return f;
 };
 
-export const uniq = (arr) => {
-  const seen = {};
-  return arr.filter((el) => !seen[el] && (seen[el] = true));
-};
-
 // const memoize = (func) => {
 //   const cache = {};
 //   return (...args) => {

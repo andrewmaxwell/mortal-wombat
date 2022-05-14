@@ -1,8 +1,14 @@
-import {uniq} from '../utils';
 import {Hud, TileElement, VersionElement, WorldElement} from './elements';
 
 const MAX_RENDER_DIST = 32; // don't move things more than this many tiles away
 const MOVEMENT_THRESHOLD = 0.1; // don't move you or the viewport if you move less than this much of a tile
+
+const dirs = [
+  [Math.floor, Math.floor],
+  [Math.ceil, Math.floor],
+  [Math.floor, Math.ceil],
+  [Math.ceil, Math.ceil],
+];
 
 export class Game {
   constructor(youPos, world, config, typeIndex, rootElement) {
@@ -110,14 +116,12 @@ export class Game {
     you.ys += gravity;
     you.y += you.ys;
 
-    for (const key of uniq([
-      `${Math.floor(you.x)}_${Math.floor(you.y)}`,
-      `${Math.ceil(you.x)}_${Math.floor(you.y)}`,
-      `${Math.floor(you.x)}_${Math.ceil(you.y)}`,
-      `${Math.ceil(you.x)}_${Math.ceil(you.y)}`,
-    ])) {
-      const block = world[key];
-      if (block) this.interact(block, pressing);
+    const seen = {};
+    for (const [fx, fy] of dirs) {
+      const key = fx(you.x) + '_' + fy(you.y);
+      if (seen[key] || !world[key]) continue;
+      seen[key] = true;
+      this.resolveCollision(world[key]);
     }
 
     if (
@@ -133,15 +137,6 @@ export class Game {
       you.py = you.y;
       you.pdirX = you.dirX;
       you.pdirY = you.dirY;
-    }
-  }
-  interact(block, pressing) {
-    const {you} = this;
-    if (block.type.collectible) {
-      this.incJewels();
-      return this.deleteTile(block);
-    } else if (block.type.healing < 0) {
-      this.setHealth(this.health + Number(block.type.healing));
     }
 
     if (pressing.Space) {
@@ -162,7 +157,16 @@ export class Game {
         if (b.hp <= 0) return this.deleteTile(b);
       }
     }
+  }
+  resolveCollision(block) {
+    if (block.type.collectible) {
+      this.incJewels();
+      return this.deleteTile(block);
+    } else if (block.type.healing < 0) {
+      return this.setHealth(this.health + Number(block.type.healing));
+    }
 
+    const {you} = this;
     if (Math.abs(you.x - block.x) > Math.abs(you.y - block.y)) {
       const dx = block.x < you.x ? -1 : 1;
       if (
@@ -179,6 +183,8 @@ export class Game {
     } else {
       if (you.y < block.y) you.jumping = false;
       you.y = block.y + (you.y < block.y ? -1 : 1);
+
+      // fall damage
       if (you.ys > this.fallDamageMin) {
         this.setHealth(
           this.health - (you.ys - this.fallDamageMin) * this.fallDamageMult
