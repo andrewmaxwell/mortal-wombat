@@ -2,7 +2,7 @@ import {defaultWorldId, loadData} from '../firebase';
 import {isGuid} from '../utils';
 import {Game} from './Game';
 
-export const load = async () => {
+export const load = async (rootElement) => {
   let hashConfig;
   if (location.hash.length > 1) {
     try {
@@ -43,11 +43,5 @@ export const load = async () => {
     you.y = hashConfig.y;
   }
 
-  return new Game(
-    you,
-    world,
-    gameConfig,
-    typeIndex,
-    document.querySelector('#root')
-  );
+  return new Game(you, world, gameConfig, typeIndex, rootElement);
 };

@@ -1,6 +1,4 @@
 Bugs: 
-- Possible to interact with diagonal tiles even when adjacent tiles are solid
-- Adjacent lava doesn't hurt you if you don't go toward it, even if it's on top of you
 
 Editor Features:
 - Rectangular selection tool for filling, moving, deleting, cut, paste, things in bulk
@@ -8,7 +6,10 @@ Editor Features:
 - Make screen cursors different colors for different people
 
 Game features:
-- particles when breaking tiles
+- lava burns up poop, grass, jewels, koalas, etc
+- keys and door (with colors)
+- bad guys drop loot
 - On-screen buttons
+- particles when breaking tiles
 - items that you can find or be given
 - buy stuff with gems

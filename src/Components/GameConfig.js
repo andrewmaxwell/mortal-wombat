@@ -82,6 +82,18 @@ const fields = [
     type: 'number',
     info: 'This is multiplied by (your speed - Fall Dmg Threshold) when you land to calculate the damage you take.',
   },
+  {
+    prop: 'swimPower',
+    label: 'Swim Power',
+    type: 'number',
+    info: 'How fast of a swimmer do you start out as?',
+  },
+  {
+    prop: 'waterDrag',
+    label: 'Water Drag',
+    type: 'number',
+    info: 'How quickly does water slow you down?',
+  },
 ];
 
 export const GameConfig = ({onError}) => {

@@ -60,3 +60,28 @@ body {
   right: 0;
   top: 0;
 }
+
+.control {
+  position: fixed;
+  width: 10em;
+  height: 10em;
+  background: rgba(255,255,255,0.1);
+  z-index: 1000;
+}
+
+#up {
+  bottom: 10.1em;
+  left: 10.1em;
+}
+#down {
+  bottom: 0;
+  left: 10.1em;
+}
+#left {
+  bottom: 0;
+  left: 0;
+}
+#right {
+  bottom: 0;
+  left: 20.2em;
+}

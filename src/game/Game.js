@@ -54,6 +54,8 @@ export class Game {
     this.moveDeceleration = 0.3;
     this.fallDamageMin = 0.2;
     this.fallDamageMult = 100;
+    this.swimPower = 0.005;
+    this.waterDrag = 0.1;
 
     for (const x in config) {
       if (!isNaN(config[x])) this[x] = Number(config[x]); // because editing them turns them into strings, yayyyy
@@ -68,7 +70,6 @@ export class Game {
     this.iterateYou(pressing);
     this.iterateTiles();
     this.frame++;
-    return this;
   }
   addTile(tile) {
     this.world[`${tile.x}_${tile.y}`] = {
@@ -84,36 +85,41 @@ export class Game {
     const {you, world, gravity} = this;
 
     if (this.health <= 0) {
-      if (pressing.KeyR) location.reload();
+      if (pressing.reload) location.reload();
       return;
     }
 
-    if (pressing.KeyA || pressing.KeyD || pressing.KeyW || pressing.KeyS) {
+    if (pressing.left || pressing.right || pressing.up || pressing.down) {
       you.dirX = 0;
       you.dirY = 0;
     }
-    if (pressing.KeyA) {
-      you.xs -= this.moveSpeed;
+    if (pressing.left) {
+      you.xs -= you.swimming ? this.swimPower : this.moveSpeed;
       you.dirX--;
     }
-    if (pressing.KeyD) {
-      you.xs += this.moveSpeed;
+    if (pressing.right) {
+      you.xs += you.swimming ? this.swimPower : this.moveSpeed;
       you.dirX++;
     }
-    if (pressing.KeyW) {
-      if (!you.jumping && !you.ys) {
+    if (pressing.up) {
+      if (you.swimming) you.ys -= this.swimPower;
+      else if (!you.jumping && !you.ys) {
         you.ys -= this.jumpPower;
         you.jumping = true;
       }
       you.dirY--;
     }
-    if (pressing.KeyS) {
+    if (pressing.down) {
+      if (you.swimming) you.ys += this.swimPower;
       you.dirY++;
     }
 
     you.x += you.xs;
-    you.xs *= 1 - this.moveDeceleration;
-    you.ys += gravity;
+    you.xs *= 1 - (you.swimming ? this.waterDrag : this.moveDeceleration);
+
+    if (you.swimming) you.ys *= 1 - this.waterDrag;
+    else you.ys += gravity;
+
     you.y += you.ys;
 
     const seen = {};
@@ -123,6 +129,22 @@ export class Game {
       seen[key] = true;
       this.resolveCollision(world[key]);
     }
+
+    let damage = 0;
+    you.swimming = false;
+    for (const [fx, fy] of dirs) {
+      const block = world[fx(you.x) + '_' + fy(you.y)];
+      if (!block) continue;
+      if (block.type.collectible) {
+        this.incJewels();
+        return this.deleteTile(block);
+      }
+      if (Number(block.type.healing) < 0) {
+        damage = Math.max(damage, -block.type.healing);
+      }
+      if (block.type.moveStyle === 'liquid') you.swimming = true;
+    }
+    if (damage) this.setHealth(this.health - damage);
 
     if (
       Math.abs(you.x - you.px) > MOVEMENT_THRESHOLD ||
@@ -139,7 +161,7 @@ export class Game {
       you.pdirY = you.dirY;
     }
 
-    if (pressing.Space) {
+    if (pressing.attack) {
       const angle = Math.atan2(you.dirY, you.dirX);
       const x = Math.round(you.x + Math.cos(angle));
       const y = Math.round(you.y + Math.sin(angle));
@@ -159,12 +181,7 @@ export class Game {
     }
   }
   resolveCollision(block) {
-    if (block.type.collectible) {
-      this.incJewels();
-      return this.deleteTile(block);
-    } else if (block.type.healing < 0) {
-      return this.setHealth(this.health + Number(block.type.healing));
-    }
+    if (block.type.collectible || block.type.moveStyle === 'liquid') return;
 
     const {you} = this;
     if (Math.abs(you.x - block.x) > Math.abs(you.y - block.y)) {
@@ -198,6 +215,10 @@ export class Game {
   }
   isEmpty(x, y) {
     return !this.getTile(x, y);
+  }
+  badGuyCanWalkOn(x, y) {
+    const t = this.getTile(x, y);
+    return t && !t.type.moveDelay;
   }
   moveTile(x, y, dx, dy) {
     const key = `${x}_${y}`;
@@ -234,8 +255,7 @@ export class Game {
         if (!b.dirX) b.dirX = 1;
         if (
           this.isEmpty(b.x + b.dirX, b.y) &&
-          this.getTile(b.x + b.dirX, b.y + 1) &&
-          !this.getTile(b.x + b.dirX, b.y + 1).type.moveDelay
+          this.badGuyCanWalkOn(b.x + b.dirX, b.y + 1)
         ) {
           this.moveTile(b.x, b.y, b.dirX, 0);
         } else {

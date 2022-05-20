@@ -90,3 +90,14 @@ export class VersionElement extends Element {
     parentElement.append(this.el);
   }
 }
+
+export class ControlButton extends Element {
+  constructor(parentElement, id, pressing) {
+    super();
+    this.el.classList.add('control');
+    this.el.setAttribute('id', id);
+    this.el.addEventListener('touchstart', () => (pressing[id] = true));
+    this.el.addEventListener('touchend', () => (pressing[id] = false));
+    parentElement.append(this.el);
+  }
+}
