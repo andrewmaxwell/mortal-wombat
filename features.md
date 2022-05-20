@@ -6,7 +6,6 @@ Editor Features:
 - Make screen cursors different colors for different people
 
 Game features:
-- lava burns up poop, grass, jewels, koalas, etc
 - keys and door (with colors)
 - bad guys drop loot
 - On-screen buttons

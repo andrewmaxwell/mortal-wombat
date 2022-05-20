@@ -150,7 +150,7 @@ export class Game {
         this.incJewels();
         return this.deleteTile(block);
       }
-      if (Number(block.type.healing) < 0) {
+      if (block.type.healing < 0) {
         damage = Math.max(damage, -block.type.healing);
       }
       if (block.type.moveStyle === 'liquid') you.swimming = true;
@@ -192,9 +192,14 @@ export class Game {
     }
   }
   resolveCollision(block) {
+    const {you} = this;
     if (block.type.collectible || block.type.moveStyle === 'liquid') return;
 
-    const {you} = this;
+    if (block.type.healing < 0) {
+      this.setHealth(this.health + Number(block.type.healing));
+      you.y -= 0.1;
+    }
+
     if (Math.abs(you.x - block.x) > Math.abs(you.y - block.y)) {
       const dx = block.x < you.x ? -1 : 1;
       if (
@@ -229,7 +234,7 @@ export class Game {
   }
   badGuyCanWalkOn(x, y) {
     const t = this.getTile(x, y);
-    return t && !t.type.moveStyle !== 'liquid';
+    return t && t.type.moveStyle !== 'liquid';
   }
   moveTile(x, y, dx, dy) {
     const key = `${x}_${y}`;
