@@ -28,9 +28,12 @@ export class TileElement extends Element {
   constructor(parentElement, tile) {
     super();
     this.el.classList.add('tile');
-    this.el.style.background = getBackground(tile.type);
+    this.updateType(tile.type);
     this.update(tile);
     parentElement.append(this.el);
+  }
+  updateType(type) {
+    this.el.style.background = getBackground(type);
   }
   update({x, y, dirX = 0, dirY = 0}) {
     const angle = Math.atan2(dirY, dirX) + Math.PI;

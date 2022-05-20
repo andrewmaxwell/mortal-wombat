@@ -3,11 +3,18 @@ import {Hud, TileElement, VersionElement, WorldElement} from './elements';
 const MAX_RENDER_DIST = 32; // don't move things more than this many tiles away
 const MOVEMENT_THRESHOLD = 0.1; // don't move you or the viewport if you move less than this much of a tile
 
-const dirs = [
+const pairs = [
   [Math.floor, Math.floor],
   [Math.ceil, Math.floor],
   [Math.floor, Math.ceil],
   [Math.ceil, Math.ceil],
+];
+
+const dirs = [
+  [1, 0],
+  [0, 1],
+  [-1, 0],
+  [0, -1],
 ];
 
 export class Game {
@@ -81,6 +88,10 @@ export class Game {
     tile.el.destroy();
     delete this.world[`${tile.x}_${tile.y}`];
   }
+  changeTileType(tile, type) {
+    tile.type = type;
+    tile.el.updateType(type);
+  }
   iterateYou(pressing) {
     const {you, world, gravity} = this;
 
@@ -123,7 +134,7 @@ export class Game {
     you.y += you.ys;
 
     const seen = {};
-    for (const [fx, fy] of dirs) {
+    for (const [fx, fy] of pairs) {
       const key = fx(you.x) + '_' + fy(you.y);
       if (seen[key] || !world[key]) continue;
       seen[key] = true;
@@ -132,7 +143,7 @@ export class Game {
 
     let damage = 0;
     you.swimming = false;
-    for (const [fx, fy] of dirs) {
+    for (const [fx, fy] of pairs) {
       const block = world[fx(you.x) + '_' + fy(you.y)];
       if (!block) continue;
       if (block.type.collectible) {
@@ -218,7 +229,7 @@ export class Game {
   }
   badGuyCanWalkOn(x, y) {
     const t = this.getTile(x, y);
-    return t && !t.type.moveDelay;
+    return t && !t.type.moveStyle !== 'liquid';
   }
   moveTile(x, y, dx, dy) {
     const key = `${x}_${y}`;
@@ -260,6 +271,25 @@ export class Game {
           this.moveTile(b.x, b.y, b.dirX, 0);
         } else {
           b.dirX *= -1;
+        }
+      }
+
+      // special rules for magma
+      if (b.type.id === 'm') {
+        let touchingWater = false;
+        for (const [dx, dy] of dirs) {
+          const block = this.getTile(b.x + dx, b.y + dy);
+          if (
+            block &&
+            (block.type.collectible || block.type.hp || block.type.id === 'a')
+          ) {
+            if (block.type.id === 'a') touchingWater = true;
+            this.deleteTile(block);
+          }
+        }
+        if (touchingWater) {
+          // if lava touches water, it turns to stone
+          this.changeTileType(b, this.typeIndex.s);
         }
       }
     }

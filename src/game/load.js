@@ -38,7 +38,7 @@ export const load = async (rootElement) => {
     }
   }
 
-  if (hashConfig?.x && hashConfig?.y) {
+  if (hashConfig?.x !== undefined && hashConfig?.y !== undefined) {
     you.x = hashConfig.x;
     you.y = hashConfig.y;
   }
