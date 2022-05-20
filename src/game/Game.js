@@ -284,10 +284,7 @@ export class Game {
         let touchingWater = false;
         for (const [dx, dy] of dirs) {
           const block = this.getTile(b.x + dx, b.y + dy);
-          if (
-            block &&
-            (block.type.collectible || block.type.hp || block.type.id === 'a')
-          ) {
+          if (block && (block.type.hp || block.type.id === 'a')) {
             if (block.type.id === 'a') touchingWater = true;
             this.deleteTile(block);
           }
