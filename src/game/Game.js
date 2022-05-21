@@ -63,6 +63,7 @@ export class Game {
     this.fallDamageMult = 100;
     this.swimPower = 0.005;
     this.waterDrag = 0.1;
+    this.airDrag = 0.001;
 
     for (const x in config) {
       if (!isNaN(config[x])) this[x] = Number(config[x]); // because editing them turns them into strings, yayyyy
@@ -74,7 +75,7 @@ export class Game {
     this.worldElement.update(this.you);
   }
   iterate(pressing) {
-    this.iterateYou(pressing);
+    this.moveWombat(pressing);
     this.iterateTiles();
     this.frame++;
   }
@@ -90,9 +91,10 @@ export class Game {
   }
   changeTileType(tile, type) {
     tile.type = type;
+    delete tile.hp;
     tile.el.updateType(type);
   }
-  iterateYou(pressing) {
+  moveWombat(pressing) {
     const {you, world, gravity} = this;
 
     if (this.health <= 0) {
@@ -128,10 +130,9 @@ export class Game {
     you.x += you.xs;
     you.xs *= 1 - (you.swimming ? this.waterDrag : this.moveDeceleration);
 
-    if (you.swimming) you.ys *= 1 - this.waterDrag;
-    else you.ys += gravity;
-
     you.y += you.ys;
+    you.ys *= 1 - (you.swimming ? this.waterDrag : this.airDrag);
+    if (!you.swimming) you.ys += gravity;
 
     const seen = {};
     for (const [fx, fy] of pairs) {
@@ -187,7 +188,11 @@ export class Game {
       if (b?.type.diggable) {
         if (b.hp === undefined) b.hp = b.type.hp;
         b.hp -= this.digSpeed;
-        if (b.hp <= 0) return this.deleteTile(b);
+        if (b.hp <= 0) {
+          if (b.type.dropsLoot) {
+            this.changeTileType(b, this.typeIndex[b.type.dropsLoot]);
+          } else this.deleteTile(b);
+        }
       }
     }
   }
@@ -204,7 +209,7 @@ export class Game {
       const dx = block.x < you.x ? -1 : 1;
       if (
         !you.jumping &&
-        Math.abs(you.ys) < 0.1 && // TODO can this be better?
+        you.ys === this.gravity &&
         block.type.movable &&
         this.isEmpty(block.x + dx, block.y)
       ) {

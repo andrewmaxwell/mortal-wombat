@@ -21,9 +21,9 @@ const Checkbox = ({value = false, onChange}) => (
 const Select = ({value, onChange, options}) => (
   <select value={value} onChange={(e) => onChange(e.target.value)}>
     <option></option>
-    {options.map((o) => (
-      <option key={o} value={o}>
-        {o}
+    {options.map(({label, value}) => (
+      <option key={label} value={value}>
+        {label}
       </option>
     ))}
   </select>

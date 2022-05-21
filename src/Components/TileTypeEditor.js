@@ -45,7 +45,10 @@ const fields = [
     label: 'Move Style',
     type: 'select',
     info: 'How does it move?',
-    options: ['liquid', 'patrol'],
+    options: [
+      {label: 'Liquid', value: 'liquid'},
+      {label: 'Patrol', value: 'patrol'},
+    ],
     show: (data) => parseInt(data.moveDelay),
   },
   {
@@ -75,6 +78,14 @@ const fields = [
     type: 'checkbox',
     info: 'Can you collect it?',
     show: (data) => !data.edible && !data.movable,
+  },
+  {
+    prop: 'dropsLoot',
+    label: 'Drops Loot',
+    type: 'select',
+    info: 'What kind of loot does it drop?',
+    options: [{label: 'Jewel', value: 'j'}],
+    show: (data) => data.diggable && data.hp,
   },
   {
     prop: 'order',

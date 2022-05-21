@@ -71,6 +71,12 @@ const fields = [
     info: 'How fast can you slow down?',
   },
   {
+    prop: 'airDrag',
+    label: 'Air Drag',
+    type: 'number',
+    info: 'How much does the air slow you down?',
+  },
+  {
     prop: 'fallDamageMin',
     label: 'Fall Dmg Threshold',
     type: 'number',
