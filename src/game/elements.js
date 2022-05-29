@@ -21,6 +21,7 @@ export class WorldElement extends Element {
     const cx = innerWidth / 2 - you.x * scale;
     const cy = innerHeight / 2 - you.y * scale;
     this.el.style.transform = `translate(${cx}px,${cy}px)`;
+    document.body.style.backgroundPosition = `${cx >> 2}px ${cy >> 2}px`;
   }
 }
 
@@ -45,7 +46,7 @@ export class TileElement extends Element {
   }
 }
 
-export class BarElement extends Element {
+class BarElement extends Element {
   constructor(parentElement) {
     super();
     this.el.classList.add('bar');
@@ -61,27 +62,37 @@ export class BarElement extends Element {
   }
 }
 
-export class JewelCounter extends Element {
-  constructor(parentElement, typeIndex) {
+class CollectibleCounter extends Element {
+  constructor(parentElement, type) {
     super();
-    this.typeIndex = typeIndex;
-    this.el.classList.add('jewelCounter');
+    this.el.classList.add('collectibleCounter');
+    this.el.innerHTML = `<span></span> <div style="background: ${getBackground(
+      type
+    )}"></div>`;
+    this.valueEl = this.el.querySelector('span');
     parentElement.append(this.el);
   }
-  update(jewels) {
-    this.el.innerHTML = `${jewels} <img src="${this.typeIndex.j.image}" />`;
+  update(value) {
+    this.valueEl.innerText = value;
   }
 }
 
 export class Hud extends Element {
-  constructor(parentElement, typeIndex) {
+  constructor(parentElement) {
     super();
     this.el.classList.add('hud');
 
     this.healthBar = new BarElement(this.el);
     this.poopBar = new BarElement(this.el);
-    this.jewelCounter = new JewelCounter(this.el, typeIndex);
     parentElement.append(this.el);
+
+    this.counters = {};
+  }
+  updateCounter(type, value) {
+    if (!this.counters[type.id]) {
+      this.counters[type.id] = new CollectibleCounter(this.el, type);
+    }
+    this.counters[type.id].update(value);
   }
 }
 

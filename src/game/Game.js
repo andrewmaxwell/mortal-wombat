@@ -21,7 +21,7 @@ export class Game {
   constructor(youPos, world, config, typeIndex, rootElement) {
     this.rootElement = rootElement;
     this.worldElement = new WorldElement(rootElement);
-    this.hud = new Hud(rootElement, typeIndex);
+    this.hud = new Hud(rootElement);
     new VersionElement(rootElement);
 
     this.world = {};
@@ -45,7 +45,7 @@ export class Game {
     for (const key of ['x', 'y', 'dirX', 'dirY']) {
       this.you['p' + key] = this.you[key];
     }
-    this.jewels = 0;
+    this.collectibles = {};
     this.frame = 0;
 
     // these can all be overridden by config
@@ -95,7 +95,7 @@ export class Game {
     tile.el.updateType(type);
   }
   moveWombat(pressing) {
-    const {you, world, gravity} = this;
+    const {you, world} = this;
 
     if (this.health <= 0) {
       if (pressing.reload) location.reload();
@@ -107,15 +107,15 @@ export class Game {
       you.dirY = 0;
     }
     if (pressing.left) {
-      you.xs -= you.swimming ? this.swimPower : this.moveSpeed;
+      you.xs -= you.swimBlock ? this.swimPower : this.moveSpeed;
       you.dirX--;
     }
     if (pressing.right) {
-      you.xs += you.swimming ? this.swimPower : this.moveSpeed;
+      you.xs += you.swimBlock ? this.swimPower : this.moveSpeed;
       you.dirX++;
     }
     if (pressing.up) {
-      if (you.swimming) you.ys -= this.swimPower;
+      if (you.swimBlock) you.ys -= this.swimPower;
       else if (!you.jumping && !you.ys) {
         you.ys -= this.jumpPower;
         you.jumping = true;
@@ -123,16 +123,16 @@ export class Game {
       you.dirY--;
     }
     if (pressing.down) {
-      if (you.swimming) you.ys += this.swimPower;
+      if (you.swimBlock) you.ys += this.swimPower;
       you.dirY++;
     }
 
     you.x += you.xs;
-    you.xs *= 1 - (you.swimming ? this.waterDrag : this.moveDeceleration);
+    you.xs *= 1 - (you.swimBlock ? this.waterDrag : this.moveDeceleration);
 
     you.y += you.ys;
-    you.ys *= 1 - (you.swimming ? this.waterDrag : this.airDrag);
-    if (!you.swimming) you.ys += gravity;
+    you.ys *= 1 - (you.swimBlock ? this.waterDrag : this.airDrag);
+    you.ys += this.gravity * (1 - (you.swimBlock?.type.density || 0));
 
     const seen = {};
     for (const [fx, fy] of pairs) {
@@ -143,18 +143,18 @@ export class Game {
     }
 
     let damage = 0;
-    you.swimming = false;
+    delete you.swimBlock;
     for (const [fx, fy] of pairs) {
       const block = world[fx(you.x) + '_' + fy(you.y)];
       if (!block) continue;
       if (block.type.collectible) {
-        this.incJewels();
+        this.collect(block.type);
         return this.deleteTile(block);
       }
       if (block.type.healing < 0) {
         damage = Math.max(damage, -block.type.healing);
       }
-      if (block.type.moveStyle === 'liquid') you.swimming = true;
+      if (block.type.moveStyle === 'liquid') you.swimBlock = block;
     }
     if (damage) this.setHealth(this.health - damage);
 
@@ -256,7 +256,8 @@ export class Game {
       if (
         !b.type.moveDelay ||
         this.frame % b.type.moveDelay > 0 ||
-        (this.you.x - b.x) ** 2 + (this.you.y - b.y) ** 2 > MAX_RENDER_DIST ** 2
+        Math.abs(this.you.x - b.x) > MAX_RENDER_DIST ||
+        Math.abs(this.you.y - b.y) > MAX_RENDER_DIST
       )
         continue;
 
@@ -317,9 +318,9 @@ export class Game {
     this.poop = Math.max(0, Math.min(this.maxPoop, poop));
     this.hud.poopBar.update(this.poop, this.maxPoop, 'saddleBrown');
   }
-  incJewels() {
-    this.jewels++;
-    this.hud.jewelCounter.update(this.jewels);
+  collect(type) {
+    this.collectibles[type.id] = (this.collectibles[type.id] || 0) + 1;
+    this.hud.updateCounter(type, this.collectibles[type.id]);
   }
   makePoop() {
     if (this.poop < 1) return;

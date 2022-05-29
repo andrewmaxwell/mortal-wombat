@@ -4,9 +4,10 @@
 
 body {
   color: white;
-  background: #222;
   margin: 0;
   font-family: sans-serif;
+  background-image: url("https://i.ibb.co/ZLjf3Jb/imgonline-com-ua-Texture-Seamless-ef-Gzuxvyq-GO67.jpg");
+  background-repeat: repeat;
 }
 
 button,

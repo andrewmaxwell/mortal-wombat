@@ -96,10 +96,10 @@ export const WorldEditor = ({
       );
       e.preventDefault();
       return false;
-    } else if (selectedTileTypeId) {
+    } else {
       const currentType = world[`${x}_${y}`]?.tileType;
       const t = e.shiftKey ? '_delete' : selectedTileTypeId;
-      if ((currentType || t !== '_delete') && currentType !== t) {
+      if (t && (currentType || t !== '_delete') && currentType !== t) {
         placeTile(worldId, x, y, t, user, onError);
       }
     }

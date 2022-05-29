@@ -25,15 +25,22 @@ body {
   padding: 1px 3px;
 }
 
-.jewelCounter {
-  color: cyan;
+.collectibleCounter {
   font-weight: bold;
   margin-top: -20px;
 }
 
-.jewelCounter>img{
+.collectibleCounter>img{
   transform: translateY(10px);
 }
+
+.collectibleCounter>div {
+  display: inline-block;
+  width: 48px;
+  height: 48px;
+  transform: translate(10px, 12px);
+}
+
 
 .youDead {
   position: fixed;

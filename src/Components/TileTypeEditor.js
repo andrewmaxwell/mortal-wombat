@@ -3,6 +3,19 @@ import {objToArr} from '../utils';
 import {FormThing} from './common/FormThing';
 import './tileTypeEditor.css';
 
+/*
+g: grass
+p: poop,
+s: stone,
+w: wombat,
+m: magma,
+j: jewel,
+k: koala,
+a: water,
+o: polymer
+
+*/
+
 const fields = [
   {
     prop: 'label',
@@ -39,6 +52,13 @@ const fields = [
     label: 'Move Delay',
     type: 'number',
     info: 'How many frames does it wait to move? Smaller is faster.',
+  },
+  {
+    prop: 'density',
+    label: 'Density',
+    type: 'number',
+    info: 'Air density is 0. Wombat density is 1. Wombat floats when density is >1, sinks when <1.',
+    show: (data) => parseInt(data.moveDelay),
   },
   {
     prop: 'moveStyle',
@@ -93,8 +113,6 @@ const fields = [
     type: 'number',
     info: 'The order it shows up in the toolbar below',
   },
-
-  // {prop: 'movement', label: 'Movement', type: 'select', }
 ];
 
 export const TileTypeEditor = ({selectedTileTypeId, tileTypes, onError}) => {

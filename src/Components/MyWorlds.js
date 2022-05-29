@@ -60,18 +60,19 @@ const WorldItem = ({
 );
 
 const loadWorlds = async (setWorlds) => {
+  setWorlds();
   const {worlds} = await loadData(['worlds']);
   setWorlds(worlds);
 };
 
 export const MyWorlds = ({userIndex, tileTypes}) => {
-  const [worlds, setWorlds] = useState([]);
+  const [worlds, setWorlds] = useState();
 
   useEffect(() => {
     loadWorlds(setWorlds);
   }, []);
 
-  return (
+  return worlds ? (
     <div className="myWorlds">
       <div style={{float: 'right'}}>
         <button
@@ -87,19 +88,21 @@ export const MyWorlds = ({userIndex, tileTypes}) => {
         <i className="fa-solid fa-arrows-rotate"></i> Refresh List
       </button>
 
-      <div className="scrollBox">
-        {Object.entries(worlds)
-          .sort((a, b) => b[1].lastEdited - a[1].lastEdited)
-          .map(([key, item]) => (
-            <WorldItem
-              key={key}
-              id={key}
-              item={item}
-              userIndex={userIndex}
-              tileTypes={tileTypes}
-            />
-          ))}
-      </div>
+      {Object.entries(worlds)
+        .sort((a, b) => b[1].lastEdited - a[1].lastEdited)
+        .map(([key, item]) => (
+          <WorldItem
+            key={key}
+            id={key}
+            item={item}
+            userIndex={userIndex}
+            tileTypes={tileTypes}
+          />
+        ))}
+    </div>
+  ) : (
+    <div className="fa-3x" style={{textAlign: 'center'}}>
+      <i className="fa-solid fa-spinner fa-spin"></i>
     </div>
   );
 };
