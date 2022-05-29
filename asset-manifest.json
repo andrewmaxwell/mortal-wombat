@@ -1,25 +1,25 @@
 {
   "files": {
-    "main.css": "/static/css/main.813e2f43.css",
-    "main.js": "/static/js/main.68ef9894.js",
+    "main.css": "/static/css/main.1567beba.css",
+    "main.js": "/static/js/main.17e33e3d.js",
     "static/css/934.780187ee.chunk.css": "/static/css/934.780187ee.chunk.css",
-    "static/js/934.1810696e.chunk.js": "/static/js/934.1810696e.chunk.js",
-    "static/css/927.fd4c07bf.chunk.css": "/static/css/927.fd4c07bf.chunk.css",
-    "static/js/927.339a5017.chunk.js": "/static/js/927.339a5017.chunk.js",
+    "static/js/934.c70970e8.chunk.js": "/static/js/934.c70970e8.chunk.js",
+    "static/css/927.af223f33.chunk.css": "/static/css/927.af223f33.chunk.css",
+    "static/js/927.7007865f.chunk.js": "/static/js/927.7007865f.chunk.js",
     "static/js/97.794272bd.chunk.js": "/static/js/97.794272bd.chunk.js",
     "static/js/329.5c100483.chunk.js": "/static/js/329.5c100483.chunk.js",
     "index.html": "/index.html",
-    "main.813e2f43.css.map": "/static/css/main.813e2f43.css.map",
-    "main.68ef9894.js.map": "/static/js/main.68ef9894.js.map",
+    "main.1567beba.css.map": "/static/css/main.1567beba.css.map",
+    "main.17e33e3d.js.map": "/static/js/main.17e33e3d.js.map",
     "934.780187ee.chunk.css.map": "/static/css/934.780187ee.chunk.css.map",
-    "934.1810696e.chunk.js.map": "/static/js/934.1810696e.chunk.js.map",
-    "927.fd4c07bf.chunk.css.map": "/static/css/927.fd4c07bf.chunk.css.map",
-    "927.339a5017.chunk.js.map": "/static/js/927.339a5017.chunk.js.map",
+    "934.c70970e8.chunk.js.map": "/static/js/934.c70970e8.chunk.js.map",
+    "927.af223f33.chunk.css.map": "/static/css/927.af223f33.chunk.css.map",
+    "927.7007865f.chunk.js.map": "/static/js/927.7007865f.chunk.js.map",
     "97.794272bd.chunk.js.map": "/static/js/97.794272bd.chunk.js.map",
     "329.5c100483.chunk.js.map": "/static/js/329.5c100483.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.813e2f43.css",
-    "static/js/main.68ef9894.js"
+    "static/css/main.1567beba.css",
+    "static/js/main.17e33e3d.js"
   ]
 }
