@@ -22,6 +22,7 @@ import {TileTypeEditor} from './TileTypeEditor';
 import {GameConfig} from './GameConfig';
 import {HereNow} from './HereNow';
 import {MyWorlds} from './MyWorlds';
+import {Stats} from './Stats';
 import {defaultWorldId} from '../firebase';
 
 const zoomAmt = 2;
@@ -47,6 +48,12 @@ const paneConfigs = [
     icon: 'person',
   },
   {
+    key: 'stats',
+    buttonLabel: 'World Stats',
+    paneLabel: 'World Stats',
+    icon: 'gauge',
+  },
+  {
     key: 'myWorlds',
     buttonLabel: 'Worlds',
     paneLabel: 'Worlds',
@@ -65,7 +72,7 @@ export const App = () => {
 
   // firebase state
   const user = useUser();
-  const userIndex = useUserIndex(onError);
+  const userIndex = useUserIndex(user, onError);
   const tileTypes = useTileTypes(onError);
   const world = useWorld(onError, worldId);
   const cursors = useCursors(onError, worldId);
@@ -155,7 +162,21 @@ export const App = () => {
 
           {Panes.myWorlds.show && (
             <Pane {...Panes.myWorlds.paneProps}>
-              <MyWorlds userIndex={userIndex} tileTypes={tileTypes} />
+              <MyWorlds
+                userIndex={userIndex}
+                tileTypes={tileTypes}
+                close={() => Panes.myWorlds.setShow(false)}
+              />
+            </Pane>
+          )}
+
+          {Panes.stats.show && (
+            <Pane {...Panes.stats.paneProps}>
+              <Stats
+                world={world}
+                tileTypes={tileTypes}
+                userIndex={userIndex}
+              />
             </Pane>
           )}
 

@@ -1,7 +1,13 @@
 import {getBackground} from '../utils/getBackground';
 import packageJSON from '../../package.json';
 
-const scale = 48;
+const TILE_SIZE = 48;
+const CHUNK_SIZE = 24;
+
+const toChunkCoords = (x, y) => [
+  Math.floor(x / CHUNK_SIZE),
+  Math.floor(y / CHUNK_SIZE),
+];
 
 class Element {
   constructor() {
@@ -12,26 +18,60 @@ class Element {
   }
 }
 
+class Chunk extends Element {
+  constructor(parentElement, x, y) {
+    super();
+    this.x = x;
+    this.y = y;
+    this.el.classList.add('chunk');
+    parentElement.append(this.el);
+  }
+  updateVisibility(x, y) {
+    const shouldShow = Math.abs(x - this.x) < 2 && Math.abs(y - this.y) < 2;
+    this.el.title = `chunk ${this.x}_${this.y} ${x} ${y}`;
+    if (shouldShow !== this.isShowing) {
+      this.isShowing = shouldShow;
+      this.el.style.display = shouldShow ? 'block' : 'none';
+    }
+  }
+}
+
 export class WorldElement extends Element {
   constructor(rootElement) {
     super();
+    this.chunks = {};
     rootElement.append(this.el);
   }
   update(you) {
-    const cx = innerWidth / 2 - you.x * scale;
-    const cy = innerHeight / 2 - you.y * scale;
+    const [chunkX, chunkY] = toChunkCoords(you.x, you.y);
+    if (chunkX !== you.chunkX || chunkY !== you.chunkY) {
+      you.chunkX = chunkX;
+      you.chunkY = chunkY;
+      for (const key in this.chunks) {
+        this.chunks[key].updateVisibility(chunkX, chunkY);
+      }
+    }
+
+    const cx = Math.round(innerWidth / 2 - you.x * TILE_SIZE);
+    const cy = Math.round(innerHeight / 2 - you.y * TILE_SIZE);
     this.el.style.transform = `translate(${cx}px,${cy}px)`;
     document.body.style.backgroundPosition = `${cx >> 2}px ${cy >> 2}px`;
+  }
+  getChunk(x, y) {
+    const [chunkX, chunkY] = toChunkCoords(x, y);
+    const key = `${chunkX}_${chunkY}`;
+    return (this.chunks[key] =
+      this.chunks[key] || new Chunk(this.el, chunkX, chunkY));
   }
 }
 
 export class TileElement extends Element {
-  constructor(parentElement, tile) {
+  constructor(tile, worldElement) {
     super();
+    this.worldElement = worldElement;
     this.el.classList.add('tile');
     this.updateType(tile.type);
     this.update(tile);
-    parentElement.append(this.el);
   }
   updateType(type) {
     this.el.style.background = getBackground(type);
@@ -40,9 +80,16 @@ export class TileElement extends Element {
     const angle = Math.atan2(dirY, dirX) + Math.PI;
     const flip = angle >= 0.5 * Math.PI && angle <= 1.5 * Math.PI;
     this.el.style.transform = `
-    translate(${x * scale}px,${y * scale}px)
+    translate(${x * TILE_SIZE}px,${y * TILE_SIZE}px)
     rotate(${angle}rad)
     ${flip ? 'scaleY(-1)' : ''}`;
+
+    const [chunkX, chunkY] = toChunkCoords(x, y);
+    if (chunkX !== this.chunkX || chunkY !== this.chunkY) {
+      this.chunkX = chunkX;
+      this.chunkY = chunkY;
+      this.worldElement.getChunk(x, y).el.append(this.el);
+    }
   }
 }
 
@@ -58,7 +105,7 @@ class BarElement extends Element {
     const el = this.valueElement;
     el.style.background = color;
     el.style.width = (100 * value) / maxValue + '%';
-    el.innerText = Math.floor(value);
+    el.innerText = Math.ceil(value);
   }
 }
 
@@ -112,6 +159,45 @@ export class ControlButton extends Element {
     this.el.setAttribute('id', id);
     this.el.addEventListener('touchstart', () => (pressing[id] = true));
     this.el.addEventListener('touchend', () => (pressing[id] = false));
+    parentElement.append(this.el);
+  }
+}
+
+export class ControlCircle extends Element {
+  constructor(parentElement, pressing) {
+    super();
+    this.el.classList.add('controlCircle');
+
+    const move = ({touches, offsetX, offsetY}) => {
+      const size = this.el.clientWidth;
+      const x = (touches ? touches[0].offsetX : offsetX) / size - 0.5;
+      const y = (touches ? touches[0].offsetY : offsetY) / size - 0.5;
+      pressing.left = x < 0;
+      pressing.right = x > 0;
+      pressing.up = y < 0;
+      pressing.down = y > 0;
+      this.el.innerText = JSON.stringify(touches);
+    };
+    const up = () => {
+      pressing.left = false;
+      pressing.up = false;
+      pressing.down = false;
+      pressing.right = false;
+      this.el.removeEventListener('touchmove', move);
+      this.el.removeEventListener('mousemove', move);
+      this.el.removeEventListener('touchend', up);
+      this.el.removeEventListener('mouseup', up);
+    };
+    const down = (e) => {
+      move(e);
+      this.el.addEventListener('touchmove', move);
+      this.el.addEventListener('mousemove', move);
+      this.el.addEventListener('touchend', up);
+      this.el.addEventListener('mouseup', up);
+    };
+
+    this.el.addEventListener('touchstart', down);
+    this.el.addEventListener('mousedown', down);
     parentElement.append(this.el);
   }
 }

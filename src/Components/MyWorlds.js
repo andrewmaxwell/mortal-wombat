@@ -3,6 +3,7 @@ import {serverTimestamp} from 'firebase/database';
 import {useEffect, useRef, useState} from 'react';
 import {loadData, update} from '../firebase';
 import {guid} from '../utils';
+import {timeAgo} from '../utils/timeAgo';
 import {worldToCanvas} from '../utils/worldToCanvas';
 import './myWorlds.css';
 
@@ -44,16 +45,25 @@ const WorldItem = ({
   item: {lastEdited, worldName, lastEditedBy, world},
   userIndex,
   tileTypes,
+  close,
 }) => (
-  <button className="worldButton" onClick={() => gotoWorld(id)}>
+  <button
+    className="worldButton"
+    onClick={() => {
+      gotoWorld(id);
+      close();
+    }}
+  >
     <div className="canvasContainer">
       <WorldCanvas world={world} tileTypes={tileTypes} />{' '}
     </div>
     {worldName || '???'}
     {lastEdited && (
       <span className="lastEdited">
-        last edited by {userIndex[lastEditedBy]?.name || lastEditedBy || '???'}{' '}
-        on {new Date(lastEdited).toLocaleString()}
+        last edited by{' '}
+        {(userIndex[lastEditedBy]?.name || lastEditedBy || '???') +
+          ' ' +
+          timeAgo(Date.now() - lastEdited)}
       </span>
     )}
   </button>
@@ -65,7 +75,7 @@ const loadWorlds = async (setWorlds) => {
   setWorlds(worlds);
 };
 
-export const MyWorlds = ({userIndex, tileTypes}) => {
+export const MyWorlds = ({userIndex, tileTypes, close}) => {
   const [worlds, setWorlds] = useState();
 
   useEffect(() => {
@@ -78,7 +88,7 @@ export const MyWorlds = ({userIndex, tileTypes}) => {
         <button
           onClick={async () => {
             await createNewWorld();
-            await loadWorlds(setWorlds);
+            close();
           }}
         >
           <i className="fa-solid fa-circle-plus"></i> Create a New World
@@ -97,6 +107,7 @@ export const MyWorlds = ({userIndex, tileTypes}) => {
             item={item}
             userIndex={userIndex}
             tileTypes={tileTypes}
+            close={close}
           />
         ))}
     </div>

@@ -2,6 +2,10 @@ body {
   overflow: hidden;
 }
 
+.chunk {
+  position: absolute;
+}
+
 .tile {
   position: absolute;
   width: 48px;
@@ -91,4 +95,17 @@ body {
 #right {
   bottom: 0;
   left: 20.2em;
+}
+
+.controlCircle {
+  position: absolute;
+  width: 2in;
+  height: 2in;
+  background: rgba(255,255,255,0.1);
+  bottom: 0;
+  left: 0;
+}
+
+.show .tile {
+  outline: 1px solid lime;
 }

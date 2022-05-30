@@ -37,11 +37,10 @@ export class Game {
       dirY: 0,
       ...youPos,
     };
-    this.you.el = new TileElement(this.worldElement.el, {
-      x: this.you.x,
-      y: this.you.y,
-      type: typeIndex.w,
-    });
+    this.you.el = new TileElement(
+      {x: this.you.x, y: this.you.y, type: typeIndex.w},
+      this.worldElement
+    );
     for (const key of ['x', 'y', 'dirX', 'dirY']) {
       this.you['p' + key] = this.you[key];
     }
@@ -82,7 +81,7 @@ export class Game {
   addTile(tile) {
     this.world[`${tile.x}_${tile.y}`] = {
       ...tile,
-      el: new TileElement(this.worldElement.el, tile),
+      el: new TileElement(tile, this.worldElement),
     };
   }
   deleteTile(tile) {
@@ -179,21 +178,26 @@ export class Game {
       const y = Math.round(you.y + Math.sin(angle));
       const b = this.getTile(x, y);
       if (b?.type.edible) {
-        if (b.hp === undefined) b.hp = b.type.hp;
-        b.hp -= this.eatSpeed;
+        this.damage(b, this.eatSpeed);
         this.setHealth(this.health + b.type.healing * this.eatSpeed);
         this.setPoop(this.poop + b.type.makePoop * this.eatSpeed);
-        if (b.hp <= 0) return this.deleteTile(b);
       }
-      if (b?.type.diggable) {
-        if (b.hp === undefined) b.hp = b.type.hp;
-        b.hp -= this.digSpeed;
-        if (b.hp <= 0) {
-          if (b.type.dropsLoot) {
-            this.changeTileType(b, this.typeIndex[b.type.dropsLoot]);
-          } else this.deleteTile(b);
-        }
-      }
+      if (b?.type.diggable) this.damage(b, this.digSpeed);
+    }
+  }
+  // returns true if block is destroyed
+  damage(block, amount) {
+    if (!block?.type.hp) return;
+    if (block.hp === undefined) block.hp = block.type.hp;
+
+    block.hp -= amount;
+
+    if (block.hp <= 0) {
+      if (block.type.dropsLoot) {
+        this.changeTileType(block, this.typeIndex[block.type.dropsLoot]);
+      } else this.deleteTile(block);
+
+      return true;
     }
   }
   resolveCollision(block) {
@@ -224,9 +228,18 @@ export class Game {
 
       // fall damage
       if (you.ys > this.fallDamageMin) {
-        this.setHealth(
-          this.health - (you.ys - this.fallDamageMin) * this.fallDamageMult
+        const damage = (you.ys - this.fallDamageMin) * this.fallDamageMult;
+        this.setHealth(this.health - damage);
+
+        const blockDamage = Math.min(
+          damage,
+          block.hp || Infinity,
+          block.type.hp || Infinity
         );
+        if (this.damage(block, damage)) {
+          you.ys /= 1 + blockDamage;
+          return;
+        }
       }
       you.ys = 0;
     }
@@ -332,5 +345,8 @@ export class Game {
       this.addTile({x, y, type: typeIndex.p});
       this.setPoop(this.poop - 1);
     }
+  }
+  updateViewport() {
+    this.worldElement.update(this.you);
   }
 }

@@ -1,5 +1,5 @@
 import {indexBy} from '../utils';
-import {ControlButton} from './elements';
+import {ControlCircle} from './elements';
 
 const showControls = false;
 
@@ -32,9 +32,11 @@ export class Controls {
     });
 
     if (showControls) {
-      for (const {id} of controls) {
-        new ControlButton(rootElement, id, this.pressing);
-      }
+      // for (const {id} of controls) {
+      //   new ControlButton(rootElement, id, this.pressing);
+      // }
+
+      new ControlCircle(rootElement, this.pressing, 400);
     }
   }
   getPressing() {

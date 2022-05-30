@@ -64,3 +64,8 @@ nav a.active {
     width: 50%;
     left: 25%;
 }
+
+.statsContainer {
+    top: 32px;
+    left: 400px;
+}

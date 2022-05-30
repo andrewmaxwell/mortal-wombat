@@ -33,3 +33,6 @@ button:hover, a:hover {
 textarea {
   font: inherit;
 }
+
+table td {padding: 0 5px}
+th {text-align: left}
