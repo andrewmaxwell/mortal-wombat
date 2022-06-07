@@ -9,7 +9,7 @@ const controls = [
   {id: 'up', key: 'W', code: 'KeyW'},
   {id: 'down', key: 'S', code: 'KeyS'},
   {id: 'poop', key: 'P', code: 'KeyP'},
-  {id: 'attack', key: 'Space', code: 'Space'},
+  {id: 'space', key: 'Space', code: 'Space'},
   {id: 'reload', key: 'R', code: 'KeyR'},
 ];
 

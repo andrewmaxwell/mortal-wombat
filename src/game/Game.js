@@ -1,4 +1,10 @@
-import {Hud, TileElement, VersionElement, WorldElement} from './elements';
+import {
+  Dialog,
+  Hud,
+  TileElement,
+  VersionElement,
+  WorldElement,
+} from './elements';
 
 const MAX_RENDER_DIST = 32; // don't move things more than this many tiles away
 const MOVEMENT_THRESHOLD = 0.1; // don't move you or the viewport if you move less than this much of a tile
@@ -22,21 +28,14 @@ export class Game {
     this.rootElement = rootElement;
     this.worldElement = new WorldElement(rootElement);
     this.hud = new Hud(rootElement);
+    this.dialog = new Dialog(rootElement);
     new VersionElement(rootElement);
 
     this.world = {};
     for (const key in world) this.addTile(world[key]);
 
     this.typeIndex = typeIndex;
-    this.you = {
-      x: 0,
-      y: 0,
-      xs: 0,
-      ys: 0,
-      dirX: 1,
-      dirY: 0,
-      ...youPos,
-    };
+    this.you = {x: 0, y: 0, xs: 0, ys: 0, dirX: 1, dirY: 0, ...youPos};
     this.you.el = new TileElement(
       {x: this.you.x, y: this.you.y, type: typeIndex.w},
       this.worldElement
@@ -147,7 +146,7 @@ export class Game {
       const block = world[fx(you.x) + '_' + fy(you.y)];
       if (!block) continue;
       if (block.type.collectible) {
-        this.collect(block.type);
+        this.collect(block.type.id);
         return this.deleteTile(block);
       }
       if (block.type.healing < 0) {
@@ -172,7 +171,7 @@ export class Game {
       you.pdirY = you.dirY;
     }
 
-    if (pressing.attack) {
+    if (pressing.space) {
       const angle = Math.atan2(you.dirY, you.dirX);
       const x = Math.round(you.x + Math.cos(angle));
       const y = Math.round(you.y + Math.sin(angle));
@@ -327,13 +326,19 @@ export class Game {
         '<div class="youDead"><h1>you dead</h1><h2>press R to try again</h2></div>';
     }
   }
+  numCollected(id) {
+    return this.collectibles[id] || 0;
+  }
+  setCollectible(typeId, amount) {
+    this.collectibles[typeId] = amount;
+    this.hud.updateCounter(this.typeIndex[typeId], amount);
+  }
+  collect(typeId) {
+    this.setCollectible(typeId, this.numCollected(typeId) + 1);
+  }
   setPoop(poop) {
     this.poop = Math.max(0, Math.min(this.maxPoop, poop));
     this.hud.poopBar.update(this.poop, this.maxPoop, 'saddleBrown');
-  }
-  collect(type) {
-    this.collectibles[type.id] = (this.collectibles[type.id] || 0) + 1;
-    this.hud.updateCounter(type, this.collectibles[type.id]);
   }
   makePoop() {
     if (this.poop < 1) return;
@@ -348,5 +353,12 @@ export class Game {
   }
   updateViewport() {
     this.worldElement.update(this.you);
+  }
+  interact() {
+    const {you} = this;
+    const angle = Math.atan2(you.dirY, you.dirX);
+    const x = Math.round(you.x + Math.cos(angle));
+    const y = Math.round(you.y + Math.sin(angle));
+    this.getTile(x, y)?.onSpace(this);
   }
 }

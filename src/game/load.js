@@ -1,5 +1,6 @@
 import {defaultWorldId, loadData} from '../firebase';
 import {isGuid} from '../utils';
+import {compile} from './compile';
 import {Game} from './Game';
 
 export const load = async (rootElement) => {
@@ -27,12 +28,12 @@ export const load = async (rootElement) => {
     typeIndex[type.id] = type;
   }
   for (const key in world) {
-    const {x, y, tileType} = world[key];
+    const {x, y, tileType, onSpace} = world[key];
     if (tileType === 'w') {
       you = {x, y};
       delete world[key];
     } else if (typeIndex[tileType]) {
-      world[key] = {x, y, type: typeIndex[tileType]};
+      world[key] = {x, y, type: typeIndex[tileType], onSpace: compile(onSpace)};
     } else {
       delete world[key];
     }

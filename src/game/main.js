@@ -14,7 +14,7 @@ const loop = () => {
       isPaused = false;
       document.body.style.opacity = 1;
     }
-    game.iterate(controls.getPressing());
+    if (!game.dialog.isOpen) game.iterate(controls.getPressing());
   } else if (!isPaused) {
     isPaused = true;
     document.body.style.opacity = 0.5;
@@ -27,7 +27,13 @@ const init = async () => {
   controls = new Controls(
     {
       onPress: (id) => {
-        if (id === 'poop') game.makePoop();
+        if (game.dialog.isOpen) {
+          if (id === 'space' && game.dialog.hasChoices()) game.dialog.choose();
+          else game.dialog.next();
+        } else {
+          if (id === 'poop') game.makePoop();
+          else if (id === 'space') game.interact();
+        }
       },
     },
     rootElement

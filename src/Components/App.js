@@ -24,6 +24,7 @@ import {HereNow} from './HereNow';
 import {MyWorlds} from './MyWorlds';
 import {Stats} from './Stats';
 import {defaultWorldId} from '../firebase';
+import {TileLogic} from './TileLogic';
 
 const zoomAmt = 2;
 
@@ -69,6 +70,7 @@ export const App = () => {
   const [selectedTileTypeId, setSelectedTileTypeId] = useState();
   const {xCoord, yCoord, setXCoord, setYCoord} = useCoords(0, 0);
   const [scale, setScale] = useState(32);
+  const [tileLogicCoords, setTileLogicCoords] = useState();
 
   // firebase state
   const user = useUser();
@@ -180,6 +182,19 @@ export const App = () => {
             </Pane>
           )}
 
+          {tileLogicCoords && (
+            <Pane
+              label="Tile Logic"
+              className="tileLogicContainer"
+              hide={() => setTileLogicCoords()}
+            >
+              <TileLogic
+                tile={world[`${tileLogicCoords.x}_${tileLogicCoords.y}`]}
+                {...{worldId, onError}}
+              />
+            </Pane>
+          )}
+
           {tileTypes && (
             <div className="toolContainer">
               <Toolbar
@@ -209,6 +224,8 @@ export const App = () => {
                   user,
                   cursors,
                   userIndex,
+                  tileLogicCoords,
+                  setTileLogicCoords,
                 }}
               />
             </div>

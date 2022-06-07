@@ -13,6 +13,7 @@ j: jewel,
 k: koala,
 a: water,
 o: polymer
+n: npc
 
 */
 

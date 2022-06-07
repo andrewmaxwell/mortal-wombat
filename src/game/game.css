@@ -109,3 +109,23 @@ body {
 .show .tile {
   outline: 1px solid lime;
 }
+
+.dialog {
+  font-size: 2em;
+  position: fixed;
+  top: 70%;
+  width: 100%;
+  text-align: center;
+}
+
+.dialog .dialogContainer {
+  text-align: left;
+  display: inline-block;
+  padding: 30px;
+  background: rgb(0,0,0,0.8);
+  max-width: 50%;
+}
+
+.dialog li.selected {
+  color: lime
+}

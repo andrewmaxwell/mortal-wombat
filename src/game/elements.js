@@ -152,6 +152,64 @@ export class VersionElement extends Element {
   }
 }
 
+export class Dialog extends Element {
+  constructor(parentElement) {
+    super();
+    this.el.classList.add('dialog');
+
+    this.div = document.createElement('div');
+    this.div.classList.add('dialogContainer');
+    this.el.append(this.div);
+
+    this.hide();
+    parentElement.append(this.el);
+  }
+  say(text) {
+    this.text = text;
+    this.choices = [];
+    this.choiceIndex = 0;
+    this.render();
+    this.el.style.display = 'block';
+    this.isOpen = true;
+  }
+  choice(text, action) {
+    this.choices.push({text, action});
+    this.render();
+  }
+  hasChoices() {
+    return this.choices.length > 0;
+  }
+  next() {
+    if (this.choices.length) {
+      this.choiceIndex = (this.choiceIndex + 1) % this.choices.length;
+      this.render();
+    } else {
+      this.hide();
+    }
+  }
+  render() {
+    this.div.innerHTML = `
+    <div>${this.text}</div>
+    <ul>
+    ${this.choices
+      .map(
+        ({text}, i) =>
+          `<li ${i === this.choiceIndex ? `class="selected"` : ''}>${text}</li>`
+      )
+      .join('')}
+        </ul>
+        `;
+  }
+  choose() {
+    this.hide();
+    this.choices[this.choiceIndex].action();
+  }
+  hide() {
+    this.el.style.display = 'none';
+    this.isOpen = false;
+  }
+}
+
 export class ControlButton extends Element {
   constructor(parentElement, id, pressing) {
     super();

@@ -69,3 +69,8 @@ nav a.active {
     top: 32px;
     left: 400px;
 }
+
+.tileLogicContainer {
+    top: 100px;
+    right: 0;
+}

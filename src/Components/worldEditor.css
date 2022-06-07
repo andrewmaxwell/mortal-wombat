@@ -10,10 +10,14 @@
   height: 32px;
 }
 
-.world .ghost {
+.world .ghost.tile {
   opacity: 0.5;
   outline: 2px dashed white;
   pointer-events: none;
+}
+
+.world .selected.tile {
+  outline: 3px dashed lime;
 }
 
 .cursorView {

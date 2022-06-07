@@ -9,6 +9,16 @@ export const Toolbar = ({
   setShowTileTypeEditor,
 }) => (
   <div className="toolBar">
+    <div
+      className="tileType"
+      onClick={() => {
+        setShowTileTypeEditor(false);
+        setSelectedTileTypeId();
+      }}
+    >
+      <label>None</label>
+    </div>
+
     {Object.values(tileTypes)
       .sort((a, b) => a.order - b.order)
       .map((type) => (

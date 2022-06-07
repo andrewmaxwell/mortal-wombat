@@ -1,25 +1,11 @@
-import {getAuth} from 'firebase/auth';
-import {serverTimestamp} from 'firebase/database';
 import {memo, useCallback, useMemo, useRef} from 'react';
-import {update} from '../firebase';
 import {setCursor} from '../hooks/useCursors';
 import {indexBy, objToArr} from '../utils';
 import {getBackground} from '../utils/getBackground';
+import {saveTile} from '../utils/saveTile';
+import {timeAgo} from '../utils/timeAgo';
 import {CSS_SIZE, Cursors} from './Cursors';
 import './worldEditor.css';
-
-const placeTile = (worldId, x, y, id, user, onError) =>
-  update(
-    {
-      [`worlds/${worldId}/world/${x}_${y}`]:
-        id === '_delete'
-          ? null
-          : {x, y, tileType: id, user: user.email, tstamp: serverTimestamp()},
-      [`worlds/${worldId}/lastEdited`]: serverTimestamp(),
-      [`worlds/${worldId}/lastEditedBy`]: getAuth().currentUser.email,
-    },
-    onError
-  );
 
 const getCoords = (e, scale, xCoord, yCoord) => ({
   x: Math.floor((e.clientX - innerWidth / 2) / scale) + xCoord,
@@ -29,11 +15,10 @@ const getCoords = (e, scale, xCoord, yCoord) => ({
 const getTitle = (user, tstamp, userIndex) => {
   if (!user || !tstamp) return '';
   const name = userIndex[user]?.name || user;
-  const date = new Date(tstamp).toLocaleString();
-  return `Placed by ${name} on ${date}`;
+  return `Placed by ${name} ${timeAgo(Date.now() - tstamp)}`;
 };
 
-const Tiles = ({world, tileTypeIndex, userIndex}) =>
+const Tiles = ({world, tileTypeIndex, userIndex, setTileLogicCoords}) =>
   Object.entries(world).map(([key, {x, y, tileType, user, tstamp}]) => (
     <div
       key={key}
@@ -43,6 +28,7 @@ const Tiles = ({world, tileTypeIndex, userIndex}) =>
         transform: `translate(${x * CSS_SIZE}px, ${y * CSS_SIZE}px)`,
         background: getBackground(tileTypeIndex[tileType]),
       }}
+      onDoubleClick={() => setTileLogicCoords({x, y})}
     />
   ));
 
@@ -60,6 +46,8 @@ export const WorldEditor = ({
   user,
   cursors,
   userIndex,
+  tileLogicCoords,
+  setTileLogicCoords,
 }) => {
   // using a ref is much more performant than keeping mouse coords in state
   const ghostRef = useRef();
@@ -100,7 +88,7 @@ export const WorldEditor = ({
       const currentType = world[`${x}_${y}`]?.tileType;
       const t = e.shiftKey ? '_delete' : selectedTileTypeId;
       if (t && (currentType || t !== '_delete') && currentType !== t) {
-        placeTile(worldId, x, y, t, user, onError);
+        saveTile(worldId, {x, y, tileType: t}, onError);
       }
     }
   };
@@ -136,7 +124,7 @@ export const WorldEditor = ({
       >
         <Cursors cursors={cursors} userIndex={userIndex} scale={scale} />
 
-        <TilesMemo {...{world, tileTypeIndex, userIndex}} />
+        <TilesMemo {...{world, tileTypeIndex, userIndex, setTileLogicCoords}} />
 
         {selectedTileTypeId && (
           <div
@@ -145,7 +133,17 @@ export const WorldEditor = ({
             style={{
               background: getBackground(tileTypeIndex[selectedTileTypeId]),
             }}
-          ></div>
+          />
+        )}
+        {tileLogicCoords && (
+          <div
+            style={{
+              transform: `translate(${tileLogicCoords.x * CSS_SIZE}px, ${
+                tileLogicCoords.y * CSS_SIZE
+              }px)`,
+            }}
+            className="selected tile"
+          />
         )}
       </div>
     </div>
