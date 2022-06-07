@@ -317,7 +317,7 @@ export class Game {
   setHealth(health) {
     this.health = Math.max(0, Math.min(this.maxHealth, health));
     this.hud.healthBar.update(
-      this.health,
+      Math.ceil(this.health),
       this.maxHealth,
       this.health > 30 ? 'green' : 'red'
     );
@@ -338,7 +338,7 @@ export class Game {
   }
   setPoop(poop) {
     this.poop = Math.max(0, Math.min(this.maxPoop, poop));
-    this.hud.poopBar.update(this.poop, this.maxPoop, 'saddleBrown');
+    this.hud.poopBar.update(Math.floor(this.poop), this.maxPoop, 'saddleBrown');
   }
   makePoop() {
     if (this.poop < 1) return;
@@ -359,6 +359,6 @@ export class Game {
     const angle = Math.atan2(you.dirY, you.dirX);
     const x = Math.round(you.x + Math.cos(angle));
     const y = Math.round(you.y + Math.sin(angle));
-    this.getTile(x, y)?.onSpace(this);
+    this.getTile(x, y)?.onSpace?.(this);
   }
 }

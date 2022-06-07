@@ -105,7 +105,7 @@ class BarElement extends Element {
     const el = this.valueElement;
     el.style.background = color;
     el.style.width = (100 * value) / maxValue + '%';
-    el.innerText = Math.ceil(value);
+    el.innerText = value;
   }
 }
 
