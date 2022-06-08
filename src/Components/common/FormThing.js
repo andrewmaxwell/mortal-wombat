@@ -1,6 +1,4 @@
-import {lazy, Suspense} from 'react';
-
-const Editor = lazy(() => import('@monaco-editor/react'));
+import Editor from '@monaco-editor/react';
 
 const TextField = ({value = '', onChange}) => (
   <input type="text" value={value} onChange={(e) => onChange(e.target.value)} />
@@ -35,16 +33,14 @@ const Select = ({value, onChange, options}) => (
 
 // TODO: add code validation
 const Code = ({value, onChange}) => (
-  <Suspense fallback="Loading...">
-    <Editor
-      height={400}
-      width={800}
-      theme="vs-dark"
-      defaultLanguage="javascript"
-      value={value}
-      onChange={onChange}
-    />
-  </Suspense>
+  <Editor
+    height={400}
+    width={800}
+    theme="vs-dark"
+    defaultLanguage="javascript"
+    value={value}
+    onChange={onChange}
+  />
 );
 
 const inputs = {
