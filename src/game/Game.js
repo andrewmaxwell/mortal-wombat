@@ -31,6 +31,7 @@ export class Game {
     this.dialog = new Dialog(rootElement);
     this.sounds = {
       j: new Audio('https://static.heironimus.info/sound/PinkFast.ogg'),
+      p: new Audio('https://static.heironimus.info/sound/SloppyPoopSoft.ogg'),
     };
     new VersionElement(rootElement);
 
@@ -353,6 +354,7 @@ export class Game {
     if ((x !== you.x || y !== you.y) && !world[`${x}_${y}`]) {
       this.addTile({x, y, type: typeIndex.p});
       this.setPoop(this.poop - 1);
+      this.sounds.p.play();
     }
   }
   updateViewport() {
