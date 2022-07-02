@@ -29,9 +29,9 @@ export class Game {
     this.worldElement = new WorldElement(rootElement);
     this.hud = new Hud(rootElement);
     this.dialog = new Dialog(rootElement);
-    this.collectableSound = new Audio(
-      'https://static.heironimus.info/sound/PinkFast.ogg'
-    );
+    this.sounds = {
+      j: new Audio('https://static.heironimus.info/sound/PinkFast.ogg'),
+    };
     new VersionElement(rootElement);
 
     this.world = {};
@@ -338,7 +338,7 @@ export class Game {
   }
   collect(typeId) {
     this.setCollectible(typeId, this.numCollected(typeId) + 1);
-    this.collectableSound.play();
+    this.sounds[typeId].play();
   }
   setPoop(poop) {
     this.poop = Math.max(0, Math.min(this.maxPoop, poop));
