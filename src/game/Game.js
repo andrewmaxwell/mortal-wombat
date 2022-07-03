@@ -187,6 +187,7 @@ export class Game {
         this.damage(b, this.eatSpeed);
         this.setHealth(this.health + b.type.healing * this.eatSpeed);
         this.setPoop(this.poop + b.type.makePoop * this.eatSpeed);
+        this.sounds[b.type.id]?.play();
       }
       if (b?.type.diggable) this.damage(b, this.digSpeed);
     }
