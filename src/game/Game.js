@@ -213,6 +213,7 @@ export class Game {
 
     if (block.type.healing < 0) {
       this.setHealth(this.health + Number(block.type.healing));
+      this.sounds[block.type.id]?.play();
       you.y -= 0.1;
     }
 
