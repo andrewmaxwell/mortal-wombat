@@ -31,6 +31,12 @@ const fields = [
     info: 'The image. uhduhhhh',
   },
   {
+    prop: 'sound',
+    label: 'Sound URL',
+    type: 'text',
+    info: 'URL for the sound that should be played.',
+  },
+  {
     prop: 'color',
     label: 'Color',
     type: 'text',

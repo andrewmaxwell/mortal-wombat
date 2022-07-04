@@ -29,6 +29,13 @@ export class Game {
     this.worldElement = new WorldElement(rootElement);
     this.hud = new Hud(rootElement);
     this.dialog = new Dialog(rootElement);
+
+    // Setup sounds for blocks that support sound.
+    this.sounds = {};
+    Object.values(typeIndex)
+      .filter((type) => type.sound)
+      .forEach((type) => (this.sounds[type.id] = new Audio(type.sound)));
+
     new VersionElement(rootElement);
 
     this.world = {};
@@ -180,6 +187,7 @@ export class Game {
         this.damage(b, this.eatSpeed);
         this.setHealth(this.health + b.type.healing * this.eatSpeed);
         this.setPoop(this.poop + b.type.makePoop * this.eatSpeed);
+        this.sounds[b.type.id]?.play();
       }
       if (b?.type.diggable) this.damage(b, this.digSpeed);
     }
@@ -335,6 +343,7 @@ export class Game {
   }
   collect(typeId) {
     this.setCollectible(typeId, this.numCollected(typeId) + 1);
+    this.sounds[typeId]?.play();
   }
   setPoop(poop) {
     this.poop = Math.max(0, Math.min(this.maxPoop, poop));
@@ -349,6 +358,7 @@ export class Game {
     if ((x !== you.x || y !== you.y) && !world[`${x}_${y}`]) {
       this.addTile({x, y, type: typeIndex.p});
       this.setPoop(this.poop - 1);
+      this.sounds.p?.play();
     }
   }
   updateViewport() {
