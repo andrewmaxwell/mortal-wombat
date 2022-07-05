@@ -35,6 +35,8 @@ export class Game {
     Object.values(typeIndex)
       .filter((type) => type.sound)
       .forEach((type) => (this.sounds[type.id] = new Audio(type.sound)));
+    if (config.fallDamageSound)
+      this.sounds.fallDamage = new Audio(config.fallDamageSound);
 
     new VersionElement(rootElement);
 
@@ -213,6 +215,7 @@ export class Game {
 
     if (block.type.healing < 0) {
       this.setHealth(this.health + Number(block.type.healing));
+      this.sounds[block.type.id]?.play();
       you.y -= 0.1;
     }
 
@@ -237,6 +240,7 @@ export class Game {
       if (you.ys > this.fallDamageMin) {
         const damage = (you.ys - this.fallDamageMin) * this.fallDamageMult;
         this.setHealth(this.health - damage);
+        this.sounds.fallDamage?.play();
 
         const blockDamage = Math.min(
           damage,

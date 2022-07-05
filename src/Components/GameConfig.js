@@ -89,6 +89,12 @@ const fields = [
     info: 'This is multiplied by (your speed - Fall Dmg Threshold) when you land to calculate the damage you take.',
   },
   {
+    prop: 'fallDamageSound',
+    label: 'Fall Dmg Sound',
+    type: 'text',
+    info: 'This is the URL for the sound that should be played if fall damage occurs.',
+  },
+  {
     prop: 'swimPower',
     label: 'Swim Power',
     type: 'number',
