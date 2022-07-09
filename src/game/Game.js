@@ -103,6 +103,7 @@ export class Game {
   }
   moveWombat(pressing) {
     const {you, world} = this;
+    const lastSwimBlock = you.swimBlock;
 
     if (this.health <= 0) {
       if (pressing.reload) location.reload();
@@ -162,6 +163,9 @@ export class Game {
         damage = Math.max(damage, -block.type.healing);
       }
       if (block.type.moveStyle === 'liquid') you.swimBlock = block;
+    }
+    if (you.swimBlock && you.swimBlock !== lastSwimBlock) {
+      this.sounds[you.swimBlock.type.id]?.play();
     }
     if (damage) this.setHealth(this.health - damage);
 
