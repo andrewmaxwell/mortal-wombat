@@ -37,6 +37,8 @@ export class Game {
       .forEach((type) => (this.sounds[type.id] = new Audio(type.sound)));
     if (config.fallDamageSound)
       this.sounds.fallDamage = new Audio(config.fallDamageSound);
+    if (config.gameOverSound)
+      this.sounds.gameOver = new Audio(config.gameOverSound);
 
     new VersionElement(rootElement);
 
@@ -103,6 +105,7 @@ export class Game {
   }
   moveWombat(pressing) {
     const {you, world} = this;
+    const lastSwimBlock = you.swimBlock;
 
     if (this.health <= 0) {
       if (pressing.reload) location.reload();
@@ -162,6 +165,9 @@ export class Game {
         damage = Math.max(damage, -block.type.healing);
       }
       if (block.type.moveStyle === 'liquid') you.swimBlock = block;
+    }
+    if (you.swimBlock && you.swimBlock !== lastSwimBlock) {
+      this.sounds[you.swimBlock.type.id]?.play();
     }
     if (damage) this.setHealth(this.health - damage);
 
@@ -334,6 +340,7 @@ export class Game {
       this.health > 30 ? 'green' : 'red'
     );
     if (health <= 0) {
+      this.sounds.gameOver?.play();
       this.rootElement.innerHTML +=
         '<div class="youDead"><h1>you dead</h1><h2>press R to try again</h2></div>';
     }
