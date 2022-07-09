@@ -106,6 +106,12 @@ const fields = [
     type: 'number',
     info: 'How quickly does water slow you down?',
   },
+  {
+    prop: 'gameOverSound',
+    label: 'Game Over Sound',
+    type: 'text',
+    info: 'This is the URL for the sound that is played when the game is over.',
+  },
 ];
 
 export const GameConfig = ({onError}) => {

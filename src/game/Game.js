@@ -37,6 +37,8 @@ export class Game {
       .forEach((type) => (this.sounds[type.id] = new Audio(type.sound)));
     if (config.fallDamageSound)
       this.sounds.fallDamage = new Audio(config.fallDamageSound);
+    if (config.gameOverSound)
+      this.sounds.gameOver = new Audio(config.gameOverSound);
 
     new VersionElement(rootElement);
 
@@ -338,6 +340,7 @@ export class Game {
       this.health > 30 ? 'green' : 'red'
     );
     if (health <= 0) {
+      this.sounds.gameOver?.play();
       this.rootElement.innerHTML +=
         '<div class="youDead"><h1>you dead</h1><h2>press R to try again</h2></div>';
     }
