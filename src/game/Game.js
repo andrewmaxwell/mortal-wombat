@@ -39,6 +39,8 @@ export class Game {
       this.sounds.fallDamage = new Audio(config.fallDamageSound);
     if (config.gameOverSound)
       this.sounds.gameOver = new Audio(config.gameOverSound);
+    if (config.gameStartSound)
+      this.sounds.gameStart = new Audio(config.gameStartSound);
 
     new VersionElement(rootElement);
 
@@ -82,6 +84,7 @@ export class Game {
     this.setPoop(this.poop);
     this.you.el.update(this.you);
     this.worldElement.update(this.you);
+    this.sounds.gameStart?.play();
   }
   iterate(pressing) {
     this.moveWombat(pressing);
