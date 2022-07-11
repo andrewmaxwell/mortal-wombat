@@ -29,18 +29,7 @@ export class Game {
     this.worldElement = new WorldElement(rootElement);
     this.hud = new Hud(rootElement);
     this.dialog = new Dialog(rootElement);
-
-    // Setup sounds for blocks that support sound.
-    this.sounds = {};
-    Object.values(typeIndex)
-      .filter((type) => type.sound)
-      .forEach((type) => (this.sounds[type.id] = new Audio(type.sound)));
-    if (config.fallDamageSound)
-      this.sounds.fallDamage = new Audio(config.fallDamageSound);
-    if (config.gameOverSound)
-      this.sounds.gameOver = new Audio(config.gameOverSound);
-    if (config.gameStartSound)
-      this.sounds.gameStart = new Audio(config.gameStartSound);
+    this.sounds = this.buildSounds(config, typeIndex);
 
     new VersionElement(rootElement);
 
@@ -84,7 +73,23 @@ export class Game {
     this.setPoop(this.poop);
     this.you.el.update(this.you);
     this.worldElement.update(this.you);
-    this.sounds.gameStart?.play();
+    this.playSound('gameStart');
+  }
+  buildSounds(config, typeIndex) {
+    const sounds = {};
+    Object.values(typeIndex)
+      .filter((type) => type.sound)
+      .forEach((type) => (sounds[type.id] = new Audio(type.sound)));
+    Object.keys(config)
+      .filter((key) => key.endsWith('Sound') && config[key])
+      .forEach((key) => {
+        const soundName = key.substring(0, key.length - 'Sound'.length);
+        sounds[soundName] = new Audio(config[key]);
+      });
+    return sounds;
+  }
+  playSound(sound) {
+    this.sounds[sound]?.play();
   }
   iterate(pressing) {
     this.moveWombat(pressing);
@@ -170,7 +175,7 @@ export class Game {
       if (block.type.moveStyle === 'liquid') you.swimBlock = block;
     }
     if (you.swimBlock && you.swimBlock !== lastSwimBlock) {
-      this.sounds[you.swimBlock.type.id]?.play();
+      this.playSound(you.swimBlock.type.id);
     }
     if (damage) this.setHealth(this.health - damage);
 
@@ -198,7 +203,7 @@ export class Game {
         this.damage(b, this.eatSpeed);
         this.setHealth(this.health + b.type.healing * this.eatSpeed);
         this.setPoop(this.poop + b.type.makePoop * this.eatSpeed);
-        this.sounds[b.type.id]?.play();
+        this.playSound(b.type.id);
       }
       if (b?.type.diggable) this.damage(b, this.digSpeed);
     }
@@ -224,7 +229,7 @@ export class Game {
 
     if (block.type.healing < 0) {
       this.setHealth(this.health + Number(block.type.healing));
-      this.sounds[block.type.id]?.play();
+      this.playSound(block.type.id);
       you.y -= 0.1;
     }
 
@@ -249,7 +254,7 @@ export class Game {
       if (you.ys > this.fallDamageMin) {
         const damage = (you.ys - this.fallDamageMin) * this.fallDamageMult;
         this.setHealth(this.health - damage);
-        this.sounds.fallDamage?.play();
+        this.playSound('fallDamage');
 
         const blockDamage = Math.min(
           damage,
@@ -343,7 +348,7 @@ export class Game {
       this.health > 30 ? 'green' : 'red'
     );
     if (health <= 0) {
-      this.sounds.gameOver?.play();
+      this.playSound('gameOver');
       this.rootElement.innerHTML +=
         '<div class="youDead"><h1>you dead</h1><h2>press R to try again</h2></div>';
     }
@@ -357,7 +362,7 @@ export class Game {
   }
   collect(typeId) {
     this.setCollectible(typeId, this.numCollected(typeId) + 1);
-    this.sounds[typeId]?.play();
+    this.playSound(typeId);
   }
   setPoop(poop) {
     this.poop = Math.max(0, Math.min(this.maxPoop, poop));
@@ -372,7 +377,7 @@ export class Game {
     if ((x !== you.x || y !== you.y) && !world[`${x}_${y}`]) {
       this.addTile({x, y, type: typeIndex.p});
       this.setPoop(this.poop - 1);
-      this.sounds.p?.play();
+      this.playSound('p');
     }
   }
   updateViewport() {
