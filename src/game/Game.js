@@ -73,19 +73,25 @@ export class Game {
     this.setPoop(this.poop);
     this.you.el.update(this.you);
     this.worldElement.update(this.you);
-    this.playSound('gameStart');
   }
   buildSounds(config, typeIndex) {
     const sounds = {};
+
     Object.values(typeIndex)
       .filter((type) => type.sound)
       .forEach((type) => (sounds[type.id] = new Audio(type.sound)));
+
+    const soundSettingSuffix = 'Sound';
     Object.keys(config)
-      .filter((key) => key.endsWith('Sound') && config[key])
+      .filter((key) => key.endsWith(soundSettingSuffix) && config[key])
       .forEach((key) => {
-        const soundName = key.substring(0, key.length - 'Sound'.length);
+        const soundName = key.substring(
+          0,
+          key.length - soundSettingSuffix.length
+        );
         sounds[soundName] = new Audio(config[key]);
       });
+
     return sounds;
   }
   playSound(sound) {

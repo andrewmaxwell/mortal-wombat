@@ -107,12 +107,6 @@ const fields = [
     info: 'How quickly does water slow you down?',
   },
   {
-    prop: 'gameStartSound',
-    label: 'Game Start Sound',
-    type: 'text',
-    info: 'This is the URL for the sound that is played when the game is started.',
-  },
-  {
     prop: 'gameOverSound',
     label: 'Game Over Sound',
     type: 'text',
