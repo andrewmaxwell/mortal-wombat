@@ -18,6 +18,7 @@ const controlIndex = indexBy((c) => c.code, controls);
 export class Controls {
   constructor({onPress}, rootElement) {
     this.pressing = {};
+    this.onPress = onPress;
     const keydown = (e) => {
       if (controlIndex[e.code]) {
         this.pressing[controlIndex[e.code].id] = e.type === 'keydown';
@@ -40,6 +41,50 @@ export class Controls {
     }
   }
   getPressing() {
-    return this.pressing;
+    const gamepadState = this.getGamepadState();
+    if (!gamepadState) return this.pressing;
+
+    // Merge the keyboard state with the joystick state
+    const controlState = {...this.pressing};
+    if (gamepadState.action) controlState.space = true;
+    if (gamepadState.jump) controlState.up = true;
+    if (gamepadState.poop) {
+      controlState.poop = true;
+      this.onPress('poop');
+    }
+    if (gamepadState.left) controlState.left = true;
+    if (gamepadState.right) controlState.right = true;
+    if (gamepadState.down) controlState.down = true;
+
+    return controlState;
+  }
+  getGamepadState() {
+    const gamepad = this.getGamepad();
+    if (gamepad == null) return undefined;
+
+    const gamepadSettings = {
+      actionIndex: 0,
+      jumpIndex: 1,
+      poopIndex: 2,
+      xAxisIndex: 0,
+      yAxisIndex: 1,
+    };
+    return {
+      action: gamepad.buttons[gamepadSettings.actionIndex].pressed,
+      jump: gamepad.buttons[gamepadSettings.jumpIndex].pressed,
+      poop: gamepad.buttons[gamepadSettings.poopIndex].pressed,
+      left: gamepad.axes[gamepadSettings.xAxisIndex] <= -0.25,
+      right: gamepad.axes[gamepadSettings.xAxisIndex] >= 0.25,
+      down: gamepad.axes[gamepadSettings.yAxisIndex] >= 0.25,
+    };
+  }
+  getGamepad() {
+    const gamepads = navigator.getGamepads();
+    for (let index = 0; index < gamepads.length; index++) {
+      if (gamepads[index] != null && gamepads[index].connected) {
+        return gamepads[index];
+      }
+    }
+    return null;
   }
 }
