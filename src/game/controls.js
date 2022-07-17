@@ -19,6 +19,7 @@ export class Controls {
   constructor({onPress}, rootElement) {
     this.pressing = {};
     this.onPress = onPress;
+    this.lastPoop = false;
     const keydown = (e) => {
       if (controlIndex[e.code]) {
         this.pressing[controlIndex[e.code].id] = e.type === 'keydown';
@@ -53,7 +54,12 @@ export class Controls {
     if (gamepadState.jump || gamepadState.up) controlState.up = true;
     if (gamepadState.poop) {
       controlState.poop = true;
-      this.onPress('poop');
+      if (!this.lastPoop) {
+        this.lastPoop = true;
+        this.onPress('poop');
+      }
+    } else {
+      this.lastPoop = false;
     }
     if (gamepadState.left) controlState.left = true;
     if (gamepadState.right) controlState.right = true;
