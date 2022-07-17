@@ -19,8 +19,7 @@ export class Controls {
   constructor({onPress}, rootElement) {
     this.pressing = {};
     this.onPress = onPress;
-    this.lastPoop = false;
-    this.lastSpace = false;
+    this.lastGamepadState = {};
     const keydown = (e) => {
       if (controlIndex[e.code]) {
         this.pressing[controlIndex[e.code].id] = e.type === 'keydown';
@@ -50,27 +49,22 @@ export class Controls {
     const controlState = {...this.pressing};
     if (gamepadState.action) {
       controlState.space = true;
-      if (!this.lastSpace) {
-        this.lastSpace = true;
+      if (!this.lastGamepadState.action) {
         this.onPress('space');
       }
-    } else {
-      this.lastSpace = false;
     }
     if (gamepadState.jump || gamepadState.up) controlState.up = true;
     if (gamepadState.poop) {
       controlState.poop = true;
-      if (!this.lastPoop) {
-        this.lastPoop = true;
+      if (!this.lastGamepadState.poop) {
         this.onPress('poop');
       }
-    } else {
-      this.lastPoop = false;
     }
     if (gamepadState.left) controlState.left = true;
     if (gamepadState.right) controlState.right = true;
     if (gamepadState.down) controlState.down = true;
 
+    this.lastGamepadState = gamepadState;
     return controlState;
   }
   getGamepadState() {
