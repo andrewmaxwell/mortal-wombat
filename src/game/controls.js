@@ -20,6 +20,7 @@ export class Controls {
     this.pressing = {};
     this.onPress = onPress;
     this.lastPoop = false;
+    this.lastSpace = false;
     const keydown = (e) => {
       if (controlIndex[e.code]) {
         this.pressing[controlIndex[e.code].id] = e.type === 'keydown';
@@ -49,7 +50,12 @@ export class Controls {
     const controlState = {...this.pressing};
     if (gamepadState.action) {
       controlState.space = true;
-      this.onPress('space');
+      if (!this.lastSpace) {
+        this.lastSpace = true;
+        this.onPress('space');
+      }
+    } else {
+      this.lastSpace = false;
     }
     if (gamepadState.jump || gamepadState.up) controlState.up = true;
     if (gamepadState.poop) {
