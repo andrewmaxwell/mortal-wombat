@@ -46,8 +46,11 @@ export class Controls {
 
     // Merge the keyboard state with the joystick state
     const controlState = {...this.pressing};
-    if (gamepadState.action) controlState.space = true;
-    if (gamepadState.jump) controlState.up = true;
+    if (gamepadState.action) {
+      controlState.space = true;
+      this.onPress('space');
+    }
+    if (gamepadState.jump || gamepadState.up) controlState.up = true;
     if (gamepadState.poop) {
       controlState.poop = true;
       this.onPress('poop');
@@ -75,7 +78,8 @@ export class Controls {
       poop: gamepad.buttons[gamepadSettings.poopIndex].pressed,
       left: gamepad.axes[gamepadSettings.xAxisIndex] <= -0.25,
       right: gamepad.axes[gamepadSettings.xAxisIndex] >= 0.25,
-      down: gamepad.axes[gamepadSettings.yAxisIndex] >= 0.25,
+      down: gamepad.axes[gamepadSettings.yAxisIndex] >= 0.5,
+      up: gamepad.axes[gamepadSettings.yAxisIndex] <= -0.5,
     };
   }
   getGamepad() {
