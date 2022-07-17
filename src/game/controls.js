@@ -47,22 +47,20 @@ export class Controls {
 
     // Merge the keyboard state with the joystick state
     const controlState = {...this.pressing};
-    if (gamepadState.action) {
-      controlState.space = true;
-      if (!this.lastGamepadState.action) {
-        this.onPress('space');
+
+    const gamepadPress = (id) => {
+      controlState[id] = true;
+      if (!this.lastGamepadState[id]) {
+        this.onPress(id);
       }
-    }
-    if (gamepadState.jump || gamepadState.up) controlState.up = true;
-    if (gamepadState.poop) {
-      controlState.poop = true;
-      if (!this.lastGamepadState.poop) {
-        this.onPress('poop');
-      }
-    }
-    if (gamepadState.left) controlState.left = true;
-    if (gamepadState.right) controlState.right = true;
-    if (gamepadState.down) controlState.down = true;
+    };
+
+    if (gamepadState.space) gamepadPress('space');
+    if (gamepadState.up) gamepadPress('up');
+    if (gamepadState.poop) gamepadPress('poop');
+    if (gamepadState.left) gamepadPress('left');
+    if (gamepadState.right) gamepadPress('right');
+    if (gamepadState.down) gamepadPress('down');
 
     this.lastGamepadState = gamepadState;
     return controlState;
@@ -72,20 +70,21 @@ export class Controls {
     if (gamepad == null) return undefined;
 
     const gamepadSettings = {
-      actionIndex: 0,
+      spaceIndex: 0,
       jumpIndex: 1,
       poopIndex: 2,
       xAxisIndex: 0,
       yAxisIndex: 1,
     };
     return {
-      action: gamepad.buttons[gamepadSettings.actionIndex].pressed,
-      jump: gamepad.buttons[gamepadSettings.jumpIndex].pressed,
+      space: gamepad.buttons[gamepadSettings.spaceIndex].pressed,
       poop: gamepad.buttons[gamepadSettings.poopIndex].pressed,
       left: gamepad.axes[gamepadSettings.xAxisIndex] <= -0.25,
       right: gamepad.axes[gamepadSettings.xAxisIndex] >= 0.25,
       down: gamepad.axes[gamepadSettings.yAxisIndex] >= 0.5,
-      up: gamepad.axes[gamepadSettings.yAxisIndex] <= -0.5,
+      up:
+        gamepad.axes[gamepadSettings.yAxisIndex] <= -0.5 ||
+        gamepad.buttons[gamepadSettings.jumpIndex].pressed,
     };
   }
   getGamepad() {
