@@ -18,6 +18,8 @@ const controlIndex = indexBy((c) => c.code, controls);
 export class Controls {
   constructor({onPress}, rootElement) {
     this.pressing = {};
+    this.onPress = onPress;
+    this.lastGamepadState = {};
     const keydown = (e) => {
       if (controlIndex[e.code]) {
         this.pressing[controlIndex[e.code].id] = e.type === 'keydown';
@@ -40,6 +42,58 @@ export class Controls {
     }
   }
   getPressing() {
-    return this.pressing;
+    const gamepadState = this.getGamepadState();
+    if (!gamepadState) return this.pressing;
+
+    // Merge the keyboard state with the joystick state
+    const controlState = {...this.pressing};
+
+    const gamepadPress = (id) => {
+      controlState[id] = true;
+      if (!this.lastGamepadState[id]) {
+        this.onPress(id);
+      }
+    };
+
+    if (gamepadState.space) gamepadPress('space');
+    if (gamepadState.up) gamepadPress('up');
+    if (gamepadState.poop) gamepadPress('poop');
+    if (gamepadState.left) gamepadPress('left');
+    if (gamepadState.right) gamepadPress('right');
+    if (gamepadState.down) gamepadPress('down');
+
+    this.lastGamepadState = gamepadState;
+    return controlState;
+  }
+  getGamepadState() {
+    const gamepad = this.getGamepad();
+    if (gamepad == null) return undefined;
+
+    const gamepadSettings = {
+      spaceIndex: 0,
+      jumpIndex: 1,
+      poopIndex: 2,
+      xAxisIndex: 0,
+      yAxisIndex: 1,
+    };
+    return {
+      space: gamepad.buttons[gamepadSettings.spaceIndex].pressed,
+      poop: gamepad.buttons[gamepadSettings.poopIndex].pressed,
+      left: gamepad.axes[gamepadSettings.xAxisIndex] <= -0.25,
+      right: gamepad.axes[gamepadSettings.xAxisIndex] >= 0.25,
+      down: gamepad.axes[gamepadSettings.yAxisIndex] >= 0.5,
+      up:
+        gamepad.axes[gamepadSettings.yAxisIndex] <= -0.5 ||
+        gamepad.buttons[gamepadSettings.jumpIndex].pressed,
+    };
+  }
+  getGamepad() {
+    const gamepads = navigator.getGamepads();
+    for (let index = 0; index < gamepads.length; index++) {
+      if (gamepads[index] != null && gamepads[index].connected) {
+        return gamepads[index];
+      }
+    }
+    return null;
   }
 }

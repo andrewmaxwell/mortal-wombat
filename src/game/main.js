@@ -14,7 +14,8 @@ const loop = () => {
       isPaused = false;
       document.body.style.opacity = 1;
     }
-    if (!game.dialog.isOpen) game.iterate(controls.getPressing());
+    const controlState = controls.getPressing();
+    if (!game.dialog.isOpen) game.iterate(controlState);
   } else if (!isPaused) {
     isPaused = true;
     document.body.style.opacity = 0.5;
