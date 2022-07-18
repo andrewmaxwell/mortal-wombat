@@ -16,8 +16,9 @@ const controls = [
 const controlIndex = indexBy((c) => c.code, controls);
 
 export class Controls {
-  constructor({onPress}, rootElement) {
+  constructor({onPress}, rootElement, additionalControls) {
     this.pressing = {};
+    this.additionalControls = additionalControls || [];
     const keydown = (e) => {
       if (controlIndex[e.code]) {
         this.pressing[controlIndex[e.code].id] = e.type === 'keydown';
@@ -40,6 +41,10 @@ export class Controls {
     }
   }
   getPressing() {
-    return this.pressing;
+    let pressing = this.pressing;
+    this.additionalControls.forEach((control) => {
+      pressing = control.getPressing(pressing);
+    });
+    return pressing;
   }
 }

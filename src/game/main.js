@@ -1,5 +1,6 @@
 import {Controls} from './controls';
 import './game.css';
+import {GamepadControls} from './gamepadControls';
 import {load} from './load';
 
 let game,
@@ -14,7 +15,8 @@ const loop = () => {
       isPaused = false;
       document.body.style.opacity = 1;
     }
-    if (!game.dialog.isOpen) game.iterate(controls.getPressing());
+    const controlState = controls.getPressing();
+    if (!game.dialog.isOpen) game.iterate(controlState);
   } else if (!isPaused) {
     isPaused = true;
     document.body.style.opacity = 0.5;
@@ -24,20 +26,18 @@ const loop = () => {
 
 const init = async () => {
   game = await load(rootElement);
-  controls = new Controls(
-    {
-      onPress: (id) => {
-        if (game.dialog.isOpen) {
-          if (id === 'space' && game.dialog.hasChoices()) game.dialog.choose();
-          else game.dialog.next();
-        } else {
-          if (id === 'poop') game.makePoop();
-          else if (id === 'space') game.interact();
-        }
-      },
-    },
-    rootElement
-  );
+  const onPress = (id) => {
+    if (game.dialog.isOpen) {
+      if (id === 'space' && game.dialog.hasChoices()) game.dialog.choose();
+      else game.dialog.next();
+    } else {
+      if (id === 'poop') game.makePoop();
+      else if (id === 'space') game.interact();
+    }
+  };
+  controls = new Controls({onPress}, rootElement, [
+    new GamepadControls({onPress}),
+  ]);
   window.addEventListener('resize', () => {
     game.updateViewport();
   });
