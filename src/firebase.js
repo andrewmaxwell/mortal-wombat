@@ -40,7 +40,7 @@ const db = getDatabase();
 const auth = getAuth();
 const dbRef = ref(db);
 
-export const defaultWorldId = 'l31p2np9:dy828s8l3wv';
+export const defaultWorldId = 'l5ybd0mu:2x3xfrsom4h';
 
 // {path1: val1, path2: val2}
 export const update = (updates, onError) => {

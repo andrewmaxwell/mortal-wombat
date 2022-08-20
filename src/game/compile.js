@@ -1,9 +1,4 @@
-export const compile = (str) => {
-  if (!str) return;
-  try {
-    return new Function(
-      'game',
-      `
+const useTemplate = (str) => `
 const GRASS = 'g';
 const POOP = 'p';
 const STONE = 's';
@@ -35,8 +30,12 @@ const you = game.you;
 const poop = game.poop;
 const health = game.health;
 
-${str}`
-    );
+${str}`;
+
+export const compile = (str) => {
+  if (!str) return;
+  try {
+    return new Function('game', useTemplate(str));
   } catch (e) {
     console.error(`Invalid logic: ${str}`);
     console.error(e);
