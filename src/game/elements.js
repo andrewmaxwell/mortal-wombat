@@ -187,18 +187,18 @@ export class Dialog extends Element {
       this.hide();
     }
   }
-  render() {
-    this.div.innerHTML = `
-    <div>${this.text}</div>
-    <ul>
-    ${this.choices
+  renderChoices() {
+    const choices = this.choices
       .map(
         ({text}, i) =>
           `<li ${i === this.choiceIndex ? `class="selected"` : ''}>${text}</li>`
       )
-      .join('')}
-        </ul>
-        `;
+      .join('');
+
+    return choices ? `<ul>${choices}</ul>` : '';
+  }
+  render() {
+    this.div.innerHTML = this.text + this.renderChoices();
   }
   choose() {
     this.hide();

@@ -113,7 +113,7 @@ body {
 .dialog {
   font-size: 2em;
   position: fixed;
-  top: 70%;
+  bottom: 30px;
   width: 100%;
   text-align: center;
 }
