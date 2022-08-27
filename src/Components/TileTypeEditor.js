@@ -17,6 +17,8 @@ n: npc
 
 */
 
+const capitalize = (str) => str[0].toUpperCase() + str.slice(1);
+
 const fields = [
   {
     prop: 'label',
@@ -24,12 +26,14 @@ const fields = [
     type: 'text',
     info: 'The label you see in the tool bar below.',
   },
-  {
-    prop: 'image',
-    label: 'Image URL',
-    type: 'text',
-    info: 'The image. uhduhhhh',
-  },
+  ...['standing', 'walking', 'pushing', 'jumping', 'digging', 'crouching'].map(
+    (n) => ({
+      prop: n === 'standing' ? 'image' : `${n}Image$`,
+      label: `${capitalize(n)} Image URL`,
+      type: 'text',
+      info: `A url to an image for ${n}.`,
+    })
+  ),
   {
     prop: 'sound',
     label: 'Sound URL',
