@@ -101,6 +101,9 @@ export class Game {
     }
     this.sounds[sound]?.play();
   }
+  pauseSound(sound) {
+    this.sounds[sound]?.pause();
+  }
   iterate(pressing) {
     this.moveWombat(pressing);
     this.iterateTiles();
