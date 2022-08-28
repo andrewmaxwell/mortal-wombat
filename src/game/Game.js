@@ -5,6 +5,7 @@ import {
   VersionElement,
   WorldElement,
 } from './elements';
+import {isValidUrl} from '../utils/isValidUrl';
 
 const MAX_RENDER_DIST = 32; // don't move things more than this many tiles away
 const MOVEMENT_THRESHOLD = 0.1; // don't move you or the viewport if you move less than this much of a tile
@@ -94,18 +95,9 @@ export class Game {
 
     return sounds;
   }
-  isValidUrl(urlString) {
-    const urlPattern = new RegExp('^(https?:\\/\\/)?'+ // validate protocol
-    '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // validate domain name
-    '((\\d{1,3}\\.){3}\\d{1,3}))'+ // validate OR ip (v4) address
-    '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // validate port and path
-    '(\\?[;&a-z\\d%_.~+=-]*)?'+ // validate query string
-    '(\\#[-a-z\\d_]*)?$','i'); // validate fragment locator
-  return !!urlPattern.test(urlString);
-  }
   playSound(sound) {
-    if (this.sounds[sound] === undefined && this.isValidUrl(sound)) {
-      this.sounds(sound) = new Audio(sound);
+    if (this.sounds[sound] === undefined && isValidUrl(sound)) {
+      this.sounds[sound] = new Audio(sound);
     }
     this.sounds[sound]?.play();
   }
