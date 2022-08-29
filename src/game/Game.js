@@ -5,6 +5,7 @@ import {
   VersionElement,
   WorldElement,
 } from './elements';
+import {isValidUrl} from '../utils/isValidUrl';
 
 const MAX_RENDER_DIST = 32; // don't move things more than this many tiles away
 const MOVEMENT_THRESHOLD = 0.1; // don't move you or the viewport if you move less than this much of a tile
@@ -95,7 +96,13 @@ export class Game {
     return sounds;
   }
   playSound(sound) {
+    if (this.sounds[sound] === undefined && isValidUrl(sound)) {
+      this.sounds[sound] = new Audio(sound);
+    }
     this.sounds[sound]?.play();
+  }
+  pauseSound(sound) {
+    this.sounds[sound]?.pause();
   }
   iterate(pressing) {
     this.moveWombat(pressing);
