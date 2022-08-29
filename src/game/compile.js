@@ -12,6 +12,8 @@ const NPC = 'n';
 
 const say = game.dialog.say.bind(game.dialog);
 const choice = game.dialog.choice.bind(game.dialog);
+const playSound = game.playSound.bind(game);
+const pauseSound = game.pauseSound.bind(game);
 
 const numCollected = game.numCollected.bind(game);
 const setCollectible = game.setCollectible.bind(game);
