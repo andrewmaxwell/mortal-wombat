@@ -1,5 +1,7 @@
+import {defaultTileTypes} from '../defaults';
 import {update} from '../firebase';
 import {objToArr} from '../utils';
+import {mergeDeepLeft} from '../utils/mergeDeepLeft';
 import {FormThing} from './common/FormThing';
 import './tileTypeEditor.css';
 
@@ -32,6 +34,7 @@ const fields = [
       label: `${capitalize(n)} Image URL`,
       type: 'text',
       info: `A url to an image for ${n}.`,
+      show: (data) => n === 'standing' || parseInt(data.moveDelay),
     })
   ),
   {
@@ -126,30 +129,41 @@ const fields = [
   },
 ];
 
-export const TileTypeEditor = ({selectedTileTypeId, tileTypes, onError}) => {
+const defaults = fields.reduce((res, {prop, type}) => {
+  res[prop] = type === 'checkbox' ? false : '';
+  return res;
+}, {});
+
+export const TileTypeEditor = ({
+  selectedTileTypeId,
+  tileTypes,
+  worldId,
+  onError,
+}) => {
   const selectedTileType = objToArr(tileTypes).find(
     (el) => el.id === selectedTileTypeId
   );
 
+  const selectedTileTypeDefaults = mergeDeepLeft(
+    Object.values(defaultTileTypes).find((el) => el.id === selectedTileTypeId),
+    defaults
+  );
+
+  const onChange = (value, prop) => {
+    update(
+      {[`worlds/${worldId}/tileTypes/${selectedTileType.key}/${prop}`]: value},
+      onError
+    );
+  };
+
   return (
     selectedTileType && (
       <div className="tileTypeEditor">
-        <p>
-          <span style={{color: 'orange'}}>
-            <i className="fa-solid fa-triangle-exclamation"></i> WARNING
-          </span>{' '}
-          You can seriously mess up the game if you change these. Please write
-          them down and change them very carefully!
-        </p>
         <FormThing
           fields={fields}
           data={selectedTileType}
-          onChange={(value, prop) => {
-            update(
-              {[`tileTypes/${selectedTileType.key}/${prop}`]: value},
-              onError
-            );
-          }}
+          defaults={selectedTileTypeDefaults}
+          onChange={onChange}
         />
       </div>
     )

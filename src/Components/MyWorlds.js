@@ -1,8 +1,10 @@
 import {getAuth} from 'firebase/auth';
 import {serverTimestamp} from 'firebase/database';
 import {useEffect, useRef, useState} from 'react';
-import {loadData, update} from '../firebase';
+import {defaultTileTypes} from '../defaults';
+import {loadItem, update} from '../firebase';
 import {guid} from '../utils';
+import {mergeDeepLeft} from '../utils/mergeDeepLeft';
 import {timeAgo} from '../utils/timeAgo';
 import {worldToCanvas} from '../utils/worldToCanvas';
 import './myWorlds.css';
@@ -42,9 +44,8 @@ const WorldCanvas = ({world, tileTypes}) => {
 
 const WorldItem = ({
   id,
-  item: {lastEdited, worldName, lastEditedBy, world},
+  item: {lastEdited, worldName, lastEditedBy, world, tileTypes},
   userIndex,
-  tileTypes,
   close,
 }) => (
   <button
@@ -55,7 +56,10 @@ const WorldItem = ({
     }}
   >
     <div className="canvasContainer">
-      <WorldCanvas world={world} tileTypes={tileTypes} />{' '}
+      <WorldCanvas
+        world={world}
+        tileTypes={mergeDeepLeft(tileTypes, defaultTileTypes)}
+      />{' '}
     </div>
     {worldName || '???'}
     {lastEdited && (
@@ -71,11 +75,10 @@ const WorldItem = ({
 
 const loadWorlds = async (setWorlds) => {
   setWorlds();
-  const {worlds} = await loadData(['worlds']);
-  setWorlds(worlds);
+  setWorlds(await loadItem('worlds'));
 };
 
-export const MyWorlds = ({userIndex, tileTypes, close}) => {
+export const MyWorlds = ({userIndex, close}) => {
   const [worlds, setWorlds] = useState();
 
   useEffect(() => {
@@ -106,7 +109,6 @@ export const MyWorlds = ({userIndex, tileTypes, close}) => {
             id={key}
             item={item}
             userIndex={userIndex}
-            tileTypes={tileTypes}
             close={close}
           />
         ))}

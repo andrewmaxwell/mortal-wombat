@@ -55,18 +55,30 @@ const inputs = {
   code: Code,
 };
 
-export const FormThing = ({fields, data, onChange}) =>
+export const FormThing = ({fields, data, defaults, onChange}) =>
   fields.map(({prop, label, type, info, show, options}) => {
     if (show && !show(data)) return null;
     const Field = inputs[type];
+    const value = data?.[prop] === undefined ? defaults?.[prop] : data?.[prop];
     return (
       <div key={prop} title={info}>
         <label>{label}</label>
         <Field
-          value={data?.[prop]}
+          value={value}
           onChange={(val) => onChange(val, prop)}
           options={options}
         />
+
+        {value !== defaults?.[prop] && (
+          <button
+            onClick={() => onChange(null, prop)}
+            title={`Click to reset ${label} to ${JSON.stringify(
+              defaults?.[prop]
+            )}`}
+          >
+            Reset
+          </button>
+        )}
       </div>
     );
   });

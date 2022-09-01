@@ -39,13 +39,13 @@ nav a.active {
 .tileTypeEditorContainer {
     left: 0;
     bottom: 70px;
-    width: 300px;
+    width: 330px;
 }
 
 .gameConfigContainer {
     top: 32px;
     left: 50px;
-    width: 325px;
+    width: 350px;
 }
 
 .hereNowContainer {

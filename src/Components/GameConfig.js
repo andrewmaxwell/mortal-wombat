@@ -1,11 +1,15 @@
 import {useEffect, useState} from 'react';
+import {defaultGameConfig} from '../defaults';
 import {listen, update} from '../firebase';
 import {FormThing} from './common/FormThing';
 import './gameConfig.css';
 
-const useConfig = (onError) => {
+const useConfig = (worldId, onError) => {
   const [config, setConfig] = useState();
-  useEffect(() => listen('gameConfig', setConfig, onError), []);
+  useEffect(
+    () => listen(`worlds/${worldId}/gameConfig`, setConfig, onError),
+    []
+  );
   return config;
 };
 
@@ -114,22 +118,16 @@ const fields = [
   },
 ];
 
-export const GameConfig = ({onError}) => {
-  const config = useConfig(onError);
+export const GameConfig = ({worldId, onError}) => {
+  const config = useConfig(worldId, onError);
   return (
     <div className="gameConfig">
-      <p>
-        <span style={{color: 'orange'}}>
-          <i className="fa-solid fa-triangle-exclamation"></i> WARNING
-        </span>{' '}
-        You can seriously mess up the game if you change these. Please write
-        them down and change them very carefully!
-      </p>
       <FormThing
         fields={fields}
         data={config}
+        defaults={defaultGameConfig}
         onChange={(value, prop) => {
-          update({[`gameConfig/${prop}`]: value}, onError);
+          update({[`worlds/${worldId}/gameConfig/${prop}`]: value}, onError);
         }}
       />
     </div>

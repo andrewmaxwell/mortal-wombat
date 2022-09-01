@@ -25,6 +25,8 @@ import {MyWorlds} from './MyWorlds';
 import {Stats} from './Stats';
 import {defaultWorldId} from '../firebase';
 import {TileLogic} from './TileLogic';
+import {mergeDeepLeft} from '../utils/mergeDeepLeft';
+import {defaultTileTypes} from '../defaults';
 
 const zoomAmt = 2;
 
@@ -38,10 +40,10 @@ const paneConfigs = [
   {
     key: 'gameConfig',
     buttonLabel: 'Config',
-    paneLabel: 'Game Config',
+    paneLabel: 'Config Overrides',
     icon: 'toolbox',
   },
-  {key: 'tileTypeEditor', paneLabel: 'Tile Type Editor', hideButton: true},
+  {key: 'tileTypeEditor', paneLabel: 'Tile Config Overrides', hideButton: true},
   {
     key: 'hereNow',
     buttonLabel: 'People',
@@ -75,7 +77,7 @@ export const App = () => {
   // firebase state
   const user = useUser();
   const userIndex = useUserIndex(user, onError);
-  const tileTypes = useTileTypes(onError);
+  const tileTypes = useTileTypes(onError, worldId);
   const world = useWorld(onError, worldId);
   const cursors = useCursors(onError, worldId);
 
@@ -98,6 +100,8 @@ export const App = () => {
       setCursor(user, null, null, worldId, xCoord, yCoord, scale, onError);
   }, [user, worldId, xCoord, yCoord, scale]);
 
+  const mergedTileTypes = mergeDeepLeft(tileTypes, defaultTileTypes);
+
   return (
     <>
       <Nav {...{user, scale, setScale, zoomAmt, userIndex}}>
@@ -109,15 +113,15 @@ export const App = () => {
       {user ? (
         <div className="appContainer">
           {selectedTileTypeId &&
-            tileTypes &&
             Panes.tileTypeEditor.show &&
-            Object.values(tileTypes).some(
+            Object.values(mergedTileTypes).some(
               (t) => t.id === selectedTileTypeId
             ) && (
               <Pane {...Panes.tileTypeEditor.paneProps}>
                 <TileTypeEditor
                   selectedTileTypeId={selectedTileTypeId}
-                  tileTypes={tileTypes}
+                  tileTypes={mergedTileTypes}
+                  worldId={worldId}
                   onError={onError}
                 />
               </Pane>
@@ -125,7 +129,7 @@ export const App = () => {
 
           {Panes.gameConfig.show && (
             <Pane {...Panes.gameConfig.paneProps}>
-              <GameConfig onError={onError} />
+              <GameConfig worldId={worldId} onError={onError} />
             </Pane>
           )}
 
@@ -166,7 +170,6 @@ export const App = () => {
             <Pane {...Panes.myWorlds.paneProps}>
               <MyWorlds
                 userIndex={userIndex}
-                tileTypes={tileTypes}
                 close={() => Panes.myWorlds.setShow(false)}
               />
             </Pane>
@@ -176,7 +179,7 @@ export const App = () => {
             <Pane {...Panes.stats.paneProps}>
               <Stats
                 world={world}
-                tileTypes={tileTypes}
+                tileTypes={mergedTileTypes}
                 userIndex={userIndex}
               />
             </Pane>
@@ -195,11 +198,11 @@ export const App = () => {
             </Pane>
           )}
 
-          {tileTypes && (
+          {
             <div className="toolContainer">
               <Toolbar
                 {...{
-                  tileTypes,
+                  tileTypes: mergedTileTypes,
                   selectedTileTypeId,
                   setSelectedTileTypeId,
                   showTileTypeEditor: Panes.tileTypeEditor.show,
@@ -207,15 +210,15 @@ export const App = () => {
                 }}
               />
             </div>
-          )}
+          }
 
-          {worldId && tileTypes && (
+          {worldId && (
             <div className="worldEditorContainer">
               <WorldEditor
                 {...{
                   world,
                   selectedTileTypeId,
-                  tileTypes,
+                  tileTypes: mergedTileTypes,
                   onError,
                   worldId,
                   xCoord,

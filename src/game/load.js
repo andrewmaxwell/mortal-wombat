@@ -1,5 +1,7 @@
-import {defaultWorldId, loadData} from '../firebase';
+import {defaultGameConfig, defaultTileTypes} from '../defaults';
+import {defaultWorldId, loadItem} from '../firebase';
 import {isGuid} from '../utils';
+import {mergeDeepLeft} from '../utils/mergeDeepLeft';
 import {compile} from './compile';
 import {Game} from './Game';
 
@@ -13,14 +15,15 @@ export const load = async (rootElement) => {
     }
   }
 
-  const worldKey = `worlds/${
-    isGuid(hashConfig?.worldId) ? hashConfig.worldId : defaultWorldId
-  }/world`;
+  const worldId = isGuid(hashConfig?.worldId)
+    ? hashConfig.worldId
+    : defaultWorldId;
 
-  const data = await loadData(['tileTypes', worldKey, 'gameConfig']);
+  const w = await loadItem(`worlds/${worldId}`);
 
-  const {tileTypes, gameConfig} = data;
-  const world = data[worldKey];
+  const {world} = w;
+  const tileTypes = mergeDeepLeft(w.tileTypes, defaultTileTypes);
+  const gameConfig = mergeDeepLeft(w.gameConfig, defaultGameConfig);
 
   const typeIndex = {};
   let you;

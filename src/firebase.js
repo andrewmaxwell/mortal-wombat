@@ -57,12 +57,7 @@ if (location.host === 'localhost:3000') {
   window._update = async (x) => await _update(dbRef, x);
 }
 
-export const loadData = async (things) =>
-  Object.fromEntries(
-    await Promise.all(
-      things.map(async (t) => [t, (await get(child(dbRef, t))).val()])
-    )
-  );
+export const loadItem = async (key) => (await get(child(dbRef, key))).val();
 
 export const listen = (pathStr, onChange, onError) => {
   try {

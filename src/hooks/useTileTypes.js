@@ -1,8 +1,14 @@
 import {useEffect, useState} from 'react';
 import {listen} from '../firebase';
 
-export const useTileTypes = (onError) => {
+export const useTileTypes = (onError, worldId) => {
   const [tileTypes, setTileTypes] = useState();
-  useEffect(() => listen('tileTypes', setTileTypes, onError), []);
+
+  // TODO: this should be part of useWorld or something
+  useEffect(
+    () => listen(`worlds/${worldId}/tileTypes`, setTileTypes, onError),
+    [worldId]
+  );
+
   return tileTypes;
 };

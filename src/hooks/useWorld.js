@@ -5,11 +5,7 @@ export const useWorld = (onError, worldId) => {
   const [world, setWorld] = useState({});
   useEffect(() => {
     if (worldId) {
-      return listen(
-        (worldId ? `worlds/${worldId}/` : '') + 'world',
-        setWorld,
-        onError
-      );
+      return listen(`worlds/${worldId}/world`, setWorld, onError);
     }
   }, [worldId]);
   return world;
