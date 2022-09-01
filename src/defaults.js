@@ -123,7 +123,7 @@ export const defaultTileTypes = {
     movable: true,
     moveDelay: '90',
     moveStyle: 'liquid',
-    order: 9,
+    order: '9',
     sound: 'https://static.heironimus.info/sound/Boing.ogg',
   },
   9: {

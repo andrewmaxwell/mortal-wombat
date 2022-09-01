@@ -34,7 +34,8 @@ const fields = [
       label: `${capitalize(n)} Image URL`,
       type: 'text',
       info: `A url to an image for ${n}.`,
-      show: (data) => n === 'standing' || parseInt(data.moveDelay),
+      show: (data) =>
+        n === 'standing' || data.label === 'wombat' || parseInt(data.moveDelay),
     })
   ),
   {
