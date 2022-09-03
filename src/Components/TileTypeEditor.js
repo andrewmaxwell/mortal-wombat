@@ -28,16 +28,19 @@ const fields = [
     type: 'text',
     info: 'The label you see in the tool bar below.',
   },
-  ...['standing', 'walking', 'pushing', 'jumping', 'digging', 'crouching'].map(
-    (n) => ({
-      prop: n === 'standing' ? 'image' : `${n}Image$`,
-      label: `${capitalize(n)} Image URL`,
-      type: 'text',
-      info: `A url to an image for ${n}.`,
-      show: (data) =>
-        n === 'standing' || data.label === 'wombat' || parseInt(data.moveDelay),
-    })
-  ),
+  {
+    prop: 'image',
+    label: 'Image URL',
+    type: 'text',
+    info: `A url to an image.`,
+  },
+  ...['walking', 'pushing', 'jumping', 'digging', 'crouching'].map((n) => ({
+    prop: `${n}Image$`,
+    label: `${capitalize(n)} Image URL`,
+    type: 'text',
+    info: `A url to an image for ${n}.`,
+    show: (data) => data.label === 'wombat' || parseInt(data.moveDelay),
+  })),
   {
     prop: 'sound',
     label: 'Sound URL',
@@ -141,13 +144,15 @@ export const TileTypeEditor = ({
   worldId,
   onError,
 }) => {
+  if (
+    !selectedTileTypeId ||
+    selectedTileTypeId.startsWith('_') ||
+    !Object.values(tileTypes).some((t) => t.id === selectedTileTypeId)
+  )
+    return "You can't edit this.";
+
   const selectedTileType = objToArr(tileTypes).find(
     (el) => el.id === selectedTileTypeId
-  );
-
-  const selectedTileTypeDefaults = mergeDeepLeft(
-    Object.values(defaultTileTypes).find((el) => el.id === selectedTileTypeId),
-    defaults
   );
 
   const onChange = (value, prop) => {
@@ -157,13 +162,20 @@ export const TileTypeEditor = ({
     );
   };
 
+  const selectedTileTypeDefaults = Object.values(defaultTileTypes).find(
+    (el) => el.id === selectedTileTypeId
+  );
+
   return (
     selectedTileType && (
       <div className="tileTypeEditor">
         <FormThing
           fields={fields}
           data={selectedTileType}
-          defaults={selectedTileTypeDefaults}
+          defaults={
+            selectedTileTypeDefaults &&
+            mergeDeepLeft(selectedTileTypeDefaults, defaults)
+          }
           onChange={onChange}
         />
       </div>

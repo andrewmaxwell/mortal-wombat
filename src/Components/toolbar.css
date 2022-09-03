@@ -35,9 +35,8 @@
   bottom: 0;
 }
 
-.toolBar i,
-.world .ghost i {
-  font-style: inherit;
-  font-size: 1.5em;
-  position: absolute;
+.toolBar .tileType button {
+  float: left;
+  height: 100%;
+  width: 100%;
 }

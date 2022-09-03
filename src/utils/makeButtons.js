@@ -2,10 +2,10 @@ import {useStatePersist} from '../hooks/useStatePersist';
 
 export const makeButtons = (config) =>
   Object.fromEntries(
-    config.map(({key, buttonLabel, paneLabel, icon, hideButton}) => {
+    config.map(({key, buttonLabel, paneLabel, icon}) => {
       const [show, setShow] = useStatePersist('show' + buttonLabel, false);
 
-      const button = !hideButton && (
+      const button = (
         <a
           key={key}
           className={show ? 'active' : ''}

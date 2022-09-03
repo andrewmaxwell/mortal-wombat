@@ -39,11 +39,16 @@ const paneConfigs = [
   },
   {
     key: 'gameConfig',
-    buttonLabel: 'Config',
+    buttonLabel: 'World Config',
     paneLabel: 'Config Overrides',
     icon: 'toolbox',
   },
-  {key: 'tileTypeEditor', paneLabel: 'Tile Config Overrides', hideButton: true},
+  {
+    key: 'tileTypeEditor',
+    buttonLabel: 'Tile Config',
+    paneLabel: 'Tile Config Overrides',
+    icon: 'gear',
+  },
   {
     key: 'hereNow',
     buttonLabel: 'People',
@@ -112,20 +117,16 @@ export const App = () => {
 
       {user ? (
         <div className="appContainer">
-          {selectedTileTypeId &&
-            Panes.tileTypeEditor.show &&
-            Object.values(mergedTileTypes).some(
-              (t) => t.id === selectedTileTypeId
-            ) && (
-              <Pane {...Panes.tileTypeEditor.paneProps}>
-                <TileTypeEditor
-                  selectedTileTypeId={selectedTileTypeId}
-                  tileTypes={mergedTileTypes}
-                  worldId={worldId}
-                  onError={onError}
-                />
-              </Pane>
-            )}
+          {Panes.tileTypeEditor.show && (
+            <Pane {...Panes.tileTypeEditor.paneProps}>
+              <TileTypeEditor
+                selectedTileTypeId={selectedTileTypeId}
+                tileTypes={mergedTileTypes}
+                worldId={worldId}
+                onError={onError}
+              />
+            </Pane>
+          )}
 
           {Panes.gameConfig.show && (
             <Pane {...Panes.gameConfig.paneProps}>
@@ -207,6 +208,7 @@ export const App = () => {
                   setSelectedTileTypeId,
                   showTileTypeEditor: Panes.tileTypeEditor.show,
                   setShowTileTypeEditor: Panes.tileTypeEditor.setShow,
+                  worldId,
                 }}
               />
             </div>

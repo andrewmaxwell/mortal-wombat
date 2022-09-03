@@ -69,7 +69,7 @@ export const FormThing = ({fields, data, defaults, onChange}) =>
           options={options}
         />
 
-        {value !== defaults?.[prop] && (
+        {defaults && value !== defaults?.[prop] && (
           <button
             onClick={() => onChange(null, prop)}
             title={`Click to reset ${label} to ${JSON.stringify(
