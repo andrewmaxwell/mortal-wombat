@@ -38,11 +38,17 @@ export class Game {
     for (const key in world) this.addTile(world[key]);
 
     this.typeIndex = typeIndex;
-    this.you = {x: 0, y: 0, xs: 0, ys: 0, dirX: 1, dirY: 0, ...youPos};
-    this.you.el = new TileElement(
-      {x: this.you.x, y: this.you.y, type: typeIndex.w},
-      this.worldElement
-    );
+    this.you = {
+      x: 0,
+      y: 0,
+      xs: 0,
+      ys: 0,
+      dirX: 1,
+      dirY: 0,
+      type: typeIndex.w,
+      ...youPos,
+    };
+    this.you.el = new TileElement(this.you, this.worldElement);
     for (const key of ['x', 'y', 'dirX', 'dirY']) {
       this.you['p' + key] = this.you[key];
     }
@@ -126,11 +132,15 @@ export class Game {
   changeTileType(tile, type) {
     tile.type = type;
     delete tile.hp;
-    tile.el.updateType(type);
+    tile.el.setBackground(type);
   }
   moveWombat(pressing) {
     const {you, world} = this;
     const lastSwimBlock = you.swimBlock;
+
+    you.isPushing = false;
+    you.isWalking = false;
+    you.isDigging = false;
 
     if (this.health <= 0) {
       if (pressing.reload) location.reload();
@@ -144,16 +154,18 @@ export class Game {
     if (pressing.left) {
       you.xs -= you.swimBlock ? this.swimPower : this.moveSpeed;
       you.dirX--;
+      you.isWalking = true;
     }
     if (pressing.right) {
       you.xs += you.swimBlock ? this.swimPower : this.moveSpeed;
       you.dirX++;
+      you.isWalking = true;
     }
     if (pressing.up) {
       if (you.swimBlock) you.ys -= this.swimPower;
-      else if (!you.jumping && !you.ys) {
+      else if (!you.isJumping && !you.ys) {
         you.ys -= this.jumpPower;
-        you.jumping = true;
+        you.isJumping = true;
       }
       you.dirY--;
     }
@@ -196,22 +208,8 @@ export class Game {
     }
     if (damage) this.setHealth(this.health - damage);
 
-    if (
-      Math.abs(you.x - you.px) > MOVEMENT_THRESHOLD ||
-      Math.abs(you.y - you.py) > MOVEMENT_THRESHOLD ||
-      you.dirX !== you.pdirX ||
-      you.dirY !== you.pdirY
-    ) {
-      you.el.update(you);
-      this.worldElement.update(you);
-
-      you.px = you.x;
-      you.py = you.y;
-      you.pdirX = you.dirX;
-      you.pdirY = you.dirY;
-    }
-
     if (pressing.space) {
+      you.isDigging = true;
       const angle = Math.atan2(you.dirY, you.dirX);
       const x = Math.round(you.x + Math.cos(angle));
       const y = Math.round(you.y + Math.sin(angle));
@@ -222,7 +220,32 @@ export class Game {
         this.setPoop(this.poop + b.type.makePoop * this.eatSpeed);
         this.playSound(b.type.id);
       }
-      if (b?.type.diggable) this.damage(b, this.digSpeed);
+      if (b?.type.diggable) {
+        this.damage(b, this.digSpeed);
+      }
+    }
+
+    if (
+      Math.abs(you.x - you.px) > MOVEMENT_THRESHOLD ||
+      Math.abs(you.y - you.py) > MOVEMENT_THRESHOLD ||
+      you.dirX !== you.pdirX ||
+      you.dirY !== you.pdirY ||
+      you.isDigging !== you.pIsDigging ||
+      you.isJumping !== you.pIsJumping ||
+      you.isPushing !== you.pIsPushing ||
+      you.isWalking !== you.pIsWalking
+    ) {
+      you.el.update(you);
+      this.worldElement.update(you);
+
+      you.px = you.x;
+      you.py = you.y;
+      you.pdirX = you.dirX;
+      you.pdirY = you.dirY;
+      you.pIsDigging = you.isDigging;
+      you.pIsJumping = you.isJumping;
+      you.pIsPushing = you.isPushing;
+      you.pIsWalking = you.isWalking;
     }
   }
   // returns true if block is destroyed
@@ -252,19 +275,18 @@ export class Game {
 
     if (Math.abs(you.x - block.x) > Math.abs(you.y - block.y)) {
       const dx = block.x < you.x ? -1 : 1;
-      if (
-        !you.jumping &&
-        you.ys === this.gravity &&
-        block.type.movable &&
-        this.isEmpty(block.x + dx, block.y)
-      ) {
-        this.moveTile(block.x, block.y, dx, 0);
+      if (!you.isJumping && you.ys === this.gravity) {
+        you.isPushing = true;
+        if (block.type.movable && this.isEmpty(block.x + dx, block.y)) {
+          this.moveTile(block.x, block.y, dx, 0);
+        }
       } else {
         you.x = block.x + (you.x < block.x ? -1 : 1);
       }
       you.xs = 0;
+      you.isWalking = false;
     } else {
-      if (you.y < block.y) you.jumping = false;
+      if (you.y < block.y) you.isJumping = false;
       you.y = block.y + (you.y < block.y ? -1 : 1);
 
       // fall damage

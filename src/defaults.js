@@ -61,7 +61,17 @@ export const defaultTileTypes = {
     density: '1.1',
     id: 'w',
     image:
+      'https://piskel-imgstore-b.appspot.com/img/610cc71e-cdb9-11ec-8e05-2f9ec14027c3.gif',
+    walkingImage:
       'https://piskel-imgstore-b.appspot.com/img/253fba5c-cdb9-11ec-acf8-2f9ec14027c3.gif',
+    pushingImage:
+      'https://piskel-imgstore-b.appspot.com/img/586bb7e6-cdb9-11ec-a846-2f9ec14027c3.gif',
+    jumpingImage:
+      'https://piskel-imgstore-b.appspot.com/img/4439c4fd-cdb9-11ec-9ce8-2f9ec14027c3.gif',
+    diggingImage:
+      'https://piskel-imgstore-b.appspot.com/img/3a751840-cdb9-11ec-8175-2f9ec14027c3.gif',
+    crouchingImage:
+      'https://piskel-imgstore-b.appspot.com/img/32ac8f9e-cdb9-11ec-9e05-2f9ec14027c3.gif',
     label: 'wombat',
     order: '4',
   },

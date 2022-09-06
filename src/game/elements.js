@@ -70,19 +70,43 @@ export class TileElement extends Element {
     super();
     this.worldElement = worldElement;
     this.el.classList.add('tile');
-    this.updateType(tile.type);
+    this.setBackground(tile.type);
     this.update(tile);
   }
-  updateType(type) {
-    this.el.style.background = getBackground(type);
+  setBackground(type, imageProp = 'image') {
+    this.el.style.background = getBackground(type, imageProp);
   }
-  update({x, y, dirX = 0, dirY = 0}) {
+  update({
+    x,
+    y,
+    dirX = 0,
+    dirY = 0,
+    type,
+    isJumping,
+    isWalking,
+    isPushing,
+    isDigging,
+  }) {
     const angle = Math.atan2(dirY, dirX) + Math.PI;
     const flip = angle >= 0.5 * Math.PI && angle <= 1.5 * Math.PI;
     this.el.style.transform = `
     translate(${x * TILE_SIZE}px,${y * TILE_SIZE}px)
     rotate(${angle}rad)
     ${flip ? 'scaleY(-1)' : ''}`;
+
+    const image = isDigging
+      ? 'diggingImage'
+      : isJumping
+      ? 'jumpingImage'
+      : isPushing
+      ? 'pushingImage'
+      : isWalking
+      ? 'walkingImage'
+      : 'image';
+    if (image !== this.pImage) {
+      this.pImage = image;
+      this.setBackground(type, image);
+    }
 
     const [chunkX, chunkY] = toChunkCoords(x, y);
     if (chunkX !== this.chunkX || chunkY !== this.chunkY) {

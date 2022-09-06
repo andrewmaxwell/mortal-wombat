@@ -1,2 +1,4 @@
-export const getBackground = (type) =>
-  type?.image ? `no-repeat center/contain url(${type.image})` : type?.color;
+export const getBackground = (type, prop = 'image') => {
+  const url = type?.[prop] || type?.image;
+  return url ? `no-repeat center/contain url(${url})` : type?.color;
+};
