@@ -63,6 +63,10 @@ export class WorldElement extends Element {
     return (this.chunks[key] =
       this.chunks[key] || new Chunk(this.el, chunkX, chunkY));
   }
+  clear() {
+    this.el.replaceChildren();
+    this.chunks = {};
+  }
 }
 
 export class TileElement extends Element {

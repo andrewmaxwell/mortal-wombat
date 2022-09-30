@@ -6,6 +6,10 @@ import {
   WorldElement,
 } from './elements';
 import {isValidUrl} from '../utils/isValidUrl';
+import {loadItem} from '../firebase';
+import {mergeDeepLeft} from '../utils/mergeDeepLeft';
+import {defaultGameConfig, defaultTileTypes} from '../defaults';
+import {compile} from './compile';
 
 const MAX_RENDER_DIST = 32; // don't move things more than this many tiles away
 const MOVEMENT_THRESHOLD = 0.1; // don't move you or the viewport if you move less than this much of a tile
@@ -25,15 +29,54 @@ const dirs = [
 ];
 
 export class Game {
-  constructor(youPos, world, config, typeIndex, rootElement) {
+  constructor(rootElement) {
     this.rootElement = rootElement;
     this.worldElement = new WorldElement(rootElement);
     this.hud = new Hud(rootElement);
     this.dialog = new Dialog(rootElement);
-    this.sounds = this.buildSounds(config, typeIndex);
-
     new VersionElement(rootElement);
+  }
+  async load(worldId, overrides) {
+    this.loading = true;
+    const {
+      world,
+      tileTypes: overrideTileTypes,
+      gameConfig: overrideGameConfig,
+    } = await loadItem(`worlds/${worldId}`);
 
+    const tileTypes = mergeDeepLeft(overrideTileTypes, defaultTileTypes);
+    const gameConfig = mergeDeepLeft(overrideGameConfig, defaultGameConfig);
+
+    const typeIndex = {};
+    let youPos;
+    for (const type of Object.values(tileTypes)) {
+      typeIndex[type.id] = type;
+    }
+    for (const key in world) {
+      const {x, y, tileType, onSpace} = world[key];
+      if (tileType === 'w') {
+        youPos = {x, y};
+        delete world[key];
+      } else if (typeIndex[tileType]) {
+        world[key] = {
+          x,
+          y,
+          type: typeIndex[tileType],
+          onSpace: compile(onSpace),
+        };
+      } else {
+        delete world[key];
+      }
+    }
+
+    if (overrides?.x !== undefined && overrides?.y !== undefined) {
+      youPos.x = overrides.x;
+      youPos.y = overrides.y;
+    }
+
+    this.sounds = this.buildSounds(gameConfig, typeIndex);
+
+    this.worldElement.clear();
     this.world = {};
     for (const key in world) this.addTile(world[key]);
 
@@ -52,7 +95,7 @@ export class Game {
     for (const key of ['x', 'y', 'dirX', 'dirY']) {
       this.you['p' + key] = this.you[key];
     }
-    this.collectibles = {};
+    this.collectibles = overrides?.collectibles || {};
     this.frame = 0;
 
     // these can all be overridden by config
@@ -72,14 +115,16 @@ export class Game {
     this.waterDrag = 0.1;
     this.airDrag = 0.001;
 
-    for (const x in config) {
-      if (!isNaN(config[x])) this[x] = Number(config[x]); // because editing them turns them into strings, yayyyy
+    for (const x in gameConfig) {
+      if (!isNaN(gameConfig[x])) this[x] = Number(gameConfig[x]); // because editing them turns them into strings, yayyyy
     }
 
-    this.setHealth(this.health);
-    this.setPoop(this.poop);
+    this.setHealth(overrides?.health || this.health);
+    this.setPoop(overrides?.poop || this.poop);
     this.you.el.update(this.you);
     this.worldElement.update(this.you);
+    this.loading = false;
+    return this;
   }
   buildSounds(config, typeIndex) {
     const sounds = {};
@@ -115,6 +160,7 @@ export class Game {
     if (this.sounds[sound]) this.sounds[sound].loop = true;
   }
   iterate(pressing) {
+    if (this.loading) return;
     this.moveWombat(pressing);
     this.iterateTiles();
     this.frame++;
@@ -428,5 +474,12 @@ export class Game {
     const x = Math.round(you.x + Math.cos(angle));
     const y = Math.round(you.y + Math.sin(angle));
     this.getTile(x, y)?.onSpace?.(this);
+  }
+  async jumpTo(worldId) {
+    await this.load(worldId, {
+      health: this.health,
+      poop: this.poop,
+      collectibles: this.collectibles,
+    });
   }
 }

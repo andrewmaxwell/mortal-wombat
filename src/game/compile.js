@@ -15,6 +15,7 @@ const choice = game.dialog.choice.bind(game.dialog);
 const playSound = game.playSound.bind(game);
 const pauseSound = game.pauseSound.bind(game);
 const loopSound = game.loopSound.bind(game);
+const jumpTo = game.jumpTo.bind(game);
 
 const numCollected = game.numCollected.bind(game);
 const setCollectible = game.setCollectible.bind(game);
