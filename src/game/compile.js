@@ -27,6 +27,7 @@ const moveTile = game.moveTile.bind(game);
 const addTile = game.addTile.bind(game);
 const isEmpty = game.isEmpty.bind(game);
 const getTile = game.getTile.bind(game);
+const getTileByName = game.getTileByName.bind(game);
 const damage = game.damage.bind(game);
 const changeTileType = game.changeTileType.bind(game);
 

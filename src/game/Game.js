@@ -48,12 +48,13 @@ export class Game {
     const gameConfig = mergeDeepLeft(overrideGameConfig, defaultGameConfig);
 
     const typeIndex = {};
+    this.namedTiles = {};
     let youPos;
     for (const type of Object.values(tileTypes)) {
       typeIndex[type.id] = type;
     }
     for (const key in world) {
-      const {x, y, tileType, onSpace, onTouch} = world[key];
+      const {x, y, tileType, onSpace, onTouch, name} = world[key];
       if (tileType === 'w') {
         youPos = {x, y};
         delete world[key];
@@ -65,6 +66,9 @@ export class Game {
           onSpace: compile(onSpace),
           onTouch: compile(onTouch),
         };
+        if (name) {
+          this.namedTiles[name] = world[key];
+        }
       } else {
         delete world[key];
       }
@@ -362,6 +366,9 @@ export class Game {
   }
   getTile(x, y) {
     return this.world[`${x}_${y}`];
+  }
+  getTileByName(tileName) {
+    return this.namedTiles[tileName];
   }
   isEmpty(x, y) {
     return !this.getTile(x, y);

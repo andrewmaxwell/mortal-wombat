@@ -3,6 +3,12 @@ import {FormThing} from './common/FormThing';
 
 const fields = [
   {
+    prop: 'name',
+    label: 'Name',
+    type: 'text',
+    info: 'Name to use to easily refer to tile.',
+  },
+  {
     prop: 'onSpace',
     label: 'On Space',
     type: 'code',
