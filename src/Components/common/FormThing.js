@@ -37,7 +37,7 @@ const Select = ({value, onChange, options}) => (
 const Code = ({value, onChange}) => (
   <Suspense fallback="Loading...">
     <Editor
-      height={400}
+      height={200}
       width={800}
       theme="vs-dark"
       defaultLanguage="javascript"

@@ -53,7 +53,7 @@ export class Game {
       typeIndex[type.id] = type;
     }
     for (const key in world) {
-      const {x, y, tileType, onSpace} = world[key];
+      const {x, y, tileType, onSpace, onTouch} = world[key];
       if (tileType === 'w') {
         youPos = {x, y};
         delete world[key];
@@ -63,6 +63,7 @@ export class Game {
           y,
           type: typeIndex[tileType],
           onSpace: compile(onSpace),
+          onTouch: compile(onTouch),
         };
       } else {
         delete world[key];
@@ -311,6 +312,11 @@ export class Game {
   }
   resolveCollision(block) {
     const {you} = this;
+
+    if (block.onTouch) {
+      block.onTouch(this);
+    }
+
     if (block.type.collectible || block.type.moveStyle === 'liquid') return;
 
     if (block.type.healing < 0) {
