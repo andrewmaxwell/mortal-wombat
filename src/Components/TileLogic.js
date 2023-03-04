@@ -8,6 +8,12 @@ const fields = [
     type: 'code',
     info: 'What should happen when you press space at it?',
   },
+  {
+    prop: 'onTouch',
+    label: 'On Touch',
+    type: 'code',
+    info: 'What should happen when you collide with this tile?',
+  },
 ];
 
 export const TileLogic = ({tile, worldId, onError}) => (
