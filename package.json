@@ -13,17 +13,17 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "@monaco-editor/react": "^4.4.5",
-    "@testing-library/jest-dom": "^5.16.4",
-    "@testing-library/react": "^13.2.0",
-    "@testing-library/user-event": "^14.1.1",
-    "firebase": "^9.8.1",
-    "gh-pages": "^4.0.0",
-    "prettier": "^2.6.2",
-    "react": "^18.1.0",
-    "react-dom": "^18.1.0",
+    "@monaco-editor/react": "^4.4.6",
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/user-event": "^14.4.3",
+    "firebase": "^9.17.2",
+    "gh-pages": "^5.0.0",
+    "prettier": "^2.8.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^3.1.1"
   },
   "eslintConfig": {
     "extends": [
@@ -44,10 +44,10 @@
     ]
   },
   "devDependencies": {
-    "eslint": "^8.15.0",
-    "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-jest": "^26.1.5",
-    "eslint-plugin-prettier": "^4.0.0"
+    "eslint": "^8.35.0",
+    "eslint-config-prettier": "^8.6.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-jest": "^27.2.1",
+    "eslint-plugin-prettier": "^4.2.1"
   }
 }
