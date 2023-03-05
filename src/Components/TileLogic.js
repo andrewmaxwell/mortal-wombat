@@ -1,7 +1,14 @@
 import {saveTile} from '../utils/saveTile';
 import {FormThing} from './common/FormThing';
+import './tileLogic.css';
 
 const fields = [
+  {
+    prop: 'name',
+    label: 'Name',
+    type: 'text',
+    info: 'Name to use to easily refer to tile.',
+  },
   {
     prop: 'onSpace',
     label: 'On Space',
@@ -17,7 +24,7 @@ const fields = [
 ];
 
 export const TileLogic = ({tile, worldId, onError}) => (
-  <>
+  <div className="tileLogic">
     <FormThing
       fields={fields}
       data={tile}
@@ -25,5 +32,5 @@ export const TileLogic = ({tile, worldId, onError}) => (
         saveTile(worldId, {...tile, [prop]: value}, onError);
       }}
     />
-  </>
+  </div>
 );
