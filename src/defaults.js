@@ -26,8 +26,7 @@ export const defaultTileTypes = {
     healing: '5',
     hp: '1',
     id: 'g',
-    image:
-      'https://pixelartmaker-data-78746291193.nyc3.digitaloceanspaces.com/image/12bfe63d7362e53.png',
+    image: 'https://art.pixilart.com/sr2601896d34615.png',
     label: 'grass',
     makePoop: '1',
     order: '1',
