@@ -317,9 +317,7 @@ export class Game {
   resolveCollision(block) {
     const {you} = this;
 
-    if (block.onTouch) {
-      block.onTouch(this);
-    }
+    this.processOnTouch(block);
 
     if (block.type.collectible || block.type.moveStyle === 'liquid') return;
 
@@ -363,6 +361,18 @@ export class Game {
       }
       you.ys = 0;
     }
+  }
+  processOnTouch(block) {
+    // If the block being touched has an onTouch handler
+    if (block.onTouch) {
+      this.currentBlockTouch = block;
+      // Don't run onTouch if this is the same block as last time
+      if (this.lastBlockTouch !== block) {
+        block.onTouch(this);
+      }
+    }
+    this.lastBlockTouch = this.currentBlockTouch;
+    this.currentBlockTouch = undefined;
   }
   getTile(x, y) {
     return this.world[`${x}_${y}`];
