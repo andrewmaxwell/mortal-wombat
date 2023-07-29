@@ -47,6 +47,8 @@ export class Game {
     const tileTypes = mergeDeepLeft(overrideTileTypes, defaultTileTypes);
     const gameConfig = mergeDeepLeft(overrideGameConfig, defaultGameConfig);
 
+    this.setGameBackground(gameConfig.backgroundUrl);
+
     const typeIndex = {};
     this.namedTiles = {};
     let youPos;
@@ -130,6 +132,9 @@ export class Game {
     this.worldElement.update(this.you);
     this.loading = false;
     return this;
+  }
+  setGameBackground(backgroundUrl) {
+    document.body.style.backgroundImage = `url(${backgroundUrl})`;
   }
   buildSounds(config, typeIndex) {
     const sounds = {};
