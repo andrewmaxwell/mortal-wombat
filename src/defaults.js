@@ -16,6 +16,8 @@ export const defaultGameConfig = {
   poop: '0',
   swimPower: '0.008',
   waterDrag: '0.1',
+  backgroundUrl:
+    'https://i.ibb.co/ZLjf3Jb/imgonline-com-ua-Texture-Seamless-ef-Gzuxvyq-GO67.jpg',
 };
 
 export const defaultTileTypes = {
