@@ -96,7 +96,7 @@ const fields = [
     prop: 'fallDamageSound',
     label: 'Fall Dmg Sound',
     type: 'text',
-    info: 'This is the URL for the sound that should be played if fall damage occurs.',
+    info: 'The URL for the sound that is played if fall damage occurs.',
   },
   {
     prop: 'swimPower',
@@ -114,7 +114,13 @@ const fields = [
     prop: 'gameOverSound',
     label: 'Game Over Sound',
     type: 'text',
-    info: 'This is the URL for the sound that is played when the game is over.',
+    info: 'The URL for the sound that is played when the game is over.',
+  },
+  {
+    prop: 'backgroundUrl',
+    label: 'Background URL',
+    type: 'text',
+    info: 'The URL for the background of the game.',
   },
 ];
 
