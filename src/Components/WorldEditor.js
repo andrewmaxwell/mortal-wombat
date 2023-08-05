@@ -1,10 +1,11 @@
-import {memo, useCallback, useMemo, useRef} from 'react';
+import {memo, useCallback, useEffect, useMemo, useRef} from 'react';
 import {setCursor} from '../hooks/useCursors';
 import {indexBy, objToArr} from '../utils';
 import {getBackground} from '../utils/getBackground';
 import {saveTile} from '../utils/saveTile';
 import {timeAgo} from '../utils/timeAgo';
 import {CSS_SIZE, Cursors} from './Cursors';
+import {loadItem} from '../firebase';
 import './worldEditor.css';
 
 const getCoords = (e, scale, xCoord, yCoord) => ({
@@ -108,6 +109,14 @@ export const WorldEditor = ({
 
   const cx = innerWidth / 2 - xCoord * CSS_SIZE;
   const cy = innerHeight / 2 - yCoord * CSS_SIZE;
+
+  // Load and Apply Game Configuration when worldId Changes
+  useEffect(() => {
+    console.log(`World Id to load: ${worldId}`);
+    loadItem(`worlds/${worldId}/gameConfig`).then((gameConfig) => {
+      console.log(JSON.stringify(gameConfig));
+    });
+  }, [worldId]);
 
   return (
     <div
