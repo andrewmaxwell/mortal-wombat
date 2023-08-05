@@ -5,6 +5,8 @@ import {getBackground} from '../utils/getBackground';
 import {saveTile} from '../utils/saveTile';
 import {timeAgo} from '../utils/timeAgo';
 import {CSS_SIZE, Cursors} from './Cursors';
+import {gameConfigFields} from './GameConfigFields';
+import {defaultGameConfig} from '../defaults';
 import {loadItem} from '../firebase';
 import './worldEditor.css';
 
@@ -112,9 +114,15 @@ export const WorldEditor = ({
 
   // Load and Apply Game Configuration when worldId Changes
   useEffect(() => {
-    console.log(`World Id to load: ${worldId}`);
-    loadItem(`worlds/${worldId}/gameConfig`).then((gameConfig) => {
-      console.log(JSON.stringify(gameConfig));
+    loadItem(`worlds/${worldId}/gameConfig`).then((gameConfigOverrides) => {
+      const gameConfig = {...defaultGameConfig, ...gameConfigOverrides};
+      gameConfigFields
+        .filter((field) => typeof field.onFieldChange === 'function')
+        .forEach((field) => {
+          if (gameConfig[field.prop] != undefined) {
+            field.onFieldChange(gameConfig[field.prop]);
+          }
+      });
     });
   }, [worldId]);
 
