@@ -121,15 +121,25 @@ const fields = [
     label: 'Background URL',
     type: 'text',
     info: 'The URL for the background of the game.',
+    onFieldChange: (value) => {
+      document.body.style.backgroundImage = `url(${value})`;
+    },
   },
 ];
 
 export const GameConfig = ({worldId, onError}) => {
   const config = useConfig(worldId, onError);
 
+  const callOnFieldChange = (value, prop) => {
+    const fieldChanged = fields.find((field) => field.prop === prop);
+    if (fieldChanged && fieldChanged.onFieldChange)
+      fieldChanged.onFieldChange(value);
+  };
+
   const onConfigValueChange = (value, prop) => {
     console.log(`Changed Game Config Setting "${prop}" to "${value}".`);
     update({[`worlds/${worldId}/gameConfig/${prop}`]: value}, onError);
+    callOnFieldChange(value, prop);
   };
 
   return (
