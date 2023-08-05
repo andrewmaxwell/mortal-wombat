@@ -19,12 +19,11 @@ export const GameConfig = ({worldId, onError}) => {
 
   const callOnFieldChange = (value, prop) => {
     const fieldChanged = gameConfigFields.find((field) => field.prop === prop);
-    if (fieldChanged && fieldChanged.onFieldChange)
+    if (fieldChanged && typeof fieldChanged.onFieldChange === 'function')
       fieldChanged.onFieldChange(value);
   };
 
   const onConfigValueChange = (value, prop) => {
-    console.log(`Changed Game Config Setting "${prop}" to "${value}".`);
     update({[`worlds/${worldId}/gameConfig/${prop}`]: value}, onError);
     callOnFieldChange(value, prop);
   };
