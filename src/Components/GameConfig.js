@@ -126,15 +126,19 @@ const fields = [
 
 export const GameConfig = ({worldId, onError}) => {
   const config = useConfig(worldId, onError);
+
+  const onConfigValueChange = (value, prop) => {
+    console.log(`Changed Game Config Setting "${prop}" to "${value}".`);
+    update({[`worlds/${worldId}/gameConfig/${prop}`]: value}, onError);
+  };
+
   return (
     <div className="gameConfig">
       <FormThing
         fields={fields}
         data={config}
         defaults={defaultGameConfig}
-        onChange={(value, prop) => {
-          update({[`worlds/${worldId}/gameConfig/${prop}`]: value}, onError);
-        }}
+        onChange={onConfigValueChange}
       />
     </div>
   );
