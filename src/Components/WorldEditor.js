@@ -122,7 +122,7 @@ export const WorldEditor = ({
           if (gameConfig[field.prop] != undefined) {
             field.onFieldChange(gameConfig[field.prop]);
           }
-      });
+        });
     });
   }, [worldId]);
 
