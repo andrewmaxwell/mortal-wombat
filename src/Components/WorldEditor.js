@@ -1,10 +1,13 @@
-import {memo, useCallback, useMemo, useRef} from 'react';
+import {memo, useCallback, useEffect, useMemo, useRef} from 'react';
 import {setCursor} from '../hooks/useCursors';
 import {indexBy, objToArr} from '../utils';
 import {getBackground} from '../utils/getBackground';
 import {saveTile} from '../utils/saveTile';
 import {timeAgo} from '../utils/timeAgo';
 import {CSS_SIZE, Cursors} from './Cursors';
+import {gameConfigFields} from './GameConfigFields';
+import {defaultGameConfig} from '../defaults';
+import {loadItem} from '../firebase';
 import './worldEditor.css';
 
 const getCoords = (e, scale, xCoord, yCoord) => ({
@@ -108,6 +111,20 @@ export const WorldEditor = ({
 
   const cx = innerWidth / 2 - xCoord * CSS_SIZE;
   const cy = innerHeight / 2 - yCoord * CSS_SIZE;
+
+  // Load and Apply Game Configuration when worldId Changes
+  useEffect(() => {
+    loadItem(`worlds/${worldId}/gameConfig`).then((gameConfigOverrides) => {
+      const gameConfig = {...defaultGameConfig, ...gameConfigOverrides};
+      gameConfigFields
+        .filter((field) => typeof field.onFieldChange === 'function')
+        .forEach((field) => {
+          if (gameConfig[field.prop] != undefined) {
+            field.onFieldChange(gameConfig[field.prop]);
+          }
+        });
+    });
+  }, [worldId]);
 
   return (
     <div
