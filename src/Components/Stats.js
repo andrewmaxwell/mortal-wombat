@@ -58,7 +58,7 @@ const stats = ({world, tileTypes, userIndex}) => {
         <SubTable
           heading="By Date"
           data={countBy(tiles, (t) =>
-            t.tstamp ? timeAgo(Date.now() - t.tstamp) : '???'
+            t.tstamp ? timeAgo(Date.now() - t.tstamp) : '???',
           )}
         />
       </tbody>

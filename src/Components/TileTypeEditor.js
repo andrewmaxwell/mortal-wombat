@@ -152,18 +152,18 @@ export const TileTypeEditor = ({
     return "You can't edit this.";
 
   const selectedTileType = objToArr(tileTypes).find(
-    (el) => el.id === selectedTileTypeId
+    (el) => el.id === selectedTileTypeId,
   );
 
   const onChange = (value, prop) => {
     update(
       {[`worlds/${worldId}/tileTypes/${selectedTileType.key}/${prop}`]: value},
-      onError
+      onError,
     );
   };
 
   const selectedTileTypeDefaults = Object.values(defaultTileTypes).find(
-    (el) => el.id === selectedTileTypeId
+    (el) => el.id === selectedTileTypeId,
   );
 
   return (

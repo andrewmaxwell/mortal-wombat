@@ -22,5 +22,5 @@ export const makeButtons = (config) =>
       };
 
       return [key, {button, show, setShow, paneProps}];
-    })
+    }),
   );

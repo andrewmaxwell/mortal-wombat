@@ -6,7 +6,7 @@ export const useTileTypes = (onError, worldId) => {
 
   useEffect(
     () => listen(`worlds/${worldId}/tileTypes`, setTileTypes, onError),
-    [worldId]
+    [worldId],
   );
 
   return tileTypes;

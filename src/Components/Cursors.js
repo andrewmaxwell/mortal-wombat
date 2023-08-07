@@ -46,6 +46,6 @@ export const Cursors = ({cursors, userIndex, scale}) => {
           ) : null}
         </Fragment>
       );
-    }
+    },
   );
 };

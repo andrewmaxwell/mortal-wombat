@@ -57,9 +57,9 @@ export const setCursor = throttle(
             tstamp: serverTimestamp(),
           },
         },
-        onError
+        onError,
       );
     }
   },
-  500
+  500,
 );

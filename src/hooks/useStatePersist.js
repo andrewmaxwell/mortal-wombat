@@ -13,7 +13,7 @@ export const useStatePersist = (key, initial) => {
   const [val, setVal] = useState(
     localStorage[key] === undefined
       ? initial
-      : parseJSON(localStorage[key], initial)
+      : parseJSON(localStorage[key], initial),
   );
 
   useEffect(() => {

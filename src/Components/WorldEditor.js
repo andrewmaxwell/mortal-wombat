@@ -57,7 +57,7 @@ export const WorldEditor = ({
 
   const tileTypeIndex = useMemo(
     () => indexBy((t) => t.id, objToArr(tileTypes)),
-    [tileTypes]
+    [tileTypes],
   );
 
   // This checks for invalid tiles in the world and outputs them along with an update object
@@ -83,7 +83,7 @@ export const WorldEditor = ({
         location.href.replace(/\?.*/, '') +
           '#' +
           btoa(JSON.stringify({worldId, x, y})),
-        '_blank'
+        '_blank',
       );
       e.preventDefault();
       return false;
@@ -106,7 +106,7 @@ export const WorldEditor = ({
       }
       setCursor(user, x, y, worldId, xCoord, yCoord, scale, onError);
     },
-    [scale, worldId, xCoord, yCoord, selectedTileTypeId, user]
+    [scale, worldId, xCoord, yCoord, selectedTileTypeId, user],
   );
 
   const cx = innerWidth / 2 - xCoord * CSS_SIZE;

@@ -8,7 +8,7 @@ export const useUserIndex = (user, onError) => {
   const [userIndex, setUserIndex] = useState({});
   useEffect(
     () => listen('users', (users) => setUserIndex(indexUsers(users)), onError),
-    [user]
+    [user],
   );
   return userIndex;
 };

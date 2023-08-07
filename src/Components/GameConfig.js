@@ -9,7 +9,7 @@ const useConfig = (worldId, onError) => {
   const [config, setConfig] = useState();
   useEffect(
     () => listen(`worlds/${worldId}/gameConfig`, setConfig, onError),
-    []
+    [],
   );
   return config;
 };

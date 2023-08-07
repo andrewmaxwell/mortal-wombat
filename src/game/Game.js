@@ -149,7 +149,7 @@ export class Game {
       .forEach((key) => {
         const soundName = key.substring(
           0,
-          key.length - soundSettingSuffix.length
+          key.length - soundSettingSuffix.length,
         );
         sounds[soundName] = new Audio(config[key]);
       });
@@ -357,7 +357,7 @@ export class Game {
         const blockDamage = Math.min(
           damage,
           block.hp || Infinity,
-          block.type.hp || Infinity
+          block.type.hp || Infinity,
         );
         if (this.damage(block, damage)) {
           you.ys /= 1 + blockDamage;
@@ -458,7 +458,7 @@ export class Game {
     this.hud.healthBar.update(
       Math.ceil(this.health),
       this.maxHealth,
-      this.health > 30 ? 'green' : 'red'
+      this.health > 30 ? 'green' : 'red',
     );
     if (health <= 0) {
       this.playSound('gameOver');

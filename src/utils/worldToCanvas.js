@@ -3,7 +3,7 @@ import {indexBy, objToArr} from '../utils';
 export const worldToCanvas = (
   world,
   tileTypes,
-  canvas = document.createElement('canvas')
+  canvas = document.createElement('canvas'),
 ) => {
   const tileTypeIndex = indexBy((t) => t.id, objToArr(tileTypes));
   let minX = Infinity;

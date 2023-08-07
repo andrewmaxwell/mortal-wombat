@@ -12,6 +12,6 @@ export const saveTile = (worldId, tile, onError) => {
       [`worlds/${worldId}/lastEdited`]: tstamp,
       [`worlds/${worldId}/lastEditedBy`]: user,
     },
-    onError
+    onError,
   );
 };

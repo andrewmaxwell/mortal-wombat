@@ -142,7 +142,7 @@ class CollectibleCounter extends Element {
     super();
     this.el.classList.add('collectibleCounter');
     this.el.innerHTML = `<span></span> <div style="background: ${getBackground(
-      type
+      type,
     )}"></div>`;
     this.valueEl = this.el.querySelector('span');
     parentElement.append(this.el);
@@ -219,7 +219,9 @@ export class Dialog extends Element {
     const choices = this.choices
       .map(
         ({text}, i) =>
-          `<li ${i === this.choiceIndex ? `class="selected"` : ''}>${text}</li>`
+          `<li ${
+            i === this.choiceIndex ? `class="selected"` : ''
+          }>${text}</li>`,
       )
       .join('');
 
