@@ -15,10 +15,10 @@ const getCoords = (e, scale, xCoord, yCoord) => ({
   y: Math.floor((e.clientY - innerHeight / 2) / scale) + yCoord,
 });
 
-const getTitle = (user, tstamp, userIndex) => {
+const getTitle = (user, tstamp, userIndex, x, y) => {
   if (!user || !tstamp) return '';
   const name = userIndex[user]?.name || user;
-  return `Placed by ${name} ${timeAgo(Date.now() - tstamp)}`;
+  return `Placed at (${x}, ${y}) by ${name} ${timeAgo(Date.now() - tstamp)}`;
 };
 
 const Tiles = ({world, tileTypeIndex, userIndex, setTileLogicCoords}) =>
@@ -26,7 +26,7 @@ const Tiles = ({world, tileTypeIndex, userIndex, setTileLogicCoords}) =>
     <div
       key={key}
       className="tile"
-      title={getTitle(user, tstamp, userIndex)}
+      title={getTitle(user, tstamp, userIndex, x, y)}
       style={{
         transform: `translate(${x * CSS_SIZE}px, ${y * CSS_SIZE}px)`,
         background: getBackground(tileTypeIndex[tileType]),

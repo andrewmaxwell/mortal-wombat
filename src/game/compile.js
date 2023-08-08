@@ -25,6 +25,7 @@ const setHealth = game.setHealth.bind(game);
 
 const moveTile = game.moveTile.bind(game);
 const addTile = game.addTile.bind(game);
+const deleteTile = game.deleteTile.bind(game);
 const isEmpty = game.isEmpty.bind(game);
 const getTile = game.getTile.bind(game);
 const getTileByName = game.getTileByName.bind(game);
@@ -34,6 +35,7 @@ const changeTileType = game.changeTileType.bind(game);
 const you = game.you;
 const poop = game.poop;
 const health = game.health;
+const namedTiles = game.namedTiles;
 
 ${str}`;
 
