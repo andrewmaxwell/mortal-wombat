@@ -35,6 +35,7 @@ const changeTileType = game.changeTileType.bind(game);
 const you = game.you;
 const poop = game.poop;
 const health = game.health;
+const namedTiles = game.namedTiles;
 
 ${str}`;
 
