@@ -82,16 +82,8 @@ export class Game {
 
     this.worldElement.clear();
     this.world = {};
+    this.namedTiles = {};
     for (const key in world) this.addTile(world[key]);
-
-    // Build "Named Tiles" object for quick retrieval
-    this.namedTiles = Object.values(this.world)
-      .filter((tile) => tile.name !== undefined)
-      .reduce(
-        (output, tile) =>
-          Object.assign(output, {[tile.name]: this.getTile(tile.x, tile.y)}),
-        {},
-      );
 
     this.typeIndex = typeIndex;
     this.you = {
@@ -186,6 +178,9 @@ export class Game {
       ...tile,
       el: new TileElement(tile, this.worldElement),
     };
+    if (tile.name !== undefined) {
+      this.namedTiles[tile.name] = this.world[`${tile.x}_${tile.y}`];
+    }
   }
   deleteTile(tile) {
     tile.el.destroy();
