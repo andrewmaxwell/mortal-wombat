@@ -189,6 +189,9 @@ export class Game {
   }
   deleteTile(tile) {
     tile.el.destroy();
+    if (tile.name !== undefined && this.namedTiles[tile.name] !== undefined) {
+      delete this.namedTiles[tile.name];
+    }
     delete this.world[`${tile.x}_${tile.y}`];
   }
   changeTileType(tile, type) {
