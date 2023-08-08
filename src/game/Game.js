@@ -90,7 +90,7 @@ export class Game {
       .reduce(
         (output, tile) =>
           Object.assign(output, {[tile.name]: this.getTile(tile.x, tile.y)}),
-        {}
+        {},
       );
 
     this.typeIndex = typeIndex;
