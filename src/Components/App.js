@@ -164,6 +164,10 @@ export const App = () => {
                 To test what you have made, Alt+Click where you want to start
                 testing. Share your game URL to share your starting point.
               </p>
+              <p>
+                Using the None tile-type, double-click on a placed tile to open
+                the script editor.
+              </p>
             </Pane>
           )}
 
@@ -188,7 +192,7 @@ export const App = () => {
 
           {tileLogicCoords && (
             <Pane
-              label="Tile Logic"
+              label={`Tile Logic (${tileLogicCoords.x},${tileLogicCoords.y})`}
               className="tileLogicContainer"
               hide={() => setTileLogicCoords()}
             >

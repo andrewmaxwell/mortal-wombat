@@ -34,7 +34,8 @@ const Select = ({value, onChange, options}) => (
 );
 
 // TODO: add code validation
-const Code = ({value, onChange}) => (
+const editorOptions = {minimap: {enabled: false}};
+export const Code = ({value, onChange}) => (
   <Suspense fallback="Loading...">
     <Editor
       height={200}
@@ -43,6 +44,7 @@ const Code = ({value, onChange}) => (
       defaultLanguage="javascript"
       value={value}
       onChange={onChange}
+      options={editorOptions}
     />
   </Suspense>
 );
