@@ -50,7 +50,6 @@ export class Game {
     this.setGameBackground(gameConfig.backgroundUrl);
 
     const typeIndex = {};
-    this.namedTiles = {};
     let youPos;
     for (const type of Object.values(tileTypes)) {
       typeIndex[type.id] = type;
@@ -67,10 +66,8 @@ export class Game {
           type: typeIndex[tileType],
           onSpace: compile(onSpace),
           onTouch: compile(onTouch),
+          name,
         };
-        if (name) {
-          this.namedTiles[name] = world[key];
-        }
       } else {
         delete world[key];
       }
@@ -86,6 +83,15 @@ export class Game {
     this.worldElement.clear();
     this.world = {};
     for (const key in world) this.addTile(world[key]);
+
+    // Build "Named Tiles" object for quick retrieval
+    this.namedTiles = Object.values(this.world)
+      .filter((tile) => tile.name !== undefined)
+      .reduce(
+        (output, tile) =>
+          Object.assign(output, {[tile.name]: this.getTile(tile.x, tile.y)}),
+        {}
+      );
 
     this.typeIndex = typeIndex;
     this.you = {
