@@ -196,7 +196,6 @@ export class Game {
   }
   moveWombat(pressing) {
     const {you, world} = this;
-    const lastSwimBlock = you.swimBlock;
 
     you.isPushing = false;
     you.isWalking = false;
@@ -261,12 +260,25 @@ export class Game {
       if (block.type.healing < 0) {
         damage = Math.max(damage, -block.type.healing);
       }
-      if (block.type.moveStyle === 'liquid') you.swimBlock = block;
-    }
-    if (you.swimBlock && you.swimBlock !== lastSwimBlock) {
-      this.playSound(you.swimBlock.type.id);
+      if (block.type.moveStyle === 'liquid') {
+        you.swimBlock = block;
+        // Only play the liquid blocks sound if this is the first time
+        // the wombat has entered the liquid.
+        if (
+          Object.keys(this.lastSeen).filter(
+            (lastSeenIndex) =>
+              this.world[lastSeenIndex]?.type?.moveStyle === 'liquid',
+          ).length === 0
+        ) {
+          this.playSound(block.type.id);
+        }
+      }
     }
     if (damage) this.setHealth(this.health - damage);
+
+    // Capture the current seen blocks so they can be used to
+    // determine if the wombat is already in the liquid.
+    this.lastSeen = seen;
 
     if (pressing.space) {
       you.isDigging = true;
