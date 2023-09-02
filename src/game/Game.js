@@ -265,6 +265,7 @@ export class Game {
         // Only play the liquid blocks sound if this is the first time
         // the wombat has entered the liquid.
         if (
+          this.lastSeen &&
           Object.keys(this.lastSeen).filter(
             (lastSeenIndex) =>
               this.world[lastSeenIndex]?.type?.moveStyle === 'liquid',
