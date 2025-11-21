@@ -35,7 +35,7 @@ const fields = [
     info: `A url to an image.`,
   },
   ...['walking', 'pushing', 'jumping', 'digging', 'crouching'].map((n) => ({
-    prop: `${n}Image$`,
+    prop: `${n}Image`,
     label: `${capitalize(n)} Image URL`,
     type: 'text',
     info: `A url to an image for ${n}.`,
