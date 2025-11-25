@@ -76,8 +76,7 @@ export const defaultTileTypes = {
     density: '2',
     healing: '-0.73',
     id: 'm',
-    image:
-      'https://piskel-imgstore-b.appspot.com/img/a3591080-d48c-11ec-adf0-83f7175e2efe.gif',
+    image: 'https://static.heironimus.info/image/magma.gif',
     label: 'magma',
     moveDelay: '30',
     moveStyle: 'liquid',
@@ -112,8 +111,7 @@ export const defaultTileTypes = {
     color: 'blue',
     density: '0.85',
     id: 'a',
-    image:
-      'https://piskel-imgstore-b.appspot.com/img/ffce45fa-d85c-11ec-a908-a90a117b47b4.gif',
+    image: 'https://static.heironimus.info/image/water.gif',
     label: 'water',
     moveDelay: '15',
     moveStyle: 'liquid',
@@ -123,8 +121,7 @@ export const defaultTileTypes = {
     color: '#f04dd2',
     density: '10',
     id: 'o',
-    image:
-      'https://piskel-imgstore-b.appspot.com/img/e92587eb-df95-11ec-b289-d74eb3c6d4e4.gif',
+    image: 'https://static.heironimus.info/image/polymer.gif',
     label: 'polymer',
     movable: true,
     moveDelay: '90',
