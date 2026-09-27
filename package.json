@@ -6,48 +6,30 @@
   "scripts": {
     "predeploy": "npm run build",
     "deploy": "npm version patch && gh-pages -d build",
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "lint": "eslint src"
+    "start": "vite",
+    "build": "vite build",
+    "test": "vitest run",
+    "lint": "eslint src --ext .js,.jsx",
+    "preview": "vite preview"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
-    "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^14.0.0",
-    "@testing-library/user-event": "^14.6.1",
     "firebase": "^9.17.2",
-    "gh-pages": "^5.0.0",
-    "prettier": "^3.6.2",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
-    "web-vitals": "^3.1.1"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@vitejs/plugin-react": "^6.1.1",
     "eslint": "^8.46.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-import": "^2.32.0",
-    "eslint-plugin-jest": "^27.2.1",
-    "eslint-plugin-prettier": "^5.5.4"
-  }
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-react": "^7.37.5",
+    "gh-pages": "^5.0.0",
+    "jsdom": "^29.1.1",
+    "prettier": "^3.9.9",
+    "vite": "^8.3.1",
+    "vitest": "^4.1.11"
+  },
+  "type": "module"
 }

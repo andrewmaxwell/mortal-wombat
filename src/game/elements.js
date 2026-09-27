@@ -1,5 +1,4 @@
 import {getBackground} from '../utils/getBackground';
-import packageJSON from '../../package.json';
 
 const TILE_SIZE = 48;
 const CHUNK_SIZE = 24;
@@ -175,7 +174,7 @@ export class VersionElement extends Element {
   constructor(parentElement) {
     super();
     this.el.classList.add('version');
-    this.el.innerText = 'v' + packageJSON.version;
+    this.el.innerText = 'v' + __APP_VERSION__;
     parentElement.append(this.el);
   }
 }

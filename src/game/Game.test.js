@@ -1,7 +1,8 @@
+import {expect, test, vi} from 'vitest';
 import {Game} from './Game';
 import {loadItem} from '../firebase';
 
-jest.mock('../firebase', () => ({loadItem: jest.fn()}));
+vi.mock('../firebase', () => ({loadItem: vi.fn()}));
 
 const noKeys = {};
 
