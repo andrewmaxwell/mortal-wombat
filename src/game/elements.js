@@ -101,12 +101,12 @@ export class TileElement extends Element {
     const image = isDigging
       ? 'diggingImage'
       : isJumping
-      ? 'jumpingImage'
-      : isPushing
-      ? 'pushingImage'
-      : isWalking
-      ? 'walkingImage'
-      : 'image';
+        ? 'jumpingImage'
+        : isPushing
+          ? 'pushingImage'
+          : isWalking
+            ? 'walkingImage'
+            : 'image';
     if (image !== this.pImage) {
       this.pImage = image;
       this.setBackground(type, image);

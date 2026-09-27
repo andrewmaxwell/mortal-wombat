@@ -4,7 +4,6 @@ import {
   getDatabase,
   update as _update,
   onValue,
-  off,
   get,
   child,
 } from 'firebase/database';
@@ -44,12 +43,16 @@ export const defaultWorldId = 'l5ybd0mu:2x3xfrsom4h';
 
 // {path1: val1, path2: val2}
 export const update = (updates, onError) => {
+  const handleError = (e) => {
+    console.error(e);
+    onError?.(e.message);
+  };
   try {
     // console.log('updates', updates);
-    return _update(dbRef, updates);
+    // write failures (e.g. permission denied) arrive as a rejected promise
+    return _update(dbRef, updates).catch(handleError);
   } catch (e) {
-    console.error(e);
-    onError(e.message);
+    handleError(e);
   }
 };
 
@@ -60,13 +63,19 @@ if (location.host === 'localhost:3000') {
 export const loadItem = async (key) => (await get(child(dbRef, key))).val();
 
 export const listen = (pathStr, onChange, onError) => {
-  try {
-    const r = ref(db, pathStr);
-    onValue(r, (snapshot) => onChange(snapshot.val() || {}));
-    return () => off(r);
-  } catch (e) {
+  const handleError = (e) => {
     console.error(e);
-    onError(e.message);
+    onError?.(e.message);
+  };
+  try {
+    // returns an unsubscribe for just this listener (off(ref) would remove all of them)
+    return onValue(
+      ref(db, pathStr),
+      (snapshot) => onChange(snapshot.val() || {}),
+      handleError,
+    );
+  } catch (e) {
+    handleError(e);
   }
 };
 

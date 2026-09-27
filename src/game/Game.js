@@ -13,6 +13,7 @@ import {compile} from './compile';
 
 const MAX_RENDER_DIST = 32; // don't move things more than this many tiles away
 const MOVEMENT_THRESHOLD = 0.1; // don't move you or the viewport if you move less than this much of a tile
+const TOUCH_GRACE_FRAMES = 2; // frames without contact before onTouch can fire again
 
 const pairs = [
   [Math.floor, Math.floor],
@@ -38,11 +39,16 @@ export class Game {
   }
   async load(worldId, overrides) {
     this.loading = true;
+    const data = await loadItem(`worlds/${worldId}`);
+    if (!data) {
+      this.loading = !this.you; // keep playing the current world, if there is one
+      throw new Error(`World not found: ${worldId}`);
+    }
     const {
       world,
       tileTypes: overrideTileTypes,
       gameConfig: overrideGameConfig,
-    } = await loadItem(`worlds/${worldId}`);
+    } = data;
 
     const tileTypes = mergeDeepLeft(overrideTileTypes, defaultTileTypes);
     const gameConfig = mergeDeepLeft(overrideGameConfig, defaultGameConfig);
@@ -74,8 +80,7 @@ export class Game {
     }
 
     if (overrides?.x !== undefined && overrides?.y !== undefined) {
-      youPos.x = overrides.x;
-      youPos.y = overrides.y;
+      youPos = {x: overrides.x, y: overrides.y};
     }
 
     this.sounds = this.buildSounds(gameConfig, typeIndex);
@@ -103,29 +108,16 @@ export class Game {
     this.collectibles = overrides?.collectibles || {};
     this.frame = 0;
 
-    // these can all be overridden by config
-    this.digSpeed = 0.07;
-    this.eatSpeed = 0.05;
-    this.gravity = 0.005;
-    this.health = 100;
-    this.maxHealth = 100;
-    this.poop = 50;
-    this.maxPoop = 10;
-    this.jumpPower = 0.11;
-    this.moveSpeed = 0.02;
-    this.moveDeceleration = 0.3;
-    this.fallDamageMin = 0.2;
-    this.fallDamageMult = 100;
-    this.swimPower = 0.005;
-    this.waterDrag = 0.1;
-    this.airDrag = 0.001;
-
-    for (const x in gameConfig) {
-      if (!isNaN(gameConfig[x])) this[x] = Number(gameConfig[x]); // because editing them turns them into strings, yayyyy
+    // numeric settings (digSpeed, gravity, etc.) come from defaultGameConfig merged with world overrides
+    for (const key in gameConfig) {
+      // a cleared field is saved as '', which would otherwise become 0
+      const value =
+        gameConfig[key] === '' ? defaultGameConfig[key] : gameConfig[key];
+      if (!isNaN(value)) this[key] = Number(value); // because editing them turns them into strings, yayyyy
     }
 
-    this.setHealth(overrides?.health || this.health);
-    this.setPoop(overrides?.poop || this.poop);
+    this.setHealth(overrides?.health ?? this.health);
+    this.setPoop(overrides?.poop ?? this.poop);
     this.you.el.update(this.you);
     this.worldElement.update(this.you);
     this.loading = false;
@@ -158,7 +150,8 @@ export class Game {
     if (this.sounds[sound] === undefined && isValidUrl(sound)) {
       this.sounds[sound] = new Audio(sound);
     }
-    this.sounds[sound]?.play();
+    // play() rejects when autoplay is blocked or playback is interrupted
+    this.sounds[sound]?.play()?.catch(() => {});
   }
   pauseSound(sound) {
     this.sounds[sound]?.pause();
@@ -255,7 +248,8 @@ export class Game {
       if (!block) continue;
       if (block.type.collectible) {
         this.collect(block.type.id);
-        return this.deleteTile(block);
+        this.deleteTile(block);
+        continue;
       }
       if (block.type.healing < 0) {
         damage = Math.max(damage, -block.type.healing);
@@ -289,8 +283,13 @@ export class Game {
       const b = this.getTile(x, y);
       if (b?.type.edible) {
         this.damage(b, this.eatSpeed);
-        this.setHealth(this.health + b.type.healing * this.eatSpeed);
-        this.setPoop(this.poop + b.type.makePoop * this.eatSpeed);
+        // healing/makePoop are optional on custom tile types; missing would make NaN
+        this.setHealth(
+          this.health + (Number(b.type.healing) || 0) * this.eatSpeed,
+        );
+        this.setPoop(
+          this.poop + (Number(b.type.makePoop) || 0) * this.eatSpeed,
+        );
         this.playSound(b.type.id);
       }
       if (b?.type.diggable) {
@@ -385,16 +384,15 @@ export class Game {
     }
   }
   processOnTouch(block) {
-    // If the block being touched has an onTouch handler
-    if (block.onTouch) {
-      this.currentBlockTouch = block;
-      // Don't run onTouch if this is the same block as last time
-      if (this.lastBlockTouch !== block) {
-        block.onTouch(this);
-      }
-    }
-    this.lastBlockTouch = this.currentBlockTouch;
-    this.currentBlockTouch = undefined;
+    if (!block.onTouch) return;
+    // Only run onTouch when contact starts, not on every frame of contact.
+    // Resting on a block only overlaps it every other frame, so short gaps still count as contact.
+    const isNewContact = !(
+      this.frame - block.lastTouchFrame <=
+      TOUCH_GRACE_FRAMES
+    );
+    block.lastTouchFrame = this.frame;
+    if (isNewContact) block.onTouch(this);
   }
   getTile(x, y) {
     return this.world[`${x}_${y}`];
@@ -477,10 +475,14 @@ export class Game {
       this.maxHealth,
       this.health > 30 ? 'green' : 'red',
     );
-    if (health <= 0) {
+    if (this.health <= 0 && !this.isDead) {
+      this.isDead = true;
       this.playSound('gameOver');
-      this.rootElement.innerHTML +=
-        '<div class="youDead"><h1>you dead</h1><h2>press R to try again</h2></div>';
+      // insertAdjacentHTML, not innerHTML +=, so existing elements aren't recreated
+      this.rootElement.insertAdjacentHTML(
+        'beforeend',
+        '<div class="youDead"><h1>you dead</h1><h2>press R to try again</h2></div>',
+      );
     }
   }
   numCollected(id) {
@@ -521,10 +523,15 @@ export class Game {
     this.getTile(x, y)?.onSpace?.(this);
   }
   async jumpTo(worldId) {
-    await this.load(worldId, {
-      health: this.health,
-      poop: this.poop,
-      collectibles: this.collectibles,
-    });
+    try {
+      await this.load(worldId, {
+        health: this.health,
+        poop: this.poop,
+        collectibles: this.collectibles,
+      });
+    } catch (e) {
+      console.error(e);
+      this.dialog.say(e.message);
+    }
   }
 }

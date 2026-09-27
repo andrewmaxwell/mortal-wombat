@@ -30,7 +30,7 @@ export const Cursors = ({cursors, userIndex, scale}) => {
               {userIndex[user]?.name || user}
             </span>
           </div>
-          {mouseX && mouseY ? (
+          {mouseX != null && mouseY != null ? (
             <div
               className="mouseCursor"
               style={{

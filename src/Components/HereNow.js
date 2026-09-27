@@ -7,7 +7,7 @@ export const HereNow = ({cursors, userIndex, worldId}) => {
     .map(([key, {user, mouseX, mouseY}]) => (
       <div key={key} style={{margin: 5}}>
         {userIndex[user]?.name || user}
-        {mouseX && mouseY ? (
+        {mouseX != null && mouseY != null ? (
           <a
             style={{margin: '0 10px'}}
             href={`#${worldId || ''}/${mouseX}/${mouseY}/32`}

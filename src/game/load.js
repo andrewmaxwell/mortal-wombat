@@ -17,5 +17,11 @@ export const load = async (rootElement) => {
     : defaultWorldId;
 
   const game = new Game(rootElement);
-  return await game.load(worldId, hashConfig);
+  try {
+    return await game.load(worldId, hashConfig);
+  } catch (e) {
+    if (worldId === defaultWorldId) throw e;
+    console.error(e);
+    return await game.load(defaultWorldId);
+  }
 };

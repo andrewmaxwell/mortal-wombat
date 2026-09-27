@@ -20,17 +20,14 @@ export class Controls {
     this.pressing = {};
     this.additionalControls = additionalControls || [];
     const keydown = (e) => {
-      if (controlIndex[e.code]) {
-        this.pressing[controlIndex[e.code].id] = e.type === 'keydown';
-      }
+      const control = controlIndex[e.code];
+      if (!control) return;
+      this.pressing[control.id] = e.type === 'keydown';
+      // ignore key auto-repeat so holding space doesn't spam interact/dialogs
+      if (e.type === 'keydown' && !e.repeat) onPress(control.id);
     };
     window.addEventListener('keydown', keydown);
     window.addEventListener('keyup', keydown);
-    window.addEventListener('keypress', (e) => {
-      if (controlIndex[e.code]) {
-        onPress(controlIndex[e.code].id);
-      }
-    });
 
     if (showControls) {
       // for (const {id} of controls) {

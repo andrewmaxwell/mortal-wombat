@@ -1,4 +1,4 @@
-import {memo, useCallback, useEffect, useMemo, useRef} from 'react';
+import {memo, useEffect, useMemo, useRef} from 'react';
 import {setCursor} from '../hooks/useCursors';
 import {indexBy, objToArr} from '../utils';
 import {getBackground} from '../utils/getBackground';
@@ -96,18 +96,16 @@ export const WorldEditor = ({
     }
   };
 
-  const onMouseMove = useCallback(
-    (e) => {
-      const {x, y} = getCoords(e, scale, xCoord, yCoord);
-      if (selectedTileTypeId) {
-        const s = ghostRef.current?.style;
-        s.transform = `translate(${x * CSS_SIZE}px, ${y * CSS_SIZE}px)`;
-        if (e.buttons) onClick(e);
-      }
-      setCursor(user, x, y, worldId, xCoord, yCoord, scale, onError);
-    },
-    [scale, worldId, xCoord, yCoord, selectedTileTypeId, user],
-  );
+  // not memoized: onClick needs the latest world, or drag-painting re-saves tiles
+  const onMouseMove = (e) => {
+    const {x, y} = getCoords(e, scale, xCoord, yCoord);
+    if (selectedTileTypeId) {
+      const s = ghostRef.current?.style;
+      if (s) s.transform = `translate(${x * CSS_SIZE}px, ${y * CSS_SIZE}px)`;
+      if (e.buttons) onClick(e);
+    }
+    setCursor(user, x, y, worldId, xCoord, yCoord, scale, onError);
+  };
 
   const cx = innerWidth / 2 - xCoord * CSS_SIZE;
   const cy = innerHeight / 2 - yCoord * CSS_SIZE;

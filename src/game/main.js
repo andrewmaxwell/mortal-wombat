@@ -3,25 +3,48 @@ import './game.css';
 import {GamepadControls} from './gamepadControls';
 import {load} from './load';
 
+// Physics constants are tuned per-tick at 60 ticks/sec. Stepping at a fixed rate
+// keeps game speed the same on 120/144Hz displays.
+const TICK_MS = 1000 / 60;
+const TICK_TOLERANCE_MS = 1; // absorb frame timing jitter so 60Hz stays at 1 tick/frame
+const MAX_TICKS_PER_FRAME = 5;
+
 let game,
   controls,
-  isPaused = false;
+  isPaused = false,
+  lastTime,
+  elapsed = 0;
 
 const rootElement = document.querySelector('#root');
 
-const loop = () => {
-  if (document.hasFocus() && game) {
-    if (isPaused) {
-      isPaused = false;
-      document.body.style.opacity = 1;
-    }
-    const controlState = controls.getPressing();
-    if (!game.dialog.isOpen) game.iterate(controlState);
-  } else if (!isPaused) {
-    isPaused = true;
-    document.body.style.opacity = 0.5;
-  }
+const loop = (now) => {
   requestAnimationFrame(loop);
+  if (!document.hasFocus() || !game) {
+    if (!isPaused) {
+      isPaused = true;
+      document.body.style.opacity = 0.5;
+    }
+    lastTime = undefined;
+    return;
+  }
+  if (isPaused) {
+    isPaused = false;
+    document.body.style.opacity = 1;
+  }
+
+  elapsed += lastTime === undefined ? TICK_MS : now - lastTime;
+  lastTime = now;
+
+  const controlState = controls.getPressing();
+  let ticks = 0;
+  while (elapsed >= TICK_MS - TICK_TOLERANCE_MS) {
+    if (!game.dialog.isOpen) game.iterate(controlState);
+    elapsed -= TICK_MS;
+    if (++ticks >= MAX_TICKS_PER_FRAME) {
+      elapsed = 0; // too far behind (e.g. tab was stalled); don't try to catch up
+      break;
+    }
+  }
 };
 
 const init = async () => {
@@ -41,7 +64,7 @@ const init = async () => {
   window.addEventListener('resize', () => {
     game.updateViewport();
   });
-  loop();
+  requestAnimationFrame(loop);
 };
 
 init();
