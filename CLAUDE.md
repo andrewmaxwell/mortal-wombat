@@ -19,7 +19,8 @@ A tile-based platformer (`src/game/`, plain DOM, no framework) and a collaborati
 
 - Physics constants are per tick. `main.js` runs a fixed 60 ticks/sec, so any tuning has to assume that rate.
 - Input comes from `Controls` (keyboard), `GamepadControls` and `TouchControls`, merged through `getPressing`. `main.js` reads them only on frames that run a tick.
-- `Game.iterate` = `moveWombat` (the player) then `iterateTiles` (falling, liquid, patrol and magma rules), then `frame++`.
+- `Game.iterate` = `moveWombat` (the player) then `iterateTiles` (falling, liquid and patrol movement, and reactions), then `frame++`.
+- Tile behavior comes from tile-type properties, not tile IDs. Magma's defaults are `burns` (destroys touching tiles that have HP), plus `reactsWith: 'a'` and `reactsInto: 's'` (touching water consumes the water and turns the magma to stone). Any tile type can use these properties. A tile acts every `moveDelay` frames, or every frame if it reacts but has no `moveDelay`.
 - When the wombat rests on a block, it only overlaps that block every other frame. Contact logic such as `processOnTouch` needs a grace window, not a "touched last frame" check.
 - Tile scripts (`onSpace`/`onTouch`) are author-written JS compiled with `new Function` in `compile.js`. The helpers they can use are the ones listed in `useTemplate`, and `TileLogic.jsx` shows examples to authors, so keep the two in sync.
 - **World scripts run only in the sandbox.** The iframe has `sandbox="allow-scripts"` and no `allow-same-origin`, so its origin is `'null'` and scripts can't read the editor's Firebase login. `play.js` starts the game only when `window.origin === 'null'`, and otherwise redirects to `/`. Keep game code out of the editor bundle and editor/auth code out of the game (auth lives in `src/auth.js`).
@@ -44,7 +45,7 @@ A tile-based platformer (`src/game/`, plain DOM, no framework) and a collaborati
 Ordered by priority. Remove an entry once it's done.
 
 1. **Normalize numbers once,** when a world loads, instead of converting at every use (see Data model). TypeScript or JSDoc types for the world schema would help.
-2. **Split `Game.js`** (physics, AI, sound, HUD, scripting). Replace the hard-coded tile-ID rules in `iterateTiles` (magma `'m'`, water `'a'`, stone `'s'`) with tile-type properties.
+2. **Split `Game.js`** (physics, AI, sound, HUD, scripting).
 3. **Narrow the script API** so scripts don't get the whole `game` object. `Dialog.say` inserts author text as raw HTML.
 4. **Smaller items:**
    - `makeButtons` calls hooks inside `.map()`.

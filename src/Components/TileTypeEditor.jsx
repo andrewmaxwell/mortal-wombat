@@ -91,6 +91,27 @@ const fields = [
     show: (data) => parseInt(data.moveDelay),
   },
   {
+    prop: 'burns',
+    label: 'Burns',
+    type: 'checkbox',
+    info: 'Does it destroy touching tiles that have HP, like magma does?',
+  },
+  {
+    prop: 'reactsWith',
+    label: 'Reacts With',
+    type: 'select',
+    info: 'When it touches this kind of tile, that tile disappears and this one turns into "Reacts Into". Magma reacts with water.',
+    tileTypeOptions: true,
+  },
+  {
+    prop: 'reactsInto',
+    label: 'Reacts Into',
+    type: 'select',
+    info: 'What it turns into after reacting. Magma turns into stone.',
+    tileTypeOptions: true,
+    show: (data) => data.reactsWith,
+  },
+  {
     prop: 'healing',
     label: 'Healing',
     type: 'number',
@@ -123,7 +144,7 @@ const fields = [
     label: 'Drops Loot',
     type: 'select',
     info: 'What kind of loot does it drop?',
-    options: [{label: 'Jewel', value: 'j'}],
+    tileTypeOptions: true,
     show: (data) => data.diggable && data.hp,
   },
   {
@@ -156,6 +177,15 @@ export const TileTypeEditor = ({
     (el) => el.id === selectedTileTypeId,
   );
 
+  // placeable tile types, for the fields that pick one
+  const options = objToArr(tileTypes)
+    .filter(({id}) => id && !id.startsWith('_') && id !== 'w')
+    .sort((a, b) => a.order - b.order)
+    .map(({id, label}) => ({label: label || id, value: id}));
+  const formFields = fields.map((field) =>
+    field.tileTypeOptions ? {...field, options} : field,
+  );
+
   const onChange = (value, prop) => {
     if (prop === 'color') markEdited(worldId);
     update(
@@ -172,7 +202,7 @@ export const TileTypeEditor = ({
     selectedTileType && (
       <div className="tileTypeEditor">
         <FormThing
-          fields={fields}
+          fields={formFields}
           data={selectedTileType}
           defaults={
             selectedTileTypeDefaults &&

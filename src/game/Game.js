@@ -428,53 +428,63 @@ export class Game {
   iterateTiles() {
     for (const key in this.world) {
       const b = this.world[key];
+      const {moveDelay, burns, reactsWith} = b.type;
+      const reacts = burns || reactsWith;
+      // tiles act every moveDelay frames; reacting tiles without one act every frame
       if (
-        !b.type.moveDelay ||
-        this.frame % b.type.moveDelay > 0 ||
+        (moveDelay ? this.frame % moveDelay > 0 : !reacts) ||
         Math.abs(this.you.x - b.x) > MAX_RENDER_DIST ||
         Math.abs(this.you.y - b.y) > MAX_RENDER_DIST
       )
         continue;
 
-      if (this.isEmpty(b.x, b.y + 1)) {
-        this.moveTile(b.x, b.y, 0, 1);
-      } else if (b.type.moveStyle === 'liquid') {
-        const left = this.isEmpty(b.x - 1, b.y);
-        const right = this.isEmpty(b.x + 1, b.y);
-        if (left && right) {
-          this.moveTile(b.x, b.y, Math.random() < 0.5 ? 1 : -1, 0);
-        } else if (left) {
-          this.moveTile(b.x, b.y, -1, 0);
-        } else if (right) {
-          this.moveTile(b.x, b.y, 1, 0);
-        }
-      } else if (b.type.moveStyle === 'patrol') {
-        if (!b.dirX) b.dirX = 1;
-        if (
-          this.isEmpty(b.x + b.dirX, b.y) &&
-          this.badGuyCanWalkOn(b.x + b.dirX, b.y + 1)
-        ) {
-          this.moveTile(b.x, b.y, b.dirX, 0);
-        } else {
-          b.dirX *= -1;
-        }
+      if (moveDelay) this.moveTileByStyle(b);
+      if (reacts) this.react(b);
+    }
+  }
+  moveTileByStyle(b) {
+    if (this.isEmpty(b.x, b.y + 1)) {
+      this.moveTile(b.x, b.y, 0, 1);
+    } else if (b.type.moveStyle === 'liquid') {
+      const left = this.isEmpty(b.x - 1, b.y);
+      const right = this.isEmpty(b.x + 1, b.y);
+      if (left && right) {
+        this.moveTile(b.x, b.y, Math.random() < 0.5 ? 1 : -1, 0);
+      } else if (left) {
+        this.moveTile(b.x, b.y, -1, 0);
+      } else if (right) {
+        this.moveTile(b.x, b.y, 1, 0);
       }
-
-      // special rules for magma
-      if (b.type.id === 'm') {
-        let touchingWater = false;
-        for (const [dx, dy] of dirs) {
-          const block = this.getTile(b.x + dx, b.y + dy);
-          if (block && (block.type.hp || block.type.id === 'a')) {
-            if (block.type.id === 'a') touchingWater = true;
-            this.deleteTile(block);
-          }
-        }
-        if (touchingWater) {
-          // if lava touches water, it turns to stone
-          this.changeTileType(b, this.typeIndex.s);
-        }
+    } else if (b.type.moveStyle === 'patrol') {
+      if (!b.dirX) b.dirX = 1;
+      if (
+        this.isEmpty(b.x + b.dirX, b.y) &&
+        this.badGuyCanWalkOn(b.x + b.dirX, b.y + 1)
+      ) {
+        this.moveTile(b.x, b.y, b.dirX, 0);
+      } else {
+        b.dirX *= -1;
       }
+    }
+  }
+  // burns: destroys neighbors that have HP.
+  // reactsWith: a neighbor of that type is consumed, and this tile turns into reactsInto
+  // (magma + water = stone).
+  react(b) {
+    const {burns, reactsWith, reactsInto} = b.type;
+    let reacted = false;
+    for (const [dx, dy] of dirs) {
+      const block = this.getTile(b.x + dx, b.y + dy);
+      if (!block) continue;
+      if (reactsWith && block.type.id === reactsWith) {
+        this.deleteTile(block);
+        reacted = true;
+      } else if (burns && block.type.hp) {
+        this.deleteTile(block);
+      }
+    }
+    if (reacted && this.typeIndex[reactsInto]) {
+      this.changeTileType(b, this.typeIndex[reactsInto]);
     }
   }
   setHealth(health) {

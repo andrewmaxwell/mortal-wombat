@@ -72,6 +72,7 @@ export const defaultTileTypes = {
     order: '4',
   },
   4: {
+    burns: true,
     color: 'orange',
     density: '2',
     healing: '-0.73',
@@ -81,6 +82,8 @@ export const defaultTileTypes = {
     moveDelay: '30',
     moveStyle: 'liquid',
     order: '5',
+    reactsInto: 's',
+    reactsWith: 'a',
   },
   5: {
     collectible: true,

@@ -26,7 +26,7 @@ const Select = ({value, onChange, options}) => (
   <select value={value} onChange={(e) => onChange(e.target.value)}>
     <option></option>
     {options.map(({label, value}) => (
-      <option key={label} value={value}>
+      <option key={value} value={value}>
         {label}
       </option>
     ))}
