@@ -1,0 +1,1 @@
+var e=document.createElement(`iframe`);e.className=`gameFrame`,e.src=`/play.html`+location.hash,e.setAttribute(`sandbox`,`allow-scripts`),e.allow=`autoplay *; gamepad *`,document.body.append(e);var t=()=>e.focus();e.addEventListener(`load`,t),window.addEventListener(`focus`,t);
