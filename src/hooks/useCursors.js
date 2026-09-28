@@ -1,6 +1,7 @@
 import {serverTimestamp} from 'firebase/database';
 import {useEffect, useState} from 'react';
-import {listen, update} from '../firebase';
+import {isLoggedIn} from '../auth';
+import {listen, removeOnDisconnect, update} from '../firebase';
 import {guid, throttle} from '../utils';
 
 export const sessionTimeOut = 15 * 1000;
@@ -14,18 +15,7 @@ export const getLatestTimestamp = (cursors) => {
   return latestTimestamp;
 };
 
-const cullCursors = (cursors, worldId, onError) => {
-  const culledCursors = {};
-  const latestTimestamp = getLatestTimestamp(cursors);
-  for (const key in cursors) {
-    if (latestTimestamp - cursors[key].tstamp > sessionTimeOut) {
-      culledCursors[`worlds/${worldId}/cursors/${key}`] = null;
-    }
-  }
-  update(culledCursors, onError);
-};
-
-export const useCursors = (onError, worldId) => {
+export const useCursors = (onError, worldId, user) => {
   const [cursors, setCursors] = useState({});
   useEffect(() => {
     if (worldId) {
@@ -33,11 +23,17 @@ export const useCursors = (onError, worldId) => {
     }
   }, [worldId]);
 
+  // remove this session's cursor when it leaves the world or disconnects
   useEffect(() => {
-    if (Math.random() < 0.01) {
-      cullCursors(cursors, worldId, onError);
-    }
-  }, [cursors, worldId]);
+    if (!user || !worldId) return;
+    const path = `worlds/${worldId}/cursors/${sessionId}`;
+    removeOnDisconnect(path, onError);
+    return () => {
+      // after logging out the write would be denied, so leave it to removeOnDisconnect
+      if (isLoggedIn()) update({[path]: null}, onError);
+    };
+  }, [user, worldId]);
+
   return cursors;
 };
 

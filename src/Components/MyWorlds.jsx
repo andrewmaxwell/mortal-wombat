@@ -1,12 +1,10 @@
 import {getAuth} from 'firebase/auth';
 import {serverTimestamp} from 'firebase/database';
-import {useEffect, useRef, useState} from 'react';
-import {defaultTileTypes} from '../defaults';
+import {useEffect, useState} from 'react';
 import {loadItem, update} from '../firebase';
 import {guid} from '../utils';
-import {mergeDeepLeft} from '../utils/mergeDeepLeft';
 import {timeAgo} from '../utils/timeAgo';
-import {worldToCanvas} from '../utils/worldToCanvas';
+import {renderThumbnail, worldIndexPath} from '../utils/worldIndex';
 import './myWorlds.css';
 import {editorName} from '../hooks/useUserIndex';
 
@@ -20,12 +18,14 @@ const createNewWorld = async () => {
   const worldName = prompt('Enter a name for your new world.');
   if (!worldName) return;
 
+  const summary = {
+    worldName,
+    lastEdited: serverTimestamp(),
+    lastEditedBy: getAuth().currentUser.uid,
+  };
   await update({
-    [`worlds/${worldGuid}`]: {
-      worldName,
-      lastEdited: serverTimestamp(),
-      lastEditedBy: getAuth().currentUser.uid,
-    },
+    [`worlds/${worldGuid}`]: summary,
+    [worldIndexPath(worldGuid)]: summary,
   });
 
   gotoWorld(worldGuid);
@@ -33,19 +33,33 @@ const createNewWorld = async () => {
 
 // collabitat
 
-const WorldCanvas = ({world, tileTypes}) => {
-  const canvasRef = useRef();
+// Worlds indexed before thumbnails existed: render one from the full world, once, and save it.
+const MissingThumbnail = ({id}) => {
+  const [src, setSrc] = useState();
 
   useEffect(() => {
-    if (world && tileTypes) worldToCanvas(world, tileTypes, canvasRef.current);
-  }, [world, tileTypes]);
+    let cancelled = false;
+    Promise.all([
+      loadItem(`worlds/${id}/world`),
+      loadItem(`worlds/${id}/tileTypes`),
+    ]).then(([world, tileTypes]) => {
+      if (cancelled) return;
+      const thumbnail = renderThumbnail(world || {}, tileTypes);
+      if (!thumbnail) return;
+      setSrc(thumbnail);
+      update({[`${worldIndexPath(id)}/thumbnail`]: thumbnail});
+    }, console.error);
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
 
-  return <canvas ref={canvasRef}></canvas>;
+  return src ? <img src={src} alt="" /> : null;
 };
 
 const WorldItem = ({
   id,
-  item: {lastEdited, worldName, lastEditedBy, world, tileTypes},
+  item: {lastEdited, worldName, lastEditedBy, thumbnail},
   userIndex,
   close,
 }) => (
@@ -57,10 +71,11 @@ const WorldItem = ({
     }}
   >
     <div className="canvasContainer">
-      <WorldCanvas
-        world={world}
-        tileTypes={mergeDeepLeft(tileTypes, defaultTileTypes)}
-      />{' '}
+      {thumbnail ? (
+        <img src={thumbnail} alt="" />
+      ) : (
+        <MissingThumbnail id={id} />
+      )}
     </div>
     {worldName || '???'}
     {lastEdited && (
@@ -76,7 +91,7 @@ const WorldItem = ({
 
 const loadWorlds = async (setWorlds) => {
   setWorlds();
-  setWorlds(await loadItem('worlds'));
+  setWorlds((await loadItem('worldIndex')) || {});
 };
 
 export const MyWorlds = ({userIndex, close}) => {

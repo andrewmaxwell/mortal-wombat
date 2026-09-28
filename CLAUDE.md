@@ -7,11 +7,12 @@ A tile-based platformer (`src/game/`, plain DOM, no framework) and a collaborati
 - A world is stored at `worlds/<worldId>` with these parts:
   - `world`: tiles keyed `"x_y"`, each `{x, y, tileType, onSpace?, onTouch?, name?, user, tstamp}`, where `user` is the editor's Firebase Auth uid
   - `tileTypes` and `gameConfig`: overrides for the defaults in `src/defaults.js`
-  - `lastEditedBy` (uid) and `cursors` (live editor presence, each with a `user` uid)
+  - `lastEditedBy` (uid) and `cursors` (live editor presence, each with a `user` uid). Each editor session removes its cursor with `onDisconnect()`.
+- `worldIndex/<worldId>` is a small summary of each world, `{worldName, lastEdited, lastEditedBy, thumbnail}`, so the Worlds pane doesn't download every world (all of `worlds/` is about 19 MB). `saveTile` updates it, and so does `createNewWorld`. `useWorldThumbnail` re-renders the PNG `thumbnail` while someone edits, and the pane fills in a missing one. Code that writes world metadata has to update both places.
 - `/users` is keyed by uid: `{[uid]: {name, email}}`. Show editors with `editorName(userIndex, uid)`. `worlds/` is public, so never store emails there.
 - Worlds only store overrides. Both the game and the editor combine them with the defaults using `mergeDeepLeft(overrides, defaults)`.
 - `tileType` is a tile type's short `id` (`'g'` grass, `'w'` wombat, `'m'` magma, …), not its key in `tileTypes`. The wombat tile only marks the spawn point, and `Game.load` removes it from the world.
-- Access rules live in `database.rules.json`, which must match what's live. Deploy with `npx firebase deploy --only database`, and check `npx firebase database:get /.settings/rules` afterwards. Anyone can read `worlds/`, and signed-in users can write to each world. The rules also require any `user`/`lastEditedBy` being written to equal the writer's `auth.uid`. Only signed-in users can read `/users`, and nobody can write it from the app (profiles are edited in the Firebase console, keyed by the editor's uid from Authentication → Users). `listen()` in `firebase.js` shows read errors in the editor's error banner, so a hook that reads a protected path must wait for `user` (see `useUserIndex`). Otherwise logged-out visitors see a `permission_denied` banner.
+- Access rules live in `database.rules.json`, which must match what's live. Deploy with `npx firebase deploy --only database`, and check `npx firebase database:get /.settings/rules` afterwards. Anyone can read `worlds/` and `worldIndex/`, and signed-in users can write to each world and its index entry. The rules also require any `user`/`lastEditedBy` being written to equal the writer's `auth.uid`. Only signed-in users can read `/users`, and nobody can write it from the app (profiles are edited in the Firebase console, keyed by the editor's uid from Authentication → Users). `listen()` in `firebase.js` shows read errors in the editor's error banner, so a hook that reads a protected path must wait for `user` (see `useUserIndex`). Otherwise logged-out visitors see a `permission_denied` banner.
 - **Numbers are stored as strings** because the editor saves raw `<input>` values: `"0.005"`, and `""` when a field is cleared. When engine code reads a config or tile-type value, it has to handle numeric strings, `""` and `undefined`. That handling caused several past NaN/0 bugs.
 
 ## Engine rules
@@ -38,12 +39,8 @@ Ordered by priority. Remove an entry once it's done.
 2. **Normalize numbers once,** when a world loads, instead of converting at every use (see Data model). TypeScript or JSDoc types for the world schema would help.
 3. **Split `Game.js`** (physics, AI, sound, HUD, scripting). Replace the hard-coded tile-ID rules in `iterateTiles` (magma `'m'`, water `'a'`, stone `'s'`) with tile-type properties.
 4. **Narrow the script API** so scripts don't get the whole `game` object. `Dialog.say` inserts author text as raw HTML.
-5. **Editor performance:**
-   - `MyWorlds` downloads every world, with every tile and cursor, just to draw thumbnails.
-   - Stale cursors are removed by a random 1% cleanup in `useCursors`; use `onDisconnect()` instead.
-6. **Collision order:** in `moveWombat`, once the first overlapping block is resolved, the wombat may no longer overlap the others. So an `onTouch` block processed after a plain block can be skipped entirely.
-7. **Smaller items:**
+5. **Collision order:** in `moveWombat`, once the first overlapping block is resolved, the wombat may no longer overlap the others. So an `onTouch` block processed after a plain block can be skipped entirely.
+6. **Smaller items:**
    - Mobile touch controls (`ControlCircle`) are disabled and broken (`Touch` objects have no `offsetX`).
    - `makeButtons` calls hooks inside `.map()`.
    - ESLint 9 is end-of-life. Move to 10 once `eslint-plugin-react` and `eslint-plugin-import` list it in their peer dependencies.
-   - In `npm run deploy`, `predeploy` builds before `npm version patch` runs, so the deployed build shows the previous version number.

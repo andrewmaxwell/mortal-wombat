@@ -20,3 +20,5 @@ export const logIn = (email, pwd) =>
 export const listenUser = (onChange) => onAuthStateChanged(auth, onChange);
 
 export const logOut = () => signOut(auth);
+
+export const isLoggedIn = () => !!auth.currentUser;

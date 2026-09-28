@@ -6,6 +6,7 @@ import {
   onValue,
   get,
   child,
+  onDisconnect,
 } from 'firebase/database';
 
 initializeApp({
@@ -50,6 +51,15 @@ export const update = (updates, onError) => {
 if (location.host === 'localhost:3000') {
   window._update = async (x) => await _update(dbRef, x);
 }
+
+// deletes pathStr on the server when this client disconnects (tab closed, network lost)
+export const removeOnDisconnect = (pathStr, onError) =>
+  onDisconnect(ref(db, pathStr))
+    .remove()
+    .catch((e) => {
+      console.error(e);
+      onError?.(e.message);
+    });
 
 export const loadItem = async (key) => (await get(child(dbRef, key))).val();
 

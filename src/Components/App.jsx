@@ -26,6 +26,7 @@ import {Stats} from './Stats';
 import {defaultWorldId} from '../firebase';
 import {TileLogic} from './TileLogic';
 import {mergeDeepLeft} from '../utils/mergeDeepLeft';
+import {useWorldThumbnail} from '../utils/worldIndex';
 import {defaultTileTypes} from '../defaults';
 
 const zoomAmt = 2;
@@ -84,7 +85,8 @@ export const App = () => {
   const userIndex = useUserIndex(user, onError);
   const tileTypes = useTileTypes(onError, worldId);
   const world = useWorld(onError, worldId);
-  const cursors = useCursors(onError, worldId);
+  const cursors = useCursors(onError, worldId, user);
+  useWorldThumbnail(worldId, world, tileTypes, onError);
 
   // pane toggles
   const Panes = makeButtons(paneConfigs);

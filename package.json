@@ -4,8 +4,7 @@
   "private": true,
   "homepage": "https://mortalwombat.app",
   "scripts": {
-    "predeploy": "npm run build",
-    "deploy": "npm version patch && gh-pages -d build",
+    "deploy": "npm version patch && npm run build && gh-pages -d build",
     "start": "vite",
     "build": "vite build",
     "test": "vitest run",

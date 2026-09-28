@@ -4,6 +4,28 @@
       ".read": "auth != null",
       ".write": false
     },
+    "worldIndex": {
+      ".read": true,
+      "$worldId": {
+        ".write": "auth != null",
+        ".validate": "newData.parent().parent().child('worlds').child($worldId).exists()",
+        "worldName": {
+          ".validate": "newData.isString() && newData.val().length <= 1000"
+        },
+        "lastEdited": {
+          ".validate": "newData.isNumber()"
+        },
+        "lastEditedBy": {
+          ".validate": "newData.val() === auth.uid"
+        },
+        "thumbnail": {
+          ".validate": "newData.isString() && newData.val().beginsWith('data:image/png;base64,') && newData.val().length <= 500000"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
     "worlds": {
       ".read": true,
       "$worldId": {

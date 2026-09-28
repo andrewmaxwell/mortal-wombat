@@ -2,6 +2,7 @@ import {defaultTileTypes} from '../defaults';
 import {update} from '../firebase';
 import {objToArr} from '../utils';
 import {mergeDeepLeft} from '../utils/mergeDeepLeft';
+import {markEdited} from '../utils/worldIndex';
 import {FormThing} from './common/FormThing';
 import './tileTypeEditor.css';
 
@@ -156,6 +157,7 @@ export const TileTypeEditor = ({
   );
 
   const onChange = (value, prop) => {
+    if (prop === 'color') markEdited(worldId);
     update(
       {[`worlds/${worldId}/tileTypes/${selectedTileType.key}/${prop}`]: value},
       onError,
