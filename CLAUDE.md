@@ -31,18 +31,17 @@ A tile-based platformer (`src/game/`, plain DOM, no framework) and a collaborati
 
 Ordered by priority. Remove an entry once it's done.
 
-1. **Open sign-up.** On 2026-09-28, Firebase Auth allowed anyone to create an email/password account through the API, which grants write access to every world. The user has to turn it off in the console (Authentication → Settings → User actions → "Enable create (sign-up)"). Confirm it's off, then check Authentication → Users for accounts nobody recognizes.
-2. **Same-origin script risk.** World scripts run on the same origin as the editor, so a malicious world could read an editor's Firebase auth session. Move the game to its own subdomain or a sandboxed iframe.
-3. **Editor emails are public.** `saveTile`, `createNewWorld` and `setCursor` store the editor's email under `worlds/`, which anyone can read. Store the auth `uid` instead and look names up from `/users`, which needs a migration of existing tiles. Also turn on database backups: there's no undo if a signed-in user overwrites a world.
-4. **Upgrade dependencies:** React 18 → 19, ESLint 8 → 9 with a flat config (`.eslintrc.cjs` is the legacy format).
-5. **Normalize numbers once,** when a world loads, instead of converting at every use (see Data model). TypeScript or JSDoc types for the world schema would help.
-6. **Split `Game.js`** (physics, AI, sound, HUD, scripting). Replace the hard-coded tile-ID rules in `iterateTiles` (magma `'m'`, water `'a'`, stone `'s'`) with tile-type properties.
-7. **Narrow the script API** so scripts don't get the whole `game` object. `Dialog.say` inserts author text as raw HTML.
-8. **Editor performance:**
+1. **Same-origin script risk.** World scripts run on the same origin as the editor, so a malicious world could read an editor's Firebase auth session. Move the game to its own subdomain or a sandboxed iframe.
+2. **Editor emails are public.** `saveTile`, `createNewWorld` and `setCursor` store the editor's email under `worlds/`, which anyone can read. Store the auth `uid` instead and look names up from `/users`, which needs a migration of existing tiles. Also turn on database backups: there's no undo if a signed-in user overwrites a world.
+3. **Upgrade dependencies:** React 18 → 19, ESLint 8 → 9 with a flat config (`.eslintrc.cjs` is the legacy format).
+4. **Normalize numbers once,** when a world loads, instead of converting at every use (see Data model). TypeScript or JSDoc types for the world schema would help.
+5. **Split `Game.js`** (physics, AI, sound, HUD, scripting). Replace the hard-coded tile-ID rules in `iterateTiles` (magma `'m'`, water `'a'`, stone `'s'`) with tile-type properties.
+6. **Narrow the script API** so scripts don't get the whole `game` object. `Dialog.say` inserts author text as raw HTML.
+7. **Editor performance:**
    - `MyWorlds` downloads every world, with every tile and cursor, just to draw thumbnails.
    - Stale cursors are removed by a random 1% cleanup in `useCursors`; use `onDisconnect()` instead.
-9. **Collision order:** in `moveWombat`, once the first overlapping block is resolved, the wombat may no longer overlap the others. So an `onTouch` block processed after a plain block can be skipped entirely.
-10. **Smaller items:**
+8. **Collision order:** in `moveWombat`, once the first overlapping block is resolved, the wombat may no longer overlap the others. So an `onTouch` block processed after a plain block can be skipped entirely.
+9. **Smaller items:**
    - Mobile touch controls (`ControlCircle`) are disabled and broken (`Touch` objects have no `offsetX`).
    - `makeButtons` calls hooks inside `.map()`.
    - In `npm run deploy`, `predeploy` builds before `npm version patch` runs, so the deployed build shows the previous version number.
