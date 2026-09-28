@@ -1,0 +1,20 @@
+{
+  "rules": {
+    "gameConfig": {
+      ".read": true,
+      ".write": "auth.uid != null"
+    },
+    "tileTypes": {
+      ".read": true,
+      ".write": "auth.uid != null"
+    },
+    "users": {
+      ".read": "auth.uid != null",
+      ".write": "auth.uid != null"
+    },
+    "worlds": {
+      ".read": true,
+      ".write": "auth.uid != null"
+    }
+  }
+}
