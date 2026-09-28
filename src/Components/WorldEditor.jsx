@@ -9,6 +9,7 @@ import {gameConfigFields} from './GameConfigFields';
 import {defaultGameConfig} from '../defaults';
 import {loadItem} from '../firebase';
 import './worldEditor.css';
+import {editorName} from '../hooks/useUserIndex';
 
 const getCoords = (e, scale, xCoord, yCoord) => ({
   x: Math.floor((e.clientX - innerWidth / 2) / scale) + xCoord,
@@ -17,7 +18,7 @@ const getCoords = (e, scale, xCoord, yCoord) => ({
 
 const getTitle = (user, tstamp, userIndex, x, y) => {
   if (!user || !tstamp) return '';
-  const name = userIndex[user]?.name || user;
+  const name = editorName(userIndex, user);
   return `Placed at (${x}, ${y}) by ${name} ${timeAgo(Date.now() - tstamp)}`;
 };
 

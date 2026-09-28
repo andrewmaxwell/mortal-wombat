@@ -47,7 +47,7 @@ export const setCursor = throttle(
       update(
         {
           [`worlds/${worldId}/cursors/${sessionId}`]: {
-            user: user.email,
+            user: user.uid,
             mouseX,
             mouseY,
             left: xCoord - innerWidth / scale / 2,

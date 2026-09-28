@@ -4,6 +4,7 @@ import {
   sessionId,
   sessionTimeOut,
 } from '../hooks/useCursors';
+import {editorName} from '../hooks/useUserIndex';
 
 export const CSS_SIZE = 32;
 
@@ -27,7 +28,7 @@ export const Cursors = ({cursors, userIndex, scale}) => {
             }}
           >
             <span style={{fontSize: (80 * CSS_SIZE) / scale + '%'}}>
-              {userIndex[user]?.name || user}
+              {editorName(userIndex, user)}
             </span>
           </div>
           {mouseX != null && mouseY != null ? (
@@ -41,7 +42,7 @@ export const Cursors = ({cursors, userIndex, scale}) => {
               }}
             >
               <i className="fa-solid fa-arrow-pointer"></i>
-              <span>{userIndex[user]?.name || user}</span>
+              <span>{editorName(userIndex, user)}</span>
             </div>
           ) : null}
         </Fragment>

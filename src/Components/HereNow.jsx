@@ -1,4 +1,5 @@
 import {getLatestTimestamp, sessionTimeOut} from '../hooks/useCursors';
+import {editorName} from '../hooks/useUserIndex';
 
 export const HereNow = ({cursors, userIndex, worldId}) => {
   const latestTimestamp = getLatestTimestamp(cursors);
@@ -6,7 +7,7 @@ export const HereNow = ({cursors, userIndex, worldId}) => {
     .filter((c) => latestTimestamp - c[1].tstamp < sessionTimeOut)
     .map(([key, {user, mouseX, mouseY}]) => (
       <div key={key} style={{margin: 5}}>
-        {userIndex[user]?.name || user}
+        {editorName(userIndex, user)}
         {mouseX != null && mouseY != null ? (
           <a
             style={{margin: '0 10px'}}

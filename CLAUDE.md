@@ -5,12 +5,13 @@ A tile-based platformer (`src/game/`, plain DOM, no framework) and a collaborati
 ## Data model
 
 - A world is stored at `worlds/<worldId>` with these parts:
-  - `world`: tiles keyed `"x_y"`, each `{x, y, tileType, onSpace?, onTouch?, name?, user, tstamp}`
+  - `world`: tiles keyed `"x_y"`, each `{x, y, tileType, onSpace?, onTouch?, name?, user, tstamp}`, where `user` is the editor's Firebase Auth uid
   - `tileTypes` and `gameConfig`: overrides for the defaults in `src/defaults.js`
-  - `cursors`: live editor presence
+  - `lastEditedBy` (uid) and `cursors` (live editor presence, each with a `user` uid)
+- `/users` is keyed by uid: `{[uid]: {name, email}}`. Show editors with `editorName(userIndex, uid)`. `worlds/` is public, so never store emails there.
 - Worlds only store overrides. Both the game and the editor combine them with the defaults using `mergeDeepLeft(overrides, defaults)`.
 - `tileType` is a tile type's short `id` (`'g'` grass, `'w'` wombat, `'m'` magma, …), not its key in `tileTypes`. The wombat tile only marks the spawn point, and `Game.load` removes it from the world.
-- Access rules live in `database.rules.json`, which must match what's live. Deploy with `npx firebase deploy --only database`, and check `npx firebase database:get /.settings/rules` afterwards. Anyone can read `worlds/`, and signed-in users can write to each world. Only signed-in users can read `/users`, and nobody can write it from the app (profiles are edited in the Firebase console). `listen()` in `firebase.js` shows read errors in the editor's error banner, so a hook that reads a protected path must wait for `user` (see `useUserIndex`). Otherwise logged-out visitors see a `permission_denied` banner.
+- Access rules live in `database.rules.json`, which must match what's live. Deploy with `npx firebase deploy --only database`, and check `npx firebase database:get /.settings/rules` afterwards. Anyone can read `worlds/`, and signed-in users can write to each world. The rules also require any `user`/`lastEditedBy` being written to equal the writer's `auth.uid`. Only signed-in users can read `/users`, and nobody can write it from the app (profiles are edited in the Firebase console, keyed by the editor's uid from Authentication → Users). `listen()` in `firebase.js` shows read errors in the editor's error banner, so a hook that reads a protected path must wait for `user` (see `useUserIndex`). Otherwise logged-out visitors see a `permission_denied` banner.
 - **Numbers are stored as strings** because the editor saves raw `<input>` values: `"0.005"`, and `""` when a field is cleared. When engine code reads a config or tile-type value, it has to handle numeric strings, `""` and `undefined`. That handling caused several past NaN/0 bugs.
 
 ## Engine rules
@@ -33,7 +34,7 @@ A tile-based platformer (`src/game/`, plain DOM, no framework) and a collaborati
 
 Ordered by priority. Remove an entry once it's done.
 
-1. **Editor emails are public.** `saveTile`, `createNewWorld` and `setCursor` store the editor's email under `worlds/`, which anyone can read. Store the auth `uid` instead and look names up from `/users`, which needs a migration of existing tiles. Also turn on database backups: there's no undo if a signed-in user overwrites a world.
+1. **Editor-email migration: code is done, the live rollout isn't.** Order matters: (a) deploy the site, (b) deploy `database.rules.json` so stale tabs can't write emails, (c) export a fresh copy with `npx firebase database:get /`, rebuild the update with `node scripts/migrateEditorIds.js <export> backups/uid-map.json <out>`, and apply it with `npx firebase database:update / <out>`, (d) check that no emails remain under `worlds/`. `backups/` (gitignored) holds the pre-migration export and the email→uid map. Delete them once the rollout is confirmed. Also turn on database backups: there's no undo if a signed-in user overwrites a world.
 2. **Upgrade dependencies:** React 18 → 19, ESLint 8 → 9 with a flat config (`.eslintrc.cjs` is the legacy format).
 3. **Normalize numbers once,** when a world loads, instead of converting at every use (see Data model). TypeScript or JSDoc types for the world schema would help.
 4. **Split `Game.js`** (physics, AI, sound, HUD, scripting). Replace the hard-coded tile-ID rules in `iterateTiles` (magma `'m'`, water `'a'`, stone `'s'`) with tile-type properties.

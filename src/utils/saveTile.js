@@ -3,7 +3,7 @@ import {serverTimestamp} from 'firebase/database';
 import {update} from '../firebase';
 
 export const saveTile = (worldId, tile, onError) => {
-  const user = getAuth().currentUser.email;
+  const user = getAuth().currentUser.uid;
   const tstamp = serverTimestamp();
   return update(
     {

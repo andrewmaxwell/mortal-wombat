@@ -8,6 +8,7 @@ import {mergeDeepLeft} from '../utils/mergeDeepLeft';
 import {timeAgo} from '../utils/timeAgo';
 import {worldToCanvas} from '../utils/worldToCanvas';
 import './myWorlds.css';
+import {editorName} from '../hooks/useUserIndex';
 
 const gotoWorld = (id) => {
   location.hash = `${id}/0/0/32`;
@@ -23,7 +24,7 @@ const createNewWorld = async () => {
     [`worlds/${worldGuid}`]: {
       worldName,
       lastEdited: serverTimestamp(),
-      lastEditedBy: getAuth().currentUser.email,
+      lastEditedBy: getAuth().currentUser.uid,
     },
   });
 
@@ -65,7 +66,7 @@ const WorldItem = ({
     {lastEdited && (
       <span className="lastEdited">
         last edited by{' '}
-        {(userIndex[lastEditedBy]?.name || lastEditedBy || '???') +
+        {editorName(userIndex, lastEditedBy) +
           ' ' +
           timeAgo(Date.now() - lastEdited)}
       </span>

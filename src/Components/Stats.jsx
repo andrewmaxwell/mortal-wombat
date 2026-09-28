@@ -1,6 +1,7 @@
 import {memo} from 'react';
 import {indexBy, objToArr} from '../utils';
 import {timeAgo} from '../utils/timeAgo';
+import {editorName} from '../hooks/useUserIndex';
 
 const capitalize = (str) => str[0].toUpperCase() + str.slice(1);
 
@@ -46,7 +47,7 @@ const stats = ({world, tileTypes, userIndex}) => {
         <SubTable
           heading="By Person"
           data={countBy(tiles, (t) => t.user)}
-          getLabel={(key) => capitalize(userIndex[key]?.name || '???')}
+          getLabel={(key) => capitalize(editorName(userIndex, key))}
         />
 
         <SubTable

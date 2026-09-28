@@ -7,7 +7,24 @@
     "worlds": {
       ".read": true,
       "$worldId": {
-        ".write": "auth != null"
+        ".write": "auth != null",
+        "lastEditedBy": {
+          ".validate": "newData.val() === auth.uid"
+        },
+        "world": {
+          "$tile": {
+            "user": {
+              ".validate": "newData.val() === auth.uid"
+            }
+          }
+        },
+        "cursors": {
+          "$session": {
+            "user": {
+              ".validate": "newData.val() === auth.uid"
+            }
+          }
+        }
       }
     }
   }

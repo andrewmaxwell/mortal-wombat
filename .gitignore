@@ -128,3 +128,6 @@ yarn-error.log*
 
 # Claude Code personal settings
 .claude/settings.local.json
+
+# local database backups (contain editor emails)
+/backups

@@ -10,7 +10,7 @@ export const Nav = ({user, setScale, zoomAmt, userIndex, children}) => (
         <a onClick={() => setScale((s) => Math.round(s / zoomAmt))}>
           <i className="fa-solid fa-magnifying-glass-minus"></i>
         </a>
-        Hi, {userIndex[user.email]?.name || user.email}!
+        Hi, {userIndex[user.uid]?.name || user.email}!
         <a onClick={logOut}>log out</a>
       </div>
     )}
