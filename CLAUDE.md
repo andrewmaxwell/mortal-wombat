@@ -10,6 +10,7 @@ A tile-based platformer (`src/game/`, plain DOM, no framework) and a collaborati
   - `cursors`: live editor presence
 - Worlds only store overrides. Both the game and the editor combine them with the defaults using `mergeDeepLeft(overrides, defaults)`.
 - `tileType` is a tile type's short `id` (`'g'` grass, `'w'` wombat, `'m'` magma, …), not its key in `tileTypes`. The wombat tile only marks the spawn point, and `Game.load` removes it from the world.
+- Access rules: anyone can read `worlds/`, but only signed-in users can read `/users`. `listen()` in `firebase.js` shows read errors in the editor's error banner, so a hook that reads a protected path must wait for `user` (see `useUserIndex`). Otherwise logged-out visitors see a `permission_denied` banner.
 - **Numbers are stored as strings** because the editor saves raw `<input>` values: `"0.005"`, and `""` when a field is cleared. When engine code reads a config or tile-type value, it has to handle numeric strings, `""` and `undefined`. That handling caused several past NaN/0 bugs.
 
 ## Engine rules
@@ -31,7 +32,7 @@ A tile-based platformer (`src/game/`, plain DOM, no framework) and a collaborati
 Ordered by priority. Remove an entry once it's done.
 
 1. **Same-origin script risk.** World scripts run on the same origin as the editor, so a malicious world could read an editor's Firebase auth session. Move the game to its own subdomain or a sandboxed iframe. Firebase security rules aren't in the repo, so check them in.
-2. **Upgrade dependencies:** Firebase 9 → 12 (the source of all remaining `npm audit` findings), React 18 → 19, ESLint 8 → 9 with a flat config (`.eslintrc.cjs` is the legacy format).
+2. **Upgrade dependencies:** React 18 → 19, ESLint 8 → 9 with a flat config (`.eslintrc.cjs` is the legacy format).
 3. **Normalize numbers once,** when a world loads, instead of converting at every use (see Data model). TypeScript or JSDoc types for the world schema would help.
 4. **Split `Game.js`** (physics, AI, sound, HUD, scripting). Replace the hard-coded tile-ID rules in `iterateTiles` (magma `'m'`, water `'a'`, stone `'s'`) with tile-type properties.
 5. **Narrow the script API** so scripts don't get the whole `game` object. `Dialog.say` inserts author text as raw HTML.
