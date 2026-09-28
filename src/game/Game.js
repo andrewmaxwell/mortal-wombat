@@ -199,6 +199,10 @@ export class Game {
       return;
     }
 
+    const supports = this.getSupports();
+    you.onGround = supports.length > 0;
+    if (you.onGround) you.isJumping = false;
+
     if (pressing.left || pressing.right || pressing.up || pressing.down) {
       you.dirX = 0;
       you.dirY = 0;
@@ -215,8 +219,8 @@ export class Game {
     }
     if (pressing.up) {
       if (you.swimBlock) you.ys -= this.swimPower;
-      else if (!you.isJumping && !you.ys) {
-        you.ys -= this.jumpPower;
+      else if (you.onGround) {
+        you.ys = -this.jumpPower;
         you.isJumping = true;
       }
       you.dirY--;
@@ -229,15 +233,22 @@ export class Game {
     you.x += you.xs;
     you.xs *= 1 - (you.swimBlock ? this.waterDrag : this.moveDeceleration);
 
-    you.y += you.ys;
-    you.ys *= 1 - (you.swimBlock ? this.waterDrag : this.airDrag);
-    you.ys += this.gravity * (1 - (you.swimBlock?.type.density || 0));
+    if (you.onGround && you.ys >= 0) {
+      // resting: no gravity, so the wombat doesn't sink into the ground every other frame
+      you.ys = 0;
+    } else {
+      you.y += you.ys;
+      you.ys *= 1 - (you.swimBlock ? this.waterDrag : this.airDrag);
+      you.ys += this.gravity * (1 - (you.swimBlock?.type.density || 0));
+    }
 
-    // Run onTouch for every overlapped block before resolving any collisions,
-    // since resolving one block can move the wombat off the others.
+    // Run onTouch for every overlapped block, and the blocks it stands on, before resolving
+    // any collisions, since resolving one block can move the wombat off the others.
     const touched = new Set();
-    for (const [fx, fy] of pairs) {
-      const block = world[fx(you.x) + '_' + fy(you.y)];
+    const overlapping = pairs.map(
+      ([fx, fy]) => world[fx(you.x) + '_' + fy(you.y)],
+    );
+    for (const block of [...overlapping, ...supports]) {
       if (block && !touched.has(block)) {
         touched.add(block);
         this.processOnTouch(block);
@@ -359,10 +370,12 @@ export class Game {
 
     if (Math.abs(you.x - block.x) > Math.abs(you.y - block.y)) {
       const dx = block.x < you.x ? -1 : 1;
-      if (!you.isJumping && you.ys === this.gravity) {
+      if (you.onGround && !you.isJumping) {
         you.isPushing = true;
         if (block.type.movable && this.isEmpty(block.x + dx, block.y)) {
           this.moveTile(block.x, block.y, dx, 0);
+        } else {
+          you.x = block.x + (you.x < block.x ? -1 : 1);
         }
       } else {
         you.x = block.x + (you.x < block.x ? -1 : 1);
@@ -392,10 +405,24 @@ export class Game {
       you.ys = 0;
     }
   }
+  // The blocks the wombat is standing on: it's on the ground when there are any.
+  // Liquids and collectibles don't hold it up. Neither do blocks that hurt: it keeps
+  // falling into those, so they keep hurting it.
+  getSupports() {
+    const {you} = this;
+    if (you.ys < 0 || you.y !== Math.floor(you.y)) return [];
+    const below = [...new Set([Math.floor(you.x), Math.ceil(you.x)])]
+      .map((x) => this.getTile(x, you.y + 1))
+      .filter(Boolean);
+    if (below.some((b) => b.type.healing < 0)) return [];
+    return below.filter(
+      (b) => b.type.moveStyle !== 'liquid' && !b.type.collectible,
+    );
+  }
   processOnTouch(block) {
     if (!block.onTouch) return;
     // Only run onTouch when contact starts, not on every frame of contact.
-    // Resting on a block only overlaps it every other frame, so short gaps still count as contact.
+    // Short gaps (a frame or two of bouncing off) still count as the same contact.
     const isNewContact = !(
       this.frame - block.lastTouchFrame <=
       TOUCH_GRACE_FRAMES

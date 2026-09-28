@@ -184,3 +184,101 @@ test('custom tile types can burn and react, even without a move delay', async ()
   // the NPC above has HP, so it burned
   expect(typeAt(game, 0, -1)).toBeUndefined();
 });
+
+// wombat physics: resting, jumping, walls, pushing, falling
+
+const flat = (tiles = {}) => ({
+  ...floor(1, -5, 20),
+  w: {x: 0, y: 0, tileType: 'w'},
+  ...tiles,
+});
+
+test('resting on the ground is stable', async () => {
+  const game = await makeGame(flat());
+  settle(game, 60);
+  for (let i = 0; i < 4; i++) {
+    game.iterate(noKeys);
+    expect([game.you.y, game.you.ys]).toEqual([0, 0]);
+  }
+});
+
+test('a one-frame jump press works on any frame', async () => {
+  for (const offset of [0, 1]) {
+    const game = await makeGame(flat());
+    settle(game, 60 + offset);
+    game.iterate({up: true});
+    settle(game, 10);
+    expect(game.you.y).toBeLessThan(-0.3);
+  }
+});
+
+test('walking into a wall stops at the wall', async () => {
+  const game = await makeGame(flat({'2_0': {x: 2, y: 0, tileType: 's'}}));
+  settle(game, 30);
+  for (let i = 0; i < 60; i++) {
+    game.iterate({right: true});
+    expect(game.you.x).toBeLessThanOrEqual(1);
+  }
+  expect(game.you.x).toBe(1);
+});
+
+test('pushing a movable block moves it', async () => {
+  const game = await makeGame(flat({'2_0': {x: 2, y: 0, tileType: 'p'}}));
+  settle(game, 30);
+  settle(game, 120, {right: true});
+  const poop = Object.values(game.world).find((t) => t.type.id === 'p');
+  expect(poop.x).toBeGreaterThanOrEqual(6);
+  expect(game.you.x).toBeLessThanOrEqual(poop.x - 1);
+});
+
+test('walking off a ledge falls', async () => {
+  const game = await makeGame({
+    ...floor(1, -5, 0),
+    ...floor(4, -5, 20),
+    w: {x: -1, y: 0, tileType: 'w'},
+  });
+  settle(game, 30);
+  settle(game, 60, {right: true});
+  expect(game.you.y).toBe(3);
+});
+
+test('a long fall hurts, but standing still does not', async () => {
+  const game = await makeGame({
+    ...floor(1, -5, 5),
+    w: {x: 0, y: -20, tileType: 'w'},
+  });
+  settle(game, 120);
+  expect(game.you.y).toBe(0);
+  const {health} = game;
+  expect(health).toBeLessThan(100);
+  settle(game, 120);
+  expect(game.health).toBe(health);
+});
+
+test('onTouch on the floor fires once while standing on it', async () => {
+  const game = await makeGame(
+    flat({'0_1': {x: 0, y: 1, tileType: 's', onTouch: 'game.touches++'}}),
+  );
+  game.touches = 0;
+  settle(game, 120);
+  expect(game.touches).toBe(1);
+
+  // step off and back on: a new contact
+  settle(game, 30, {right: true});
+  settle(game, 60);
+  settle(game, 30, {left: true});
+  settle(game, 60);
+  expect(game.touches).toBe(2);
+});
+
+test('standing on a koala keeps hurting', async () => {
+  const game = await makeGame({
+    ...floor(2, -5, 5),
+    '0_1': {x: 0, y: 1, tileType: 'k'},
+    w: {x: 0, y: 0, tileType: 'w'},
+  });
+  // stop the koala patrolling away
+  game.getTile(0, 1).type = {...game.getTile(0, 1).type, moveDelay: ''};
+  settle(game, 60);
+  expect(game.health).toBeLessThan(90);
+});
