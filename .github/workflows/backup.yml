@@ -1,0 +1,48 @@
+# Daily backup of worlds/ as a workflow artifact, kept for 90 days.
+# worlds/ is publicly readable, so this needs no Firebase credentials. It doesn't include /users.
+# Restore with scripts/restoreWorld.js (see CLAUDE.md).
+name: Back up worlds
+
+on:
+  schedule:
+    - cron: '17 9 * * *'
+  workflow_dispatch:
+
+permissions:
+  actions: write # for `gh workflow enable` below
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download worlds/
+        run: |
+          curl --fail --silent --show-error --retry 3 \
+            https://mortal-wombat-8c76a-default-rtdb.firebaseio.com/worlds.json \
+            -o worlds.json
+
+      - name: Check the download
+        # fail loudly (GitHub emails the repo owner) rather than keep an empty or broken backup
+        run: |
+          node -e '
+            const worlds = JSON.parse(require("fs").readFileSync("worlds.json"));
+            const ids = Object.keys(worlds || {});
+            const tiles = ids.reduce((n, id) => n + Object.keys(worlds[id].world || {}).length, 0);
+            console.log(`${ids.length} worlds, ${tiles} tiles`);
+            if (!ids.length || !tiles) process.exit(1);
+          '
+          gzip -9 worlds.json
+          echo "DATE=$(date -u +%F)" >> "$GITHUB_ENV"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: worlds-${{ env.DATE }}
+          path: worlds.json.gz
+          retention-days: 90
+          compression-level: 0 # already gzipped
+
+      - name: Keep the schedule alive
+        # GitHub disables scheduled workflows in public repos after 60 days without repo activity
+        run: gh workflow enable backup.yml --repo "$GITHUB_REPOSITORY"
+        env:
+          GH_TOKEN: ${{ github.token }}

@@ -31,16 +31,21 @@ A tile-based platformer (`src/game/`, plain DOM, no framework) and a collaborati
 - The editor needs a login. The only way to create accounts is the Firebase console, so editor changes past the login screen need the user to test them.
 - The dev server must stay on port 3000: `firebase.js` exposes `window._update` only on `localhost:3000`.
 
+## Backups
+
+- `.github/workflows/backup.yml` downloads `worlds/` every day (it's public, so no credentials) and keeps it as a workflow artifact, `worlds-YYYY-MM-DD`, for 90 days. It doesn't back up `/users`, and `worldIndex/` can be rebuilt from `worlds/`. It fails, and GitHub emails the owner, if the download is empty. Run it by hand with `gh workflow run backup.yml`.
+- To restore a world, run `gh run download --name worlds-YYYY-MM-DD --dir backups` and then `node scripts/restoreWorld.js backups/worlds.json.gz <worldId>`. That only compares the backup with the live world. Add `--yes` to restore it. The script first saves the live world to `backups/` (gitignored), then resets the world's `worldIndex` entry so the Worlds pane re-renders its thumbnail.
+- `npx firebase database:update` fails with a generic error on very large updates, so split big writes into batches of about 10k paths.
+
 ## Known issues / TODO
 
 Ordered by priority. Remove an entry once it's done.
 
-1. **Turn on database backups:** there's no undo if a signed-in user overwrites a world. Note that `npx firebase database:update` fails with a generic error on very large updates, so split big writes into batches of about 10k paths.
-2. **Normalize numbers once,** when a world loads, instead of converting at every use (see Data model). TypeScript or JSDoc types for the world schema would help.
-3. **Split `Game.js`** (physics, AI, sound, HUD, scripting). Replace the hard-coded tile-ID rules in `iterateTiles` (magma `'m'`, water `'a'`, stone `'s'`) with tile-type properties.
-4. **Narrow the script API** so scripts don't get the whole `game` object. `Dialog.say` inserts author text as raw HTML.
-5. **Collision order:** in `moveWombat`, once the first overlapping block is resolved, the wombat may no longer overlap the others. So an `onTouch` block processed after a plain block can be skipped entirely.
-6. **Smaller items:**
+1. **Normalize numbers once,** when a world loads, instead of converting at every use (see Data model). TypeScript or JSDoc types for the world schema would help.
+2. **Split `Game.js`** (physics, AI, sound, HUD, scripting). Replace the hard-coded tile-ID rules in `iterateTiles` (magma `'m'`, water `'a'`, stone `'s'`) with tile-type properties.
+3. **Narrow the script API** so scripts don't get the whole `game` object. `Dialog.say` inserts author text as raw HTML.
+4. **Collision order:** in `moveWombat`, once the first overlapping block is resolved, the wombat may no longer overlap the others. So an `onTouch` block processed after a plain block can be skipped entirely.
+5. **Smaller items:**
    - Mobile touch controls (`ControlCircle`) are disabled and broken (`Touch` objects have no `offsetX`).
    - `makeButtons` calls hooks inside `.map()`.
    - ESLint 9 is end-of-life. Move to 10 once `eslint-plugin-react` and `eslint-plugin-import` list it in their peer dependencies.
