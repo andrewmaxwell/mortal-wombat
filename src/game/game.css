@@ -48,7 +48,8 @@ body {
 
 .youDead {
   position: fixed;
-  width: 100%;
+  inset: 0;
+  z-index: 6; /* above .touchControls */
   text-align: center;
   text-shadow: 5px 5px 0px black;
 }
@@ -72,40 +73,6 @@ body {
   top: 0;
 }
 
-.control {
-  position: fixed;
-  width: 10em;
-  height: 10em;
-  background: rgba(255,255,255,0.1);
-  z-index: 1000;
-}
-
-#up {
-  bottom: 10.1em;
-  left: 10.1em;
-}
-#down {
-  bottom: 0;
-  left: 10.1em;
-}
-#left {
-  bottom: 0;
-  left: 0;
-}
-#right {
-  bottom: 0;
-  left: 20.2em;
-}
-
-.controlCircle {
-  position: absolute;
-  width: 2in;
-  height: 2in;
-  background: rgba(255,255,255,0.1);
-  bottom: 0;
-  left: 0;
-}
-
 .show .tile {
   outline: 1px solid lime;
 }
@@ -113,6 +80,7 @@ body {
 .dialog {
   font-size: 2em;
   position: fixed;
+  z-index: 6; /* above .touchControls */
   bottom: 30px;
   width: 100%;
   text-align: center;
@@ -128,4 +96,85 @@ body {
 
 .dialog li.selected {
   color: lime
+}
+
+.touchControls {
+  position: fixed;
+  inset: auto 0 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 0 max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom))
+    max(16px, env(safe-area-inset-left));
+  pointer-events: none;
+  z-index: 5;
+}
+
+.touchPad,
+.touchButtons > div {
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  background: rgba(255, 255, 255, 0.12);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.touchPad {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  display: grid;
+  grid-template: 1fr 1fr 1fr / 1fr 1fr 1fr;
+  place-items: center;
+  font-size: 22px;
+}
+
+.touchPad > span:nth-child(1) { grid-area: 1 / 2; }
+.touchPad > span:nth-child(2) { grid-area: 2 / 1; }
+.touchPad > span:nth-child(3) { grid-area: 2 / 3; }
+.touchPad > span:nth-child(4) { grid-area: 3 / 2; }
+
+.touchButtons {
+  display: grid;
+  grid-template: 'poop dig' 'poop jump' / auto auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.touchButtons > div {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: bold 16px sans-serif;
+}
+
+.touchButtons > [data-id='up'] { grid-area: jump; }
+.touchButtons > [data-id='space'] { grid-area: dig; }
+.touchButtons > [data-id='poop'] { grid-area: poop; font-size: 28px; }
+
+.touchButtons > div.pressed {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+@media (max-width: 700px) {
+  .dialog {
+    font-size: 1.2em;
+  }
+  .dialog .dialogContainer {
+    max-width: 85%;
+    padding: 16px;
+  }
+  .youDead > h1 {
+    font-size: 5em;
+  }
+  .youDead > h2 {
+    font-size: 1.5em;
+    margin-top: -40px;
+  }
 }

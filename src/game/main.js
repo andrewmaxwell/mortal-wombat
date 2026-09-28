@@ -2,6 +2,7 @@ import {Controls} from './controls';
 import './game.css';
 import {GamepadControls} from './gamepadControls';
 import {load} from './load';
+import {TouchControls} from './touchControls';
 
 // Physics constants are tuned per-tick at 60 ticks/sec. Stepping at a fixed rate
 // keeps game speed the same on 120/144Hz displays.
@@ -35,9 +36,11 @@ const loop = (now) => {
   elapsed += lastTime === undefined ? TICK_MS : now - lastTime;
   lastTime = now;
 
-  const controlState = controls.getPressing();
+  // read the controls only on frames that tick: touch taps are latched until read
+  let controlState;
   let ticks = 0;
   while (elapsed >= TICK_MS - TICK_TOLERANCE_MS) {
+    controlState ??= controls.getPressing();
     if (!game.dialog.isOpen) game.iterate(controlState);
     elapsed -= TICK_MS;
     if (++ticks >= MAX_TICKS_PER_FRAME) {
@@ -58,8 +61,9 @@ const init = async () => {
       else if (id === 'space') game.interact();
     }
   };
-  controls = new Controls({onPress}, rootElement, [
+  controls = new Controls({onPress}, [
     new GamepadControls({onPress}),
+    new TouchControls({onPress}, rootElement),
   ]);
   window.addEventListener('resize', () => {
     game.updateViewport();

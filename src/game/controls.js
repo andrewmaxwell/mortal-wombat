@@ -1,7 +1,4 @@
 import {indexBy} from '../utils';
-import {ControlCircle} from './elements';
-
-const showControls = false;
 
 const controls = [
   {id: 'left', key: 'A', code: 'KeyA'},
@@ -16,7 +13,7 @@ const controls = [
 const controlIndex = indexBy((c) => c.code, controls);
 
 export class Controls {
-  constructor({onPress}, rootElement, additionalControls) {
+  constructor({onPress}, additionalControls) {
     this.pressing = {};
     this.additionalControls = additionalControls || [];
     const keydown = (e) => {
@@ -28,14 +25,6 @@ export class Controls {
     };
     window.addEventListener('keydown', keydown);
     window.addEventListener('keyup', keydown);
-
-    if (showControls) {
-      // for (const {id} of controls) {
-      //   new ControlButton(rootElement, id, this.pressing);
-      // }
-
-      new ControlCircle(rootElement, this.pressing, 400);
-    }
   }
   getPressing() {
     let pressing = this.pressing;

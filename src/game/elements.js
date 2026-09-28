@@ -188,6 +188,18 @@ export class Dialog extends Element {
     this.div.classList.add('dialogContainer');
     this.el.append(this.div);
 
+    // tapping or clicking advances the dialog, or picks the tapped choice
+    this.el.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      const choice = e.target.closest('[data-choice]');
+      if (choice) {
+        this.choiceIndex = Number(choice.dataset.choice);
+        this.choose();
+      } else if (!this.hasChoices()) {
+        this.hide();
+      }
+    });
+
     this.hide();
     parentElement.append(this.el);
   }
@@ -218,7 +230,7 @@ export class Dialog extends Element {
     const choices = this.choices
       .map(
         ({text}, i) =>
-          `<li ${
+          `<li data-choice="${i}" ${
             i === this.choiceIndex ? `class="selected"` : ''
           }>${text}</li>`,
       )
@@ -236,55 +248,5 @@ export class Dialog extends Element {
   hide() {
     this.el.style.display = 'none';
     this.isOpen = false;
-  }
-}
-
-export class ControlButton extends Element {
-  constructor(parentElement, id, pressing) {
-    super();
-    this.el.classList.add('control');
-    this.el.setAttribute('id', id);
-    this.el.addEventListener('touchstart', () => (pressing[id] = true));
-    this.el.addEventListener('touchend', () => (pressing[id] = false));
-    parentElement.append(this.el);
-  }
-}
-
-export class ControlCircle extends Element {
-  constructor(parentElement, pressing) {
-    super();
-    this.el.classList.add('controlCircle');
-
-    const move = ({touches, offsetX, offsetY}) => {
-      const size = this.el.clientWidth;
-      const x = (touches ? touches[0].offsetX : offsetX) / size - 0.5;
-      const y = (touches ? touches[0].offsetY : offsetY) / size - 0.5;
-      pressing.left = x < 0;
-      pressing.right = x > 0;
-      pressing.up = y < 0;
-      pressing.down = y > 0;
-      this.el.innerText = JSON.stringify(touches);
-    };
-    const up = () => {
-      pressing.left = false;
-      pressing.up = false;
-      pressing.down = false;
-      pressing.right = false;
-      this.el.removeEventListener('touchmove', move);
-      this.el.removeEventListener('mousemove', move);
-      this.el.removeEventListener('touchend', up);
-      this.el.removeEventListener('mouseup', up);
-    };
-    const down = (e) => {
-      move(e);
-      this.el.addEventListener('touchmove', move);
-      this.el.addEventListener('mousemove', move);
-      this.el.addEventListener('touchend', up);
-      this.el.addEventListener('mouseup', up);
-    };
-
-    this.el.addEventListener('touchstart', down);
-    this.el.addEventListener('mousedown', down);
-    parentElement.append(this.el);
   }
 }

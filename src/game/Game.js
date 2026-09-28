@@ -490,7 +490,10 @@ export class Game {
       // insertAdjacentHTML, not innerHTML +=, so existing elements aren't recreated
       this.rootElement.insertAdjacentHTML(
         'beforeend',
-        '<div class="youDead"><h1>you dead</h1><h2>press R to try again</h2></div>',
+        '<div class="youDead"><h1>you dead</h1><h2>press R or tap to try again</h2></div>',
+      );
+      this.rootElement.lastElementChild.addEventListener('pointerdown', () =>
+        location.reload(),
       );
     }
   }

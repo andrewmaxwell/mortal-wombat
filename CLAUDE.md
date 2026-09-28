@@ -18,6 +18,7 @@ A tile-based platformer (`src/game/`, plain DOM, no framework) and a collaborati
 ## Engine rules
 
 - Physics constants are per tick. `main.js` runs a fixed 60 ticks/sec, so any tuning has to assume that rate.
+- Input comes from `Controls` (keyboard), `GamepadControls` and `TouchControls`, merged through `getPressing`. `main.js` reads them only on frames that run a tick.
 - `Game.iterate` = `moveWombat` (the player) then `iterateTiles` (falling, liquid, patrol and magma rules), then `frame++`.
 - When the wombat rests on a block, it only overlaps that block every other frame. Contact logic such as `processOnTouch` needs a grace window, not a "touched last frame" check.
 - Tile scripts (`onSpace`/`onTouch`) are author-written JS compiled with `new Function` in `compile.js`. The helpers they can use are the ones listed in `useTemplate`, and `TileLogic.jsx` shows examples to authors, so keep the two in sync.
@@ -28,6 +29,7 @@ A tile-based platformer (`src/game/`, plain DOM, no framework) and a collaborati
 
 - `npm test` (Vitest + jsdom) covers the engine. The tests mock `../firebase` and build worlds inline. Add a test here when fixing engine behavior.
 - To check the game in a browser, run `npm start` and open `localhost:3000` (the default world loads from the live DB and is read-only). Browsers pause `requestAnimationFrame` in hidden tabs, so an automated browser that isn't in the foreground shows a frozen game. Browser-automation console and network tools don't see inside the game's iframe, and the outer page can't reach into it: to debug the game, have it `parent.postMessage` its errors temporarily, or check with screenshots.
+- Automated input is unreliable in the game's iframe. Automated clicks reach it, but automated drags don't arrive at all. A synthetic key press releases before the next tick, so the game never sees it. Touch taps are latched until a tick reads them (`touchControls.js`), so a click on a touch button does register. The touch controls only appear on touch screens, so force them on temporarily to check them on a desktop.
 - The editor needs a login. The only way to create accounts is the Firebase console, so editor changes past the login screen need the user to test them.
 - The dev server must stay on port 3000: `firebase.js` exposes `window._update` only on `localhost:3000`.
 
@@ -45,6 +47,5 @@ Ordered by priority. Remove an entry once it's done.
 2. **Split `Game.js`** (physics, AI, sound, HUD, scripting). Replace the hard-coded tile-ID rules in `iterateTiles` (magma `'m'`, water `'a'`, stone `'s'`) with tile-type properties.
 3. **Narrow the script API** so scripts don't get the whole `game` object. `Dialog.say` inserts author text as raw HTML.
 4. **Smaller items:**
-   - Mobile touch controls (`ControlCircle`) are disabled and broken (`Touch` objects have no `offsetX`).
    - `makeButtons` calls hooks inside `.map()`.
    - ESLint 9 is end-of-life. Move to 10 once `eslint-plugin-react` and `eslint-plugin-import` list it in their peer dependencies.
