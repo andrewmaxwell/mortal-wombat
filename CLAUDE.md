@@ -34,16 +34,16 @@ A tile-based platformer (`src/game/`, plain DOM, no framework) and a collaborati
 
 Ordered by priority. Remove an entry once it's done.
 
-1. **Clean up after the editor-email migration (applied 2026-09-28, verified tile by tile).** Once the user confirms names show correctly in the editor, delete `backups/db-premigration-*.json` and `backups/uid-map.json` (they contain editor emails). `scripts/migrateEditorIds.js` can go too. Turn on database backups: there's no undo if a signed-in user overwrites a world. Note that `npx firebase database:update` fails with a generic error on very large updates, so split big writes into batches of about 10k paths.
-2. **Upgrade dependencies:** React 18 → 19, ESLint 8 → 9 with a flat config (`.eslintrc.cjs` is the legacy format).
-3. **Normalize numbers once,** when a world loads, instead of converting at every use (see Data model). TypeScript or JSDoc types for the world schema would help.
-4. **Split `Game.js`** (physics, AI, sound, HUD, scripting). Replace the hard-coded tile-ID rules in `iterateTiles` (magma `'m'`, water `'a'`, stone `'s'`) with tile-type properties.
-5. **Narrow the script API** so scripts don't get the whole `game` object. `Dialog.say` inserts author text as raw HTML.
-6. **Editor performance:**
+1. **Turn on database backups:** there's no undo if a signed-in user overwrites a world. Note that `npx firebase database:update` fails with a generic error on very large updates, so split big writes into batches of about 10k paths.
+2. **Normalize numbers once,** when a world loads, instead of converting at every use (see Data model). TypeScript or JSDoc types for the world schema would help.
+3. **Split `Game.js`** (physics, AI, sound, HUD, scripting). Replace the hard-coded tile-ID rules in `iterateTiles` (magma `'m'`, water `'a'`, stone `'s'`) with tile-type properties.
+4. **Narrow the script API** so scripts don't get the whole `game` object. `Dialog.say` inserts author text as raw HTML.
+5. **Editor performance:**
    - `MyWorlds` downloads every world, with every tile and cursor, just to draw thumbnails.
    - Stale cursors are removed by a random 1% cleanup in `useCursors`; use `onDisconnect()` instead.
-7. **Collision order:** in `moveWombat`, once the first overlapping block is resolved, the wombat may no longer overlap the others. So an `onTouch` block processed after a plain block can be skipped entirely.
-8. **Smaller items:**
+6. **Collision order:** in `moveWombat`, once the first overlapping block is resolved, the wombat may no longer overlap the others. So an `onTouch` block processed after a plain block can be skipped entirely.
+7. **Smaller items:**
    - Mobile touch controls (`ControlCircle`) are disabled and broken (`Touch` objects have no `offsetX`).
    - `makeButtons` calls hooks inside `.map()`.
+   - ESLint 9 is end-of-life. Move to 10 once `eslint-plugin-react` and `eslint-plugin-import` list it in their peer dependencies.
    - In `npm run deploy`, `predeploy` builds before `npm version patch` runs, so the deployed build shows the previous version number.
