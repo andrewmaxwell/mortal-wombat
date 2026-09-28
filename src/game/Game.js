@@ -7,8 +7,7 @@ import {
 } from './elements';
 import {isValidUrl} from '../utils/isValidUrl';
 import {loadItem} from '../firebase';
-import {mergeDeepLeft} from '../utils/mergeDeepLeft';
-import {defaultGameConfig, defaultTileTypes} from '../defaults';
+import {normalizeWorld, numericGameConfigKeys} from '../worldSchema';
 import {compile} from './compile';
 
 const MAX_RENDER_DIST = 32; // don't move things more than this many tiles away
@@ -44,14 +43,7 @@ export class Game {
       this.loading = !this.you; // keep playing the current world, if there is one
       throw new Error(`World not found: ${worldId}`);
     }
-    const {
-      world,
-      tileTypes: overrideTileTypes,
-      gameConfig: overrideGameConfig,
-    } = data;
-
-    const tileTypes = mergeDeepLeft(overrideTileTypes, defaultTileTypes);
-    const gameConfig = mergeDeepLeft(overrideGameConfig, defaultGameConfig);
+    const {world, tileTypes, gameConfig} = normalizeWorld(data);
 
     this.setGameBackground(gameConfig.backgroundUrl);
 
@@ -108,13 +100,8 @@ export class Game {
     this.collectibles = overrides?.collectibles || {};
     this.frame = 0;
 
-    // numeric settings (digSpeed, gravity, etc.) come from defaultGameConfig merged with world overrides
-    for (const key in gameConfig) {
-      // a cleared field is saved as '', which would otherwise become 0
-      const value =
-        gameConfig[key] === '' ? defaultGameConfig[key] : gameConfig[key];
-      if (!isNaN(value)) this[key] = Number(value); // because editing them turns them into strings, yayyyy
-    }
+    // numeric settings (digSpeed, gravity, etc.) become properties of the game
+    for (const key of numericGameConfigKeys) this[key] = gameConfig[key];
 
     this.setHealth(overrides?.health ?? this.health);
     this.setPoop(overrides?.poop ?? this.poop);
@@ -239,7 +226,7 @@ export class Game {
     } else {
       you.y += you.ys;
       you.ys *= 1 - (you.swimBlock ? this.waterDrag : this.airDrag);
-      you.ys += this.gravity * (1 - (you.swimBlock?.type.density || 0));
+      you.ys += this.gravity * (1 - (you.swimBlock?.type.density ?? 0));
     }
 
     // Run onTouch for every overlapped block, and the blocks it stands on, before resolving
@@ -305,13 +292,8 @@ export class Game {
       const b = this.getTile(x, y);
       if (b?.type.edible) {
         this.damage(b, this.eatSpeed);
-        // healing/makePoop are optional on custom tile types; missing would make NaN
-        this.setHealth(
-          this.health + (Number(b.type.healing) || 0) * this.eatSpeed,
-        );
-        this.setPoop(
-          this.poop + (Number(b.type.makePoop) || 0) * this.eatSpeed,
-        );
+        this.setHealth(this.health + b.type.healing * this.eatSpeed);
+        this.setPoop(this.poop + b.type.makePoop * this.eatSpeed);
         this.playSound(b.type.id);
       }
       if (b?.type.diggable) {
@@ -363,7 +345,7 @@ export class Game {
     if (block.type.collectible || block.type.moveStyle === 'liquid') return;
 
     if (block.type.healing < 0) {
-      this.setHealth(this.health + Number(block.type.healing));
+      this.setHealth(this.health + block.type.healing);
       this.playSound(block.type.id);
       you.y -= 0.1;
     }
@@ -457,15 +439,17 @@ export class Game {
       const b = this.world[key];
       const {moveDelay, burns, reactsWith} = b.type;
       const reacts = burns || reactsWith;
-      // tiles act every moveDelay frames; reacting tiles without one act every frame
+      const moves = moveDelay !== undefined;
+      // tiles act every moveDelay frames (every frame when it's 0 or less);
+      // reacting tiles without one act every frame
       if (
-        (moveDelay ? this.frame % moveDelay > 0 : !reacts) ||
+        (moves ? moveDelay > 0 && this.frame % moveDelay > 0 : !reacts) ||
         Math.abs(this.you.x - b.x) > MAX_RENDER_DIST ||
         Math.abs(this.you.y - b.y) > MAX_RENDER_DIST
       )
         continue;
 
-      if (moveDelay) this.moveTileByStyle(b);
+      if (moves) this.moveTileByStyle(b);
       if (reacts) this.react(b);
     }
   }

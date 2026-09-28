@@ -13,7 +13,7 @@ A tile-based platformer (`src/game/`, plain DOM, no framework) and a collaborati
 - Worlds only store overrides. Both the game and the editor combine them with the defaults using `mergeDeepLeft(overrides, defaults)`.
 - `tileType` is a tile type's short `id` (`'g'` grass, `'w'` wombat, `'m'` magma, …), not its key in `tileTypes`. The wombat tile only marks the spawn point, and `Game.load` removes it from the world.
 - Access rules live in `database.rules.json`, which must match what's live. Deploy with `npx firebase deploy --only database`, and check `npx firebase database:get /.settings/rules` afterwards. Anyone can read `worlds/` and `worldIndex/`, and signed-in users can write to each world and its index entry. The rules also require any `user`/`lastEditedBy` being written to equal the writer's `auth.uid`. Only signed-in users can read `/users`, and nobody can write it from the app (profiles are edited in the Firebase console, keyed by the editor's uid from Authentication → Users). `listen()` in `firebase.js` shows read errors in the editor's error banner, so a hook that reads a protected path must wait for `user` (see `useUserIndex`). Otherwise logged-out visitors see a `permission_denied` banner.
-- **Numbers are stored as strings** because the editor saves raw `<input>` values: `"0.005"`, and `""` when a field is cleared. When engine code reads a config or tile-type value, it has to handle numeric strings, `""` and `undefined`. That handling caused several past NaN/0 bugs.
+- **Numbers are stored as strings** because the editor saves raw `<input>` values: `"0.005"`, and `""` when a field is cleared. `Game.load` converts them once with `normalizeWorld` (`src/worldSchema.js`, which also has JSDoc types for the schema), so engine code and tile scripts only see numbers. A blank game-config number becomes its default. A blank tile-type number becomes `0`, except `moveDelay`, which stays `undefined` (never moves), while `0` means it moves every frame. The editor keeps the raw strings. A new numeric field has to go in `worldSchema.js`'s key lists as well as the editor, and a test checks that they match. Tile-type `id`s can look numeric (`"10"`) but stay strings.
 
 ## Engine rules
 
@@ -44,9 +44,8 @@ A tile-based platformer (`src/game/`, plain DOM, no framework) and a collaborati
 
 Ordered by priority. Remove an entry once it's done.
 
-1. **Normalize numbers once,** when a world loads, instead of converting at every use (see Data model). TypeScript or JSDoc types for the world schema would help.
-2. **Split `Game.js`** (physics, AI, sound, HUD, scripting).
-3. **Narrow the script API** so scripts don't get the whole `game` object. `Dialog.say` inserts author text as raw HTML.
-4. **Smaller items:**
+1. **Split `Game.js`** (physics, AI, sound, HUD, scripting).
+2. **Narrow the script API** so scripts don't get the whole `game` object. `Dialog.say` inserts author text as raw HTML.
+3. **Smaller items:**
    - `makeButtons` calls hooks inside `.map()`.
    - ESLint 9 is end-of-life. Move to 10 once `eslint-plugin-react` and `eslint-plugin-import` list it in their peer dependencies.

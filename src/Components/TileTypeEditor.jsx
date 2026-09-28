@@ -22,7 +22,7 @@ n: npc
 
 const capitalize = (str) => str[0].toUpperCase() + str.slice(1);
 
-const fields = [
+export const tileTypeFields = [
   {
     prop: 'label',
     label: 'Label',
@@ -155,7 +155,7 @@ const fields = [
   },
 ];
 
-const defaults = fields.reduce((res, {prop, type}) => {
+const defaults = tileTypeFields.reduce((res, {prop, type}) => {
   res[prop] = type === 'checkbox' ? false : '';
   return res;
 }, {});
@@ -182,7 +182,7 @@ export const TileTypeEditor = ({
     .filter(({id}) => id && !id.startsWith('_') && id !== 'w')
     .sort((a, b) => a.order - b.order)
     .map(({id, label}) => ({label: label || id, value: id}));
-  const formFields = fields.map((field) =>
+  const formFields = tileTypeFields.map((field) =>
     field.tileTypeOptions ? {...field, options} : field,
   );
 

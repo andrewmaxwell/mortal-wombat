@@ -278,7 +278,43 @@ test('standing on a koala keeps hurting', async () => {
     w: {x: 0, y: 0, tileType: 'w'},
   });
   // stop the koala patrolling away
-  game.getTile(0, 1).type = {...game.getTile(0, 1).type, moveDelay: ''};
+  game.getTile(0, 1).type = {
+    ...game.getTile(0, 1).type,
+    moveDelay: undefined,
+  };
   settle(game, 60);
   expect(game.health).toBeLessThan(90);
+});
+
+test('numbers from the database reach the engine and scripts as numbers', async () => {
+  const game = await makeGame(
+    {
+      ...floor(1, -3, 3),
+      '1_0': {
+        x: 1,
+        y: 0,
+        tileType: 'g',
+        onTouch: 'game.hpSeen = getTile(1, 0).type.hp',
+      },
+      w: {x: 0, y: 0, tileType: 'w'},
+    },
+    {gameConfig: {maxPoop: '12', airDrag: ''}},
+  );
+  expect(game.maxPoop).toBe(12);
+  expect(game.airDrag).toBe(0.001);
+  settle(game, 30, {right: true});
+  expect(game.hpSeen).toBe(1);
+});
+
+test('a move delay of 0 moves every frame', async () => {
+  const game = await makeGame(
+    {
+      ...floor(10, -3, 3),
+      '0_0': {x: 0, y: 0, tileType: 'p'},
+      w: {x: 3, y: 9, tileType: 'w'},
+    },
+    {tileTypes: {1: {moveDelay: '0'}}},
+  );
+  settle(game, 3);
+  expect(typeAt(game, 0, 3)).toBe('p');
 });
