@@ -233,6 +233,17 @@ export class Game {
     you.ys *= 1 - (you.swimBlock ? this.waterDrag : this.airDrag);
     you.ys += this.gravity * (1 - (you.swimBlock?.type.density || 0));
 
+    // Run onTouch for every overlapped block before resolving any collisions,
+    // since resolving one block can move the wombat off the others.
+    const touched = new Set();
+    for (const [fx, fy] of pairs) {
+      const block = world[fx(you.x) + '_' + fy(you.y)];
+      if (block && !touched.has(block)) {
+        touched.add(block);
+        this.processOnTouch(block);
+      }
+    }
+
     const seen = {};
     for (const [fx, fy] of pairs) {
       const key = fx(you.x) + '_' + fy(you.y);
@@ -337,8 +348,6 @@ export class Game {
   }
   resolveCollision(block) {
     const {you} = this;
-
-    this.processOnTouch(block);
 
     if (block.type.collectible || block.type.moveStyle === 'liquid') return;
 

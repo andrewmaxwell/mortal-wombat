@@ -44,8 +44,7 @@ Ordered by priority. Remove an entry once it's done.
 1. **Normalize numbers once,** when a world loads, instead of converting at every use (see Data model). TypeScript or JSDoc types for the world schema would help.
 2. **Split `Game.js`** (physics, AI, sound, HUD, scripting). Replace the hard-coded tile-ID rules in `iterateTiles` (magma `'m'`, water `'a'`, stone `'s'`) with tile-type properties.
 3. **Narrow the script API** so scripts don't get the whole `game` object. `Dialog.say` inserts author text as raw HTML.
-4. **Collision order:** in `moveWombat`, once the first overlapping block is resolved, the wombat may no longer overlap the others. So an `onTouch` block processed after a plain block can be skipped entirely.
-5. **Smaller items:**
+4. **Smaller items:**
    - Mobile touch controls (`ControlCircle`) are disabled and broken (`Touch` objects have no `offsetX`).
    - `makeButtons` calls hooks inside `.map()`.
    - ESLint 9 is end-of-life. Move to 10 once `eslint-plugin-react` and `eslint-plugin-import` list it in their peer dependencies.

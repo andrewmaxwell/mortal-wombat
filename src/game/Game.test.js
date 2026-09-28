@@ -43,6 +43,19 @@ test('onTouch fires once per contact, even while touching other blocks', async (
   expect(game.touches).toBe(2);
 });
 
+test('onTouch fires when a plain block is resolved first', async () => {
+  const game = await makeGame({
+    ...floor(1, -3, 3),
+    '1_1': {x: 1, y: 1, tileType: 's', onTouch: 'game.touches++'},
+    w: {x: 0, y: 0, tileType: 'w'},
+  });
+  game.touches = 0;
+  // stand half on the plain block at x=0 and half on the onTouch block at x=1
+  game.you.x = 0.5;
+  settle(game, 60);
+  expect(game.touches).toBe(1);
+});
+
 test('eating a custom tile without healing/makePoop does not produce NaN', async () => {
   const game = await makeGame(
     {
