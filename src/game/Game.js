@@ -4,30 +4,17 @@ import {
   TileElement,
   VersionElement,
   WorldElement,
+  YouDeadElement,
 } from './elements';
-import {isValidUrl} from '../utils/isValidUrl';
 import {loadItem} from '../firebase';
 import {normalizeWorld, numericGameConfigKeys} from '../worldSchema';
 import {compile} from './compile';
+import {Sounds} from './sounds';
+import {iterateTiles} from './tiles';
+import {facingPosition, moveWombat} from './wombat';
 
-const MAX_RENDER_DIST = 32; // don't move things more than this many tiles away
-const MOVEMENT_THRESHOLD = 0.1; // don't move you or the viewport if you move less than this much of a tile
-const TOUCH_GRACE_FRAMES = 2; // frames without contact before onTouch can fire again
-
-const pairs = [
-  [Math.floor, Math.floor],
-  [Math.ceil, Math.floor],
-  [Math.floor, Math.ceil],
-  [Math.ceil, Math.ceil],
-];
-
-const dirs = [
-  [1, 0],
-  [0, 1],
-  [-1, 0],
-  [0, -1],
-];
-
+// Game holds the world state and the methods tile scripts call (see compile.js).
+// The wombat's physics live in wombat.js, and the tiles' movement and reactions in tiles.js.
 export class Game {
   constructor(rootElement) {
     this.rootElement = rootElement;
@@ -75,7 +62,7 @@ export class Game {
       youPos = {x: overrides.x, y: overrides.y};
     }
 
-    this.sounds = this.buildSounds(gameConfig, typeIndex);
+    this.sounds = new Sounds(gameConfig, typeIndex);
 
     this.worldElement.clear();
     this.world = {};
@@ -113,46 +100,24 @@ export class Game {
   setGameBackground(backgroundUrl) {
     document.body.style.backgroundImage = `url(${backgroundUrl})`;
   }
-  buildSounds(config, typeIndex) {
-    const sounds = {};
-
-    Object.values(typeIndex)
-      .filter((type) => type.sound)
-      .forEach((type) => (sounds[type.id] = new Audio(type.sound)));
-
-    const soundSettingSuffix = 'Sound';
-    Object.keys(config)
-      .filter((key) => key.endsWith(soundSettingSuffix) && config[key])
-      .forEach((key) => {
-        const soundName = key.substring(
-          0,
-          key.length - soundSettingSuffix.length,
-        );
-        sounds[soundName] = new Audio(config[key]);
-      });
-
-    return sounds;
-  }
   playSound(sound) {
-    if (this.sounds[sound] === undefined && isValidUrl(sound)) {
-      this.sounds[sound] = new Audio(sound);
-    }
-    // play() rejects when autoplay is blocked or playback is interrupted
-    this.sounds[sound]?.play()?.catch(() => {});
+    this.sounds.play(sound);
   }
   pauseSound(sound) {
-    this.sounds[sound]?.pause();
+    this.sounds.pause(sound);
   }
   loopSound(sound) {
-    this.playSound(sound);
-    if (this.sounds[sound]) this.sounds[sound].loop = true;
+    this.sounds.loop(sound);
   }
   iterate(pressing) {
     if (this.loading) return;
-    this.moveWombat(pressing);
-    this.iterateTiles();
+    moveWombat(this, pressing);
+    iterateTiles(this);
     this.frame++;
   }
+
+  // tiles
+
   addTile(tile) {
     this.world[`${tile.x}_${tile.y}`] = {
       ...tile,
@@ -174,156 +139,6 @@ export class Game {
     delete tile.hp;
     tile.el.setBackground(type);
   }
-  moveWombat(pressing) {
-    const {you, world} = this;
-
-    you.isPushing = false;
-    you.isWalking = false;
-    you.isDigging = false;
-
-    if (this.health <= 0) {
-      if (pressing.reload) location.reload();
-      return;
-    }
-
-    const supports = this.getSupports();
-    you.onGround = supports.length > 0;
-    if (you.onGround) you.isJumping = false;
-
-    if (pressing.left || pressing.right || pressing.up || pressing.down) {
-      you.dirX = 0;
-      you.dirY = 0;
-    }
-    if (pressing.left) {
-      you.xs -= you.swimBlock ? this.swimPower : this.moveSpeed;
-      you.dirX--;
-      you.isWalking = true;
-    }
-    if (pressing.right) {
-      you.xs += you.swimBlock ? this.swimPower : this.moveSpeed;
-      you.dirX++;
-      you.isWalking = true;
-    }
-    if (pressing.up) {
-      if (you.swimBlock) you.ys -= this.swimPower;
-      else if (you.onGround) {
-        you.ys = -this.jumpPower;
-        you.isJumping = true;
-      }
-      you.dirY--;
-    }
-    if (pressing.down) {
-      if (you.swimBlock) you.ys += this.swimPower;
-      you.dirY++;
-    }
-
-    you.x += you.xs;
-    you.xs *= 1 - (you.swimBlock ? this.waterDrag : this.moveDeceleration);
-
-    if (you.onGround && you.ys >= 0) {
-      // resting: no gravity, so the wombat doesn't sink into the ground every other frame
-      you.ys = 0;
-    } else {
-      you.y += you.ys;
-      you.ys *= 1 - (you.swimBlock ? this.waterDrag : this.airDrag);
-      you.ys += this.gravity * (1 - (you.swimBlock?.type.density ?? 0));
-    }
-
-    // Run onTouch for every overlapped block, and the blocks it stands on, before resolving
-    // any collisions, since resolving one block can move the wombat off the others.
-    const touched = new Set();
-    const overlapping = pairs.map(
-      ([fx, fy]) => world[fx(you.x) + '_' + fy(you.y)],
-    );
-    for (const block of [...overlapping, ...supports]) {
-      if (block && !touched.has(block)) {
-        touched.add(block);
-        this.processOnTouch(block);
-      }
-    }
-
-    const seen = {};
-    for (const [fx, fy] of pairs) {
-      const key = fx(you.x) + '_' + fy(you.y);
-      if (seen[key] || !world[key]) continue;
-      seen[key] = true;
-      this.resolveCollision(world[key]);
-    }
-
-    let damage = 0;
-    delete you.swimBlock;
-    for (const [fx, fy] of pairs) {
-      const block = world[fx(you.x) + '_' + fy(you.y)];
-      if (!block) continue;
-      if (block.type.collectible) {
-        this.collect(block.type.id);
-        this.deleteTile(block);
-        continue;
-      }
-      if (block.type.healing < 0) {
-        damage = Math.max(damage, -block.type.healing);
-      }
-      if (block.type.moveStyle === 'liquid') {
-        you.swimBlock = block;
-        // Only play the liquid blocks sound if this is the first time
-        // the wombat has entered the liquid.
-        if (
-          this.lastSeen &&
-          Object.keys(this.lastSeen).filter(
-            (lastSeenIndex) =>
-              this.world[lastSeenIndex]?.type?.moveStyle === 'liquid',
-          ).length === 0
-        ) {
-          this.playSound(block.type.id);
-        }
-      }
-    }
-    if (damage) this.setHealth(this.health - damage);
-
-    // Capture the current seen blocks so they can be used to
-    // determine if the wombat is already in the liquid.
-    this.lastSeen = seen;
-
-    if (pressing.space) {
-      you.isDigging = true;
-      const angle = Math.atan2(you.dirY, you.dirX);
-      const x = Math.round(you.x + Math.cos(angle));
-      const y = Math.round(you.y + Math.sin(angle));
-      const b = this.getTile(x, y);
-      if (b?.type.edible) {
-        this.damage(b, this.eatSpeed);
-        this.setHealth(this.health + b.type.healing * this.eatSpeed);
-        this.setPoop(this.poop + b.type.makePoop * this.eatSpeed);
-        this.playSound(b.type.id);
-      }
-      if (b?.type.diggable) {
-        this.damage(b, this.digSpeed);
-      }
-    }
-
-    if (
-      Math.abs(you.x - you.px) > MOVEMENT_THRESHOLD ||
-      Math.abs(you.y - you.py) > MOVEMENT_THRESHOLD ||
-      you.dirX !== you.pdirX ||
-      you.dirY !== you.pdirY ||
-      you.isDigging !== you.pIsDigging ||
-      you.isJumping !== you.pIsJumping ||
-      you.isPushing !== you.pIsPushing ||
-      you.isWalking !== you.pIsWalking
-    ) {
-      you.el.update(you);
-      this.worldElement.update(you);
-
-      you.px = you.x;
-      you.py = you.y;
-      you.pdirX = you.dirX;
-      you.pdirY = you.dirY;
-      you.pIsDigging = you.isDigging;
-      you.pIsJumping = you.isJumping;
-      you.pIsPushing = you.isPushing;
-      you.pIsWalking = you.isWalking;
-    }
-  }
   // returns true if block is destroyed
   damage(block, amount) {
     if (!block?.type.hp) return;
@@ -339,79 +154,6 @@ export class Game {
       return true;
     }
   }
-  resolveCollision(block) {
-    const {you} = this;
-
-    if (block.type.collectible || block.type.moveStyle === 'liquid') return;
-
-    if (block.type.healing < 0) {
-      this.setHealth(this.health + block.type.healing);
-      this.playSound(block.type.id);
-      you.y -= 0.1;
-    }
-
-    if (Math.abs(you.x - block.x) > Math.abs(you.y - block.y)) {
-      const dx = block.x < you.x ? -1 : 1;
-      if (you.onGround && !you.isJumping) {
-        you.isPushing = true;
-        if (block.type.movable && this.isEmpty(block.x + dx, block.y)) {
-          this.moveTile(block.x, block.y, dx, 0);
-        } else {
-          you.x = block.x + (you.x < block.x ? -1 : 1);
-        }
-      } else {
-        you.x = block.x + (you.x < block.x ? -1 : 1);
-      }
-      you.xs = 0;
-      you.isWalking = false;
-    } else {
-      if (you.y < block.y) you.isJumping = false;
-      you.y = block.y + (you.y < block.y ? -1 : 1);
-
-      // fall damage
-      if (you.ys > this.fallDamageMin) {
-        const damage = (you.ys - this.fallDamageMin) * this.fallDamageMult;
-        this.setHealth(this.health - damage);
-        this.playSound('fallDamage');
-
-        const blockDamage = Math.min(
-          damage,
-          block.hp || Infinity,
-          block.type.hp || Infinity,
-        );
-        if (this.damage(block, damage)) {
-          you.ys /= 1 + blockDamage;
-          return;
-        }
-      }
-      you.ys = 0;
-    }
-  }
-  // The blocks the wombat is standing on: it's on the ground when there are any.
-  // Liquids and collectibles don't hold it up. Neither do blocks that hurt: it keeps
-  // falling into those, so they keep hurting it.
-  getSupports() {
-    const {you} = this;
-    if (you.ys < 0 || you.y !== Math.floor(you.y)) return [];
-    const below = [...new Set([Math.floor(you.x), Math.ceil(you.x)])]
-      .map((x) => this.getTile(x, you.y + 1))
-      .filter(Boolean);
-    if (below.some((b) => b.type.healing < 0)) return [];
-    return below.filter(
-      (b) => b.type.moveStyle !== 'liquid' && !b.type.collectible,
-    );
-  }
-  processOnTouch(block) {
-    if (!block.onTouch) return;
-    // Only run onTouch when contact starts, not on every frame of contact.
-    // Short gaps (a frame or two of bouncing off) still count as the same contact.
-    const isNewContact = !(
-      this.frame - block.lastTouchFrame <=
-      TOUCH_GRACE_FRAMES
-    );
-    block.lastTouchFrame = this.frame;
-    if (isNewContact) block.onTouch(this);
-  }
   getTile(x, y) {
     return this.world[`${x}_${y}`];
   }
@@ -420,10 +162,6 @@ export class Game {
   }
   isEmpty(x, y) {
     return !this.getTile(x, y);
-  }
-  badGuyCanWalkOn(x, y) {
-    const t = this.getTile(x, y);
-    return t && t.type.moveStyle !== 'liquid';
   }
   moveTile(x, y, dx, dy) {
     const key = `${x}_${y}`;
@@ -434,70 +172,9 @@ export class Game {
     this.world[`${b.x}_${b.y}`] = b;
     b.el.update(b);
   }
-  iterateTiles() {
-    for (const key in this.world) {
-      const b = this.world[key];
-      const {moveDelay, burns, reactsWith} = b.type;
-      const reacts = burns || reactsWith;
-      const moves = moveDelay !== undefined;
-      // tiles act every moveDelay frames (every frame when it's 0 or less);
-      // reacting tiles without one act every frame
-      if (
-        (moves ? moveDelay > 0 && this.frame % moveDelay > 0 : !reacts) ||
-        Math.abs(this.you.x - b.x) > MAX_RENDER_DIST ||
-        Math.abs(this.you.y - b.y) > MAX_RENDER_DIST
-      )
-        continue;
 
-      if (moves) this.moveTileByStyle(b);
-      if (reacts) this.react(b);
-    }
-  }
-  moveTileByStyle(b) {
-    if (this.isEmpty(b.x, b.y + 1)) {
-      this.moveTile(b.x, b.y, 0, 1);
-    } else if (b.type.moveStyle === 'liquid') {
-      const left = this.isEmpty(b.x - 1, b.y);
-      const right = this.isEmpty(b.x + 1, b.y);
-      if (left && right) {
-        this.moveTile(b.x, b.y, Math.random() < 0.5 ? 1 : -1, 0);
-      } else if (left) {
-        this.moveTile(b.x, b.y, -1, 0);
-      } else if (right) {
-        this.moveTile(b.x, b.y, 1, 0);
-      }
-    } else if (b.type.moveStyle === 'patrol') {
-      if (!b.dirX) b.dirX = 1;
-      if (
-        this.isEmpty(b.x + b.dirX, b.y) &&
-        this.badGuyCanWalkOn(b.x + b.dirX, b.y + 1)
-      ) {
-        this.moveTile(b.x, b.y, b.dirX, 0);
-      } else {
-        b.dirX *= -1;
-      }
-    }
-  }
-  // burns: destroys neighbors that have HP.
-  // reactsWith: a neighbor of that type is consumed, and this tile turns into reactsInto
-  // (magma + water = stone).
-  react(b) {
-    const {burns, reactsWith, reactsInto} = b.type;
-    let reacted = false;
-    for (const [dx, dy] of dirs) {
-      const block = this.getTile(b.x + dx, b.y + dy);
-      if (!block) continue;
-      if (reactsWith && block.type.id === reactsWith) {
-        this.deleteTile(block);
-        reacted = true;
-      } else if (burns && block.type.hp) {
-        this.deleteTile(block);
-      }
-    }
-    if (reacted && this.typeIndex[reactsInto]) {
-      this.changeTileType(b, this.typeIndex[reactsInto]);
-    }
-  }
+  // HUD: health, poop and collectibles
+
   setHealth(health) {
     this.health = Math.max(0, Math.min(this.maxHealth, health));
     this.hud.healthBar.update(
@@ -508,14 +185,7 @@ export class Game {
     if (this.health <= 0 && !this.isDead) {
       this.isDead = true;
       this.playSound('gameOver');
-      // insertAdjacentHTML, not innerHTML +=, so existing elements aren't recreated
-      this.rootElement.insertAdjacentHTML(
-        'beforeend',
-        '<div class="youDead"><h1>you dead</h1><h2>press R or tap to try again</h2></div>',
-      );
-      this.rootElement.lastElementChild.addEventListener('pointerdown', () =>
-        location.reload(),
-      );
+      new YouDeadElement(this.rootElement);
     }
   }
   numCollected(id) {
@@ -533,14 +203,15 @@ export class Game {
     this.poop = Math.max(0, Math.min(this.maxPoop, poop));
     this.hud.poopBar.update(Math.floor(this.poop), this.maxPoop, 'saddleBrown');
   }
+
+  // actions from main.js and scripts
+
   makePoop() {
     if (this.poop < 1) return;
-    const {you, world, typeIndex} = this;
-    const angle = Math.atan2(you.dirY, you.dirX) + Math.PI;
-    const x = Math.round(you.x + Math.cos(angle));
-    const y = Math.round(you.y + Math.sin(angle));
-    if ((x !== you.x || y !== you.y) && !world[`${x}_${y}`]) {
-      this.addTile({x, y, type: typeIndex.p});
+    const {you} = this;
+    const {x, y} = facingPosition(you, true);
+    if ((x !== you.x || y !== you.y) && this.isEmpty(x, y)) {
+      this.addTile({x, y, type: this.typeIndex.p});
       this.setPoop(this.poop - 1);
       this.playSound('p');
     }
@@ -549,10 +220,7 @@ export class Game {
     this.worldElement.update(this.you);
   }
   interact() {
-    const {you} = this;
-    const angle = Math.atan2(you.dirY, you.dirX);
-    const x = Math.round(you.x + Math.cos(angle));
-    const y = Math.round(you.y + Math.sin(angle));
+    const {x, y} = facingPosition(this.you);
     this.getTile(x, y)?.onSpace?.(this);
   }
   async jumpTo(worldId) {

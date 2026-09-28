@@ -170,6 +170,16 @@ export class Hud extends Element {
   }
 }
 
+export class YouDeadElement extends Element {
+  constructor(parentElement) {
+    super();
+    this.el.classList.add('youDead');
+    this.el.innerHTML = '<h1>you dead</h1><h2>press R or tap to try again</h2>';
+    this.el.addEventListener('pointerdown', () => location.reload());
+    parentElement.append(this.el);
+  }
+}
+
 export class VersionElement extends Element {
   constructor(parentElement) {
     super();

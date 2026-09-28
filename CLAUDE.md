@@ -19,7 +19,7 @@ A tile-based platformer (`src/game/`, plain DOM, no framework) and a collaborati
 
 - Physics constants are per tick. `main.js` runs a fixed 60 ticks/sec, so any tuning has to assume that rate.
 - Input comes from `Controls` (keyboard), `GamepadControls` and `TouchControls`, merged through `getPressing`. `main.js` reads them only on frames that run a tick.
-- `Game.iterate` = `moveWombat` (the player) then `iterateTiles` (falling, liquid and patrol movement, and reactions), then `frame++`.
+- `Game.iterate` = `moveWombat` (the player, in `wombat.js`) then `iterateTiles` (falling, liquid and patrol movement, and reactions, in `tiles.js`), then `frame++`. `Game.js` holds the world state, loading, the HUD stats (health, poop, collectibles) and the methods tile scripts call. Sounds live in `sounds.js`, and running tile scripts in `compile.js`. Helpers in `wombat.js` and `tiles.js` take `game` as their first argument. Keep script-facing methods on `Game`, since scripts reach them through `game`.
 - Tile behavior comes from tile-type properties, not tile IDs. Magma's defaults are `burns` (destroys touching tiles that have HP), plus `reactsWith: 'a'` and `reactsInto: 's'` (touching water consumes the water and turns the magma to stone). Any tile type can use these properties. A tile acts every `moveDelay` frames, or every frame if it reacts but has no `moveDelay`.
 - The wombat is on the ground (`you.onGround`) when `getSupports()` finds solid blocks directly below it and its y is a whole number. While grounded, it gets no gravity, can jump, and the blocks it stands on count as touched every frame. Liquids and collectibles don't count as ground. Neither do blocks that hurt: the wombat keeps falling into those every other frame, so they keep damaging it. `processOnTouch` still allows a short grace window for contact that bounces.
 - Tile scripts (`onSpace`/`onTouch`) are author-written JS compiled with `new Function` in `compile.js`. The helpers they can use are the ones listed in `useTemplate`, and `TileLogic.jsx` shows examples to authors, so keep the two in sync.
@@ -44,8 +44,7 @@ A tile-based platformer (`src/game/`, plain DOM, no framework) and a collaborati
 
 Ordered by priority. Remove an entry once it's done.
 
-1. **Split `Game.js`** (physics, AI, sound, HUD, scripting).
-2. **Narrow the script API** so scripts don't get the whole `game` object. `Dialog.say` inserts author text as raw HTML.
-3. **Smaller items:**
+1. **Narrow the script API** so scripts don't get the whole `game` object. `Dialog.say` inserts author text as raw HTML.
+2. **Smaller items:**
    - `makeButtons` calls hooks inside `.map()`.
    - ESLint 9 is end-of-life. Move to 10 once `eslint-plugin-react` and `eslint-plugin-import` list it in their peer dependencies.

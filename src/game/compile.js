@@ -49,3 +49,17 @@ export const compile = (str) => {
     return;
   }
 };
+
+const TOUCH_GRACE_FRAMES = 2; // frames without contact before onTouch can fire again
+
+// Runs a block's onTouch script when the wombat starts touching it, not on every frame
+// of contact. Short gaps (a frame or two of bouncing off) still count as the same contact.
+export const runOnTouch = (game, block) => {
+  if (!block.onTouch) return;
+  const isNewContact = !(
+    game.frame - block.lastTouchFrame <=
+    TOUCH_GRACE_FRAMES
+  );
+  block.lastTouchFrame = game.frame;
+  if (isNewContact) block.onTouch(game);
+};
