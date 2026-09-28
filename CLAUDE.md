@@ -34,7 +34,7 @@ A tile-based platformer (`src/game/`, plain DOM, no framework) and a collaborati
 
 Ordered by priority. Remove an entry once it's done.
 
-1. **Editor-email migration: code is done, the live rollout isn't.** Order matters: (a) deploy the site, (b) deploy `database.rules.json` so stale tabs can't write emails, (c) export a fresh copy with `npx firebase database:get /`, rebuild the update with `node scripts/migrateEditorIds.js <export> backups/uid-map.json <out>`, and apply it with `npx firebase database:update / <out>`, (d) check that no emails remain under `worlds/`. `backups/` (gitignored) holds the pre-migration export and the email→uid map. Delete them once the rollout is confirmed. Also turn on database backups: there's no undo if a signed-in user overwrites a world.
+1. **Clean up after the editor-email migration (applied 2026-09-28, verified tile by tile).** Once the user confirms names show correctly in the editor, delete `backups/db-premigration-*.json` and `backups/uid-map.json` (they contain editor emails). `scripts/migrateEditorIds.js` can go too. Turn on database backups: there's no undo if a signed-in user overwrites a world. Note that `npx firebase database:update` fails with a generic error on very large updates, so split big writes into batches of about 10k paths.
 2. **Upgrade dependencies:** React 18 → 19, ESLint 8 → 9 with a flat config (`.eslintrc.cjs` is the legacy format).
 3. **Normalize numbers once,** when a world loads, instead of converting at every use (see Data model). TypeScript or JSDoc types for the world schema would help.
 4. **Split `Game.js`** (physics, AI, sound, HUD, scripting). Replace the hard-coded tile-ID rules in `iterateTiles` (magma `'m'`, water `'a'`, stone `'s'`) with tile-type properties.
