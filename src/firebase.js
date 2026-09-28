@@ -7,12 +7,6 @@ import {
   get,
   child,
 } from 'firebase/database';
-import {
-  getAuth,
-  signInWithEmailAndPassword,
-  onAuthStateChanged,
-  signOut,
-} from 'firebase/auth';
 
 initializeApp({
   apiKey: 'AIzaSyBEserPzSUos4MT3XRO8NKAO2oVk1-LS-I',
@@ -30,13 +24,10 @@ https://console.firebase.google.com/project/mortal-wombat-8c76a/database/mortal-
 Data Docs: https://firebase.google.com/docs/database/web/read-and-write?hl=en&authuser=0
 List Docs: https://firebase.google.com/docs/database/web/lists-of-data?hl=en&authuser=0
 
-Users:
-https://console.firebase.google.com/project/mortal-wombat-8c76a/authentication/users
-User Docs: https://firebase.google.com/docs/auth/web/manage-users
+Auth lives in auth.js so the game (which never logs in) doesn't start Firebase Auth.
 */
 
 const db = getDatabase();
-const auth = getAuth();
 const dbRef = ref(db);
 
 export const defaultWorldId = 'l5ybd0mu:2x3xfrsom4h';
@@ -78,20 +69,3 @@ export const listen = (pathStr, onChange, onError) => {
     handleError(e);
   }
 };
-
-// export const createUser = async (email, pwd) => {
-//   try {
-//     const result = await createUserWithEmailAndPassword(auth, email, pwd);
-//     return result.user;
-//   } catch (e) {
-//     console.error(e);
-//     return e.message;
-//   }
-// };
-
-export const logIn = (email, pwd) =>
-  signInWithEmailAndPassword(auth, email, pwd);
-
-export const listenUser = (onChange) => onAuthStateChanged(auth, onChange);
-
-export const logOut = () => signOut(auth);

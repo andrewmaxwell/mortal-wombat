@@ -1,4 +1,4 @@
-import {logOut} from '../firebase';
+import {logOut} from '../auth';
 
 export const Nav = ({user, setScale, zoomAmt, userIndex, children}) => (
   <nav>

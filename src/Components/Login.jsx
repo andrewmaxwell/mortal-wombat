@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import {logIn} from '../firebase';
+import {logIn} from '../auth';
 import './login.css';
 
 export const Login = ({onError}) => {

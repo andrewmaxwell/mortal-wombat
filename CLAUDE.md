@@ -1,6 +1,6 @@
 # Mortal Wombat
 
-A tile-based platformer (`src/game/`, plain DOM, no framework) and a collaborative React world editor (`src/Components/`), both backed by Firebase Realtime Database. `src/index.js` loads the editor when the URL has `?editor`, and the game otherwise. Scripts live in `package.json`.
+A tile-based platformer (`src/game/`, plain DOM, no framework) and a collaborative React world editor (`src/Components/`), both backed by Firebase Realtime Database. `src/index.js` loads the editor when the URL has `?editor`. Otherwise `gameFrame.js` shows the game in a sandboxed iframe of `play.html` (entry `src/play.js`), and passes the URL's `#…` start config through. Scripts live in `package.json`.
 
 ## Data model
 
@@ -19,11 +19,13 @@ A tile-based platformer (`src/game/`, plain DOM, no framework) and a collaborati
 - `Game.iterate` = `moveWombat` (the player) then `iterateTiles` (falling, liquid, patrol and magma rules), then `frame++`.
 - When the wombat rests on a block, it only overlaps that block every other frame. Contact logic such as `processOnTouch` needs a grace window, not a "touched last frame" check.
 - Tile scripts (`onSpace`/`onTouch`) are author-written JS compiled with `new Function` in `compile.js`. The helpers they can use are the ones listed in `useTemplate`, and `TileLogic.jsx` shows examples to authors, so keep the two in sync.
+- **World scripts run only in the sandbox.** The iframe has `sandbox="allow-scripts"` and no `allow-same-origin`, so its origin is `'null'` and scripts can't read the editor's Firebase login. `play.js` starts the game only when `window.origin === 'null'`, and otherwise redirects to `/`. Keep game code out of the editor bundle and editor/auth code out of the game (auth lives in `src/auth.js`).
+- Inside the sandbox, browser storage is unavailable. The database SDK treats that as "WebSockets failed before" and falls back to long polling, which the sandbox breaks, so `play.js` calls `forceWebSockets()` first. Script requests from the sandbox arrive with `Origin: null`: GitHub Pages allows any origin, and `vite.config.js` allows `null` for the dev and preview servers.
 
 ## Verifying changes
 
 - `npm test` (Vitest + jsdom) covers the engine. The tests mock `../firebase` and build worlds inline. Add a test here when fixing engine behavior.
-- To check the game in a browser, run `npm start` and open `localhost:3000` (the default world loads from the live DB and is read-only). Browsers pause `requestAnimationFrame` in hidden tabs, so an automated browser that isn't in the foreground shows a frozen game.
+- To check the game in a browser, run `npm start` and open `localhost:3000` (the default world loads from the live DB and is read-only). Browsers pause `requestAnimationFrame` in hidden tabs, so an automated browser that isn't in the foreground shows a frozen game. Browser-automation console and network tools don't see inside the game's iframe, and the outer page can't reach into it: to debug the game, have it `parent.postMessage` its errors temporarily, or check with screenshots.
 - The editor needs a login. The only way to create accounts is the Firebase console, so editor changes past the login screen need the user to test them.
 - The dev server must stay on port 3000: `firebase.js` exposes `window._update` only on `localhost:3000`.
 
@@ -31,17 +33,16 @@ A tile-based platformer (`src/game/`, plain DOM, no framework) and a collaborati
 
 Ordered by priority. Remove an entry once it's done.
 
-1. **Same-origin script risk.** World scripts run on the same origin as the editor, so a malicious world could read an editor's Firebase auth session. Move the game to its own subdomain or a sandboxed iframe.
-2. **Editor emails are public.** `saveTile`, `createNewWorld` and `setCursor` store the editor's email under `worlds/`, which anyone can read. Store the auth `uid` instead and look names up from `/users`, which needs a migration of existing tiles. Also turn on database backups: there's no undo if a signed-in user overwrites a world.
-3. **Upgrade dependencies:** React 18 → 19, ESLint 8 → 9 with a flat config (`.eslintrc.cjs` is the legacy format).
-4. **Normalize numbers once,** when a world loads, instead of converting at every use (see Data model). TypeScript or JSDoc types for the world schema would help.
-5. **Split `Game.js`** (physics, AI, sound, HUD, scripting). Replace the hard-coded tile-ID rules in `iterateTiles` (magma `'m'`, water `'a'`, stone `'s'`) with tile-type properties.
-6. **Narrow the script API** so scripts don't get the whole `game` object. `Dialog.say` inserts author text as raw HTML.
-7. **Editor performance:**
+1. **Editor emails are public.** `saveTile`, `createNewWorld` and `setCursor` store the editor's email under `worlds/`, which anyone can read. Store the auth `uid` instead and look names up from `/users`, which needs a migration of existing tiles. Also turn on database backups: there's no undo if a signed-in user overwrites a world.
+2. **Upgrade dependencies:** React 18 → 19, ESLint 8 → 9 with a flat config (`.eslintrc.cjs` is the legacy format).
+3. **Normalize numbers once,** when a world loads, instead of converting at every use (see Data model). TypeScript or JSDoc types for the world schema would help.
+4. **Split `Game.js`** (physics, AI, sound, HUD, scripting). Replace the hard-coded tile-ID rules in `iterateTiles` (magma `'m'`, water `'a'`, stone `'s'`) with tile-type properties.
+5. **Narrow the script API** so scripts don't get the whole `game` object. `Dialog.say` inserts author text as raw HTML.
+6. **Editor performance:**
    - `MyWorlds` downloads every world, with every tile and cursor, just to draw thumbnails.
    - Stale cursors are removed by a random 1% cleanup in `useCursors`; use `onDisconnect()` instead.
-8. **Collision order:** in `moveWombat`, once the first overlapping block is resolved, the wombat may no longer overlap the others. So an `onTouch` block processed after a plain block can be skipped entirely.
-9. **Smaller items:**
+7. **Collision order:** in `moveWombat`, once the first overlapping block is resolved, the wombat may no longer overlap the others. So an `onTouch` block processed after a plain block can be skipped entirely.
+8. **Smaller items:**
    - Mobile touch controls (`ControlCircle`) are disabled and broken (`Touch` objects have no `offsetX`).
    - `makeButtons` calls hooks inside `.map()`.
    - In `npm run deploy`, `predeploy` builds before `npm version patch` runs, so the deployed build shows the previous version number.
