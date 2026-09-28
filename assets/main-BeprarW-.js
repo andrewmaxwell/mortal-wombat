@@ -1,2 +1,0 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/editorMain-DT-ew0bP.js","assets/preload-helper-BkB_DHlh.js","assets/preload-helper-Cl3vUPeY.css","assets/index.esm-Dj1DErYJ.js","assets/mergeDeepLeft-BemFIRTk.js","assets/editorMain-DAtbk0jI.css"])))=>i.map(i=>d[i]);
-import{t as e}from"./preload-helper-BkB_DHlh.js";location.search===`?editor`?e(()=>import(`./editorMain-DT-ew0bP.js`).then(e=>e.t),__vite__mapDeps([0,1,2,3,4,5])):e(()=>import(`./gameFrame-DUz9xQv5.js`),[]);
