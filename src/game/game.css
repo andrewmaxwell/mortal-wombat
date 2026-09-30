@@ -73,6 +73,27 @@ body {
   top: 0;
 }
 
+.scriptErrors {
+  position: fixed;
+  z-index: 10;
+  top: 20px;
+  right: 0;
+  max-width: min(600px, 90%);
+  max-height: 40%;
+  overflow: auto;
+  font: 14px monospace;
+  background: rgba(120, 0, 0, 0.85);
+  color: white;
+}
+
+.scriptErrors:empty {
+  display: none;
+}
+
+.scriptErrors > div {
+  padding: 4px 8px;
+}
+
 .show .tile {
   outline: 1px solid lime;
 }

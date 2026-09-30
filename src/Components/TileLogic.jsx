@@ -1,3 +1,4 @@
+import {scriptSyntaxError} from '../scriptTemplate';
 import {saveTile} from '../utils/saveTile';
 import {Code, FormThing} from './common/FormThing';
 import './tileLogic.css';
@@ -14,12 +15,14 @@ const fields = [
     label: 'On Space',
     type: 'code',
     info: 'What should happen when you press space at it?',
+    validate: scriptSyntaxError,
   },
   {
     prop: 'onTouch',
     label: 'On Touch',
     type: 'code',
     info: 'What should happen when you collide with this tile?',
+    validate: scriptSyntaxError,
   },
 ];
 
@@ -31,6 +34,8 @@ say('hello!');
 say('what do you want to do?');
 choice('replenish health', () => setHealth(100));
 choice('lose health', () => setHealth(1));
+
+// if a script has a mistake, the game shows the error in the top right corner
 
 // to play a sound:
 playSound('https://static.heironimus.info/sound/PinkFast.ogg');

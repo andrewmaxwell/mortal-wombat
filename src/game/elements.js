@@ -189,6 +189,28 @@ export class VersionElement extends Element {
   }
 }
 
+// Errors in tile scripts, so world authors see them while play-testing. Tap to dismiss.
+export class ScriptErrors extends Element {
+  constructor(parentElement) {
+    super();
+    this.el.classList.add('scriptErrors');
+    this.messages = new Set();
+    this.el.addEventListener('pointerdown', () => this.clear());
+    parentElement.append(this.el);
+  }
+  show(message) {
+    if (this.messages.has(message)) return; // a broken onTouch fails on every contact
+    this.messages.add(message);
+    const line = document.createElement('div');
+    line.textContent = message;
+    this.el.append(line);
+  }
+  clear() {
+    this.messages.clear();
+    this.el.replaceChildren();
+  }
+}
+
 export class Dialog extends Element {
   constructor(parentElement) {
     super();
@@ -253,7 +275,7 @@ export class Dialog extends Element {
   }
   choose() {
     this.hide();
-    this.choices[this.choiceIndex].action();
+    this.choices[this.choiceIndex].action?.(); // choice('No') has no action
   }
   hide() {
     this.el.style.display = 'none';

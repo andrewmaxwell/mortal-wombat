@@ -2,3 +2,9 @@
   display: inline-block;
   width: 80px;
 }
+
+.tileLogic .fieldError {
+  color: #ff6b6b;
+  font-family: monospace;
+  margin: 4px 0 8px 80px;
+}

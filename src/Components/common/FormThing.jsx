@@ -33,7 +33,6 @@ const Select = ({value, onChange, options}) => (
   </select>
 );
 
-// TODO: add code validation
 const editorOptions = {minimap: {enabled: false}};
 export const Code = ({value, onChange}) => (
   <Suspense fallback="Loading...">
@@ -58,10 +57,11 @@ const inputs = {
 };
 
 export const FormThing = ({fields, data, defaults, onChange}) =>
-  fields.map(({prop, label, type, info, show, options}) => {
+  fields.map(({prop, label, type, info, show, options, validate}) => {
     if (show && !show(data)) return null;
     const Field = inputs[type];
     const value = data?.[prop] === undefined ? defaults?.[prop] : data?.[prop];
+    const error = validate?.(value);
     return (
       <div key={prop} title={info}>
         <label>{label}</label>
@@ -81,6 +81,8 @@ export const FormThing = ({fields, data, defaults, onChange}) =>
             Reset
           </button>
         )}
+
+        {error && <div className="fieldError">{error}</div>}
       </div>
     );
   });

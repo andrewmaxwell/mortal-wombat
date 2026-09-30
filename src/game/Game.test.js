@@ -318,3 +318,72 @@ test('a move delay of 0 moves every frame', async () => {
   settle(game, 3);
   expect(typeAt(game, 0, 3)).toBe('p');
 });
+
+const errorText = (game) => game.scriptErrors.el.textContent;
+
+test('a script with a syntax error is reported and the tile still loads', async () => {
+  const game = await makeGame({
+    '1_0': {x: 1, y: 0, tileType: 's', name: 'sign', onSpace: '[say hi]'},
+    w: {x: 0, y: 0, tileType: 'w'},
+  });
+  expect(typeAt(game, 1, 0)).toBe('s');
+  expect(errorText(game)).toMatch(
+    /On Space script of tile "sign" \(1, 0\): SyntaxError/,
+  );
+});
+
+test('an onTouch that throws is reported once and collisions still work', async () => {
+  const game = await makeGame({
+    ...floor(1, -3, 3),
+    '1_0': {x: 1, y: 0, tileType: 's', onTouch: 'getTileByName("nope").x'},
+    w: {x: 0, y: 0, tileType: 'w'},
+  });
+  settle(game, 30);
+  settle(game, 60, {right: true});
+  settle(game, 10, {left: true});
+  settle(game, 60, {right: true});
+  // the wall still stopped the wombat
+  expect(game.you.x).toBe(0);
+  expect(game.you.y).toBe(0);
+  expect(game.scriptErrors.el.children).toHaveLength(1);
+  expect(errorText(game)).toMatch(
+    /On Touch script of tile \(1, 0\): TypeError/,
+  );
+});
+
+test('errors in choice and setTimeout callbacks are reported', async () => {
+  vi.useFakeTimers();
+  try {
+    const game = await makeGame({
+      '1_0': {
+        x: 1,
+        y: 0,
+        tileType: 's',
+        onSpace: `
+          setTimeout(() => missingTimer());
+          say('pick');
+          choice('broken', () => missingChoice());`,
+      },
+      w: {x: 0, y: 0, tileType: 'w'},
+    });
+    game.interact();
+    vi.runAllTimers();
+    game.dialog.choose();
+    expect(errorText(game)).toMatch(/missingTimer is not defined/);
+    expect(errorText(game)).toMatch(/missingChoice is not defined/);
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+test('a choice without an action just closes the dialog', async () => {
+  const game = await makeGame({
+    '1_0': {x: 1, y: 0, tileType: 's', onSpace: "say('hi'); choice('No');"},
+    w: {x: 0, y: 0, tileType: 'w'},
+  });
+  game.interact();
+  expect(game.dialog.isOpen).toBe(true);
+  game.dialog.choose();
+  expect(game.dialog.isOpen).toBe(false);
+  expect(errorText(game)).toBe('');
+});

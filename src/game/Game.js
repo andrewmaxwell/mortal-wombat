@@ -1,6 +1,7 @@
 import {
   Dialog,
   Hud,
+  ScriptErrors,
   TileElement,
   VersionElement,
   WorldElement,
@@ -21,6 +22,7 @@ export class Game {
     this.worldElement = new WorldElement(rootElement);
     this.hud = new Hud(rootElement);
     this.dialog = new Dialog(rootElement);
+    this.scriptErrors = new ScriptErrors(rootElement);
     new VersionElement(rootElement);
   }
   async load(worldId, overrides) {
@@ -31,6 +33,7 @@ export class Game {
       throw new Error(`World not found: ${worldId}`);
     }
     const {world, tileTypes, gameConfig} = normalizeWorld(data);
+    this.scriptErrors.clear();
 
     this.setGameBackground(gameConfig.backgroundUrl);
 
@@ -45,12 +48,14 @@ export class Game {
         youPos = {x, y};
         delete world[key];
       } else if (typeIndex[tileType]) {
+        const onError = (script) => (e) =>
+          this.reportScriptError({x, y, name}, script, e);
         world[key] = {
           x,
           y,
           type: typeIndex[tileType],
-          onSpace: compile(onSpace),
-          onTouch: compile(onTouch),
+          onSpace: compile(onSpace, onError('On Space')),
+          onTouch: compile(onTouch, onError('On Touch')),
           name,
         };
       } else {
@@ -99,6 +104,14 @@ export class Game {
   }
   setGameBackground(backgroundUrl) {
     document.body.style.backgroundImage = `url(${backgroundUrl})`;
+  }
+  // where is the tile's position in the world as saved, which is where the editor shows it
+  reportScriptError(where, script, error) {
+    console.error(error);
+    const tile = where.name
+      ? `"${where.name}" (${where.x}, ${where.y})`
+      : `(${where.x}, ${where.y})`;
+    this.scriptErrors.show(`${script} script of tile ${tile}: ${error}`);
   }
   playSound(sound) {
     this.sounds.play(sound);
