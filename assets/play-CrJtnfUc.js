@@ -1,2 +1,0 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/main-DoCqGEO1.js","assets/scriptTemplate-BhTdDr_g.js","assets/index.esm-b9Qad1XC.js","assets/main-DlB1JCLC.css"])))=>i.map(i=>d[i]);
-import{t as e}from"./preload-helper-BkB_DHlh.js";import{n as t}from"./index.esm-b9Qad1XC.js";window.origin===`null`?(t(),e(()=>import(`./main-DoCqGEO1.js`),__vite__mapDeps([0,1,2,3]))):window===window.top?location.replace(`/`+location.hash):document.body.textContent=`Play Mortal Wombat at https://mortalwombat.app/`;
