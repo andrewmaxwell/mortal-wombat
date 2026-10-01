@@ -11,7 +11,7 @@ import {loadItem} from '../firebase';
 import {normalizeWorld, numericGameConfigKeys} from '../worldSchema';
 import {compile} from './compile';
 import {Sounds} from './sounds';
-import {iterateTiles} from './tiles';
+import {createTileIndex, indexTile, iterateTiles, unindexTile} from './tiles';
 import {facingPosition, moveWombat} from './wombat';
 
 // Game holds the world state and the methods tile scripts call (see compile.js).
@@ -71,6 +71,7 @@ export class Game {
 
     this.worldElement.clear();
     this.world = {};
+    this.tileIndex = createTileIndex();
     this.namedTiles = {};
     for (const key in world) this.addTile(world[key]);
 
@@ -132,12 +133,13 @@ export class Game {
   // tiles
 
   addTile(tile) {
-    this.world[`${tile.x}_${tile.y}`] = {
-      ...tile,
-      el: new TileElement(tile, this.worldElement),
-    };
+    const key = `${tile.x}_${tile.y}`;
+    const replaced = this.world[key];
+    const added = {...tile, el: new TileElement(tile, this.worldElement)};
+    this.world[key] = added;
+    indexTile(this, added, replaced);
     if (tile.name !== undefined) {
-      this.namedTiles[tile.name] = this.world[`${tile.x}_${tile.y}`];
+      this.namedTiles[tile.name] = added;
     }
   }
   deleteTile(tile) {
@@ -145,7 +147,9 @@ export class Game {
     if (tile.name !== undefined && this.namedTiles[tile.name] !== undefined) {
       delete this.namedTiles[tile.name];
     }
-    delete this.world[`${tile.x}_${tile.y}`];
+    const key = `${tile.x}_${tile.y}`;
+    if (this.world[key]) unindexTile(this, this.world[key]);
+    delete this.world[key];
   }
   changeTileType(tile, type) {
     tile.type = type;
@@ -180,9 +184,13 @@ export class Game {
     const key = `${x}_${y}`;
     const b = this.world[key];
     delete this.world[key];
+    unindexTile(this, b);
     b.x += dx;
     b.y += dy;
-    this.world[`${b.x}_${b.y}`] = b;
+    const newKey = `${b.x}_${b.y}`;
+    const replaced = this.world[newKey];
+    this.world[newKey] = b;
+    indexTile(this, b, replaced);
     b.el.update(b);
   }
 

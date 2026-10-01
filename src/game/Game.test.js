@@ -403,3 +403,65 @@ test('the wombat can jump while standing half over magma', async () => {
   settle(game, 10);
   expect(game.you.y).toBeLessThan(-0.3);
 });
+
+test('a falling tile keeps falling across chunk borders', async () => {
+  const game = await makeGame({
+    ...floor(1, -3, 3),
+    ...floor(30, 4, 6),
+    '5_2': {x: 5, y: 2, tileType: 'p'},
+    w: {x: 0, y: 0, tileType: 'w'},
+  });
+  settle(game, 120);
+  expect(game.getTile(5, 29)?.type.id).toBe('p');
+  expect(game.isEmpty(5, 2)).toBe(true);
+});
+
+test('tiles out of reach wait until the wombat comes near', async () => {
+  const game = await makeGame({
+    ...floor(1, -3, 3),
+    ...floor(1, 42, 48),
+    ...floor(5, 49, 51),
+    '50_0': {x: 50, y: 0, tileType: 'p'},
+    w: {x: 0, y: 0, tileType: 'w'},
+  });
+  settle(game, 60);
+  expect(game.getTile(50, 0)?.type.id).toBe('p');
+
+  Object.assign(game.you, {x: 45, y: 0, xs: 0, ys: 0});
+  settle(game, 60);
+  expect(game.isEmpty(50, 0)).toBe(true);
+  expect(game.getTile(50, 4)?.type.id).toBe('p');
+});
+
+test('tiles that scripts add fall, and deleted or replaced ones stop', async () => {
+  const game = await makeGame({
+    ...floor(1, -3, 3),
+    ...floor(10, 4, 8),
+    w: {x: 0, y: 0, tileType: 'w'},
+  });
+  const {p, s} = game.typeIndex;
+  game.addTile({x: 5, y: 0, type: p});
+  game.addTile({x: 6, y: 0, type: p});
+  game.addTile({x: 7, y: 0, type: p});
+  game.deleteTile(game.getTile(6, 0));
+  game.addTile({x: 7, y: 0, type: s}); // replaces the poop
+  settle(game, 60);
+  expect(game.getTile(5, 9)?.type.id).toBe('p');
+  expect(game.getTile(7, 0)?.type.id).toBe('s');
+  const poops = Object.values(game.world).filter((t) => t.type.id === 'p');
+  expect(poops.map(({x, y}) => [x, y])).toEqual([[5, 9]]);
+});
+
+test("loading another world leaves the old world's tiles behind", async () => {
+  const game = await makeGame({
+    ...floor(1, -3, 3),
+    '2_-5': {x: 2, y: -5, tileType: 'p'},
+    w: {x: 0, y: 0, tileType: 'w'},
+  });
+  loadItem.mockResolvedValue({
+    world: {...floor(1, -1, 1), w: {x: 0, y: 0, tileType: 'w'}},
+  });
+  await game.load('other');
+  settle(game, 60);
+  expect(Object.keys(game.world).sort()).toEqual(['-1_1', '0_1', '1_1']);
+});
