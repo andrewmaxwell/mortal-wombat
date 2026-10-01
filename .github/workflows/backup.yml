@@ -34,7 +34,7 @@ jobs:
           gzip -9 worlds.json
           echo "DATE=$(date -u +%F)" >> "$GITHUB_ENV"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: worlds-${{ env.DATE }}
           path: worlds.json.gz
