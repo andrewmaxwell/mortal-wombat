@@ -57,5 +57,4 @@ Ordered by priority. Remove an entry once it's done.
 
 1. **Narrow the script API** so scripts don't get the whole `game` object. `Dialog.say` inserts author text as raw HTML.
 2. **Smaller items:**
-   - `makeButtons` calls hooks inside `.map()`.
    - ESLint 9 is end-of-life. Move to 10 once `eslint-plugin-react` and `eslint-plugin-import` list it in their peer dependencies.

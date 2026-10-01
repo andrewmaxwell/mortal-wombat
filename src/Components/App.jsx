@@ -12,7 +12,7 @@ import {setCursor, useCursors} from '../hooks/useCursors';
 import {useUndo} from '../hooks/useUndo';
 
 import {Pane} from './common/Pane';
-import {makeButtons} from '../utils/makeButtons';
+import {usePanes} from '../hooks/usePanes';
 
 import {ErrorBanner} from './ErrorBanner';
 import {Login} from './Login';
@@ -91,7 +91,7 @@ export const App = () => {
   const undoHistory = useUndo(worldId, world, onError);
 
   // pane toggles
-  const Panes = makeButtons(paneConfigs);
+  const Panes = usePanes(paneConfigs);
 
   useLocationHash({
     worldId,
