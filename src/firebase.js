@@ -4,6 +4,9 @@ import {
   getDatabase,
   update as _update,
   onValue,
+  onChildAdded,
+  onChildChanged,
+  onChildRemoved,
   get,
   child,
   onDisconnect,
@@ -78,4 +81,39 @@ export const listen = (pathStr, onChange, onError) => {
   } catch (e) {
     handleError(e);
   }
+};
+
+// Like listen, but for a node with many children (a world's tiles): calls onChanges with
+// {key: value} for the children that were added or changed, and {key: null} for removed ones.
+// Changes that arrive together (all of them on the first load) come in one call.
+export const listenChildren = (pathStr, onChanges, onError) => {
+  const nodeRef = ref(db, pathStr);
+  let pending;
+  const queue = (key, val) => {
+    if (!pending) {
+      pending = {};
+      queueMicrotask(() => {
+        const changes = pending;
+        pending = undefined;
+        onChanges(changes);
+      });
+    }
+    pending[key] = val;
+  };
+  let failed = false;
+  const handleError = (e) => {
+    if (failed) return; // each of the three listeners reports the same error
+    failed = true;
+    console.error(e);
+    onError?.(e.message);
+  };
+  const unsubscribes = [
+    onChildAdded(nodeRef, (s) => queue(s.key, s.val()), handleError),
+    onChildChanged(nodeRef, (s) => queue(s.key, s.val()), handleError),
+    onChildRemoved(nodeRef, (s) => queue(s.key, null), handleError),
+  ];
+  return () => {
+    for (const unsubscribe of unsubscribes) unsubscribe();
+    pending = {}; // drop changes queued before unsubscribing
+  };
 };

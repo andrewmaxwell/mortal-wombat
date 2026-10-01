@@ -1,10 +1,11 @@
-import {memo, useEffect, useMemo, useRef} from 'react';
+import {useEffect, useMemo, useRef} from 'react';
 import {setCursor} from '../hooks/useCursors';
 import {indexBy, objToArr} from '../utils';
 import {getBackground} from '../utils/getBackground';
 import {saveTile} from '../utils/saveTile';
 import {timeAgo} from '../utils/timeAgo';
 import {CSS_SIZE, Cursors} from './Cursors';
+import {TileCanvas} from './TileCanvas';
 import {gameConfigFields} from './GameConfigFields';
 import {defaultGameConfig} from '../defaults';
 import {loadItem} from '../firebase';
@@ -21,22 +22,6 @@ const getTitle = (user, tstamp, userIndex, x, y) => {
   const name = editorName(userIndex, user);
   return `Placed at (${x}, ${y}) by ${name} ${timeAgo(Date.now() - tstamp)}`;
 };
-
-const Tiles = ({world, tileTypeIndex, userIndex, setTileLogicCoords}) =>
-  Object.entries(world).map(([key, {x, y, tileType, user, tstamp}]) => (
-    <div
-      key={key}
-      className="tile"
-      title={getTitle(user, tstamp, userIndex, x, y)}
-      style={{
-        transform: `translate(${x * CSS_SIZE}px, ${y * CSS_SIZE}px)`,
-        background: getBackground(tileTypeIndex[tileType]),
-      }}
-      onDoubleClick={() => setTileLogicCoords({x, y})}
-    />
-  ));
-
-const TilesMemo = memo(Tiles);
 
 export const WorldEditor = ({
   world,
@@ -56,6 +41,7 @@ export const WorldEditor = ({
 }) => {
   // using a ref is much more performant than keeping mouse coords in state
   const ghostRef = useRef();
+  const editorRef = useRef();
 
   const tileTypeIndex = useMemo(
     () => indexBy((t) => t.id, objToArr(tileTypes)),
@@ -109,12 +95,19 @@ export const WorldEditor = ({
   // not memoized: onClick needs the latest world, or drag-painting re-saves tiles
   const onMouseMove = (e) => {
     const {x, y} = getCoords(e, scale, xCoord, yCoord);
+    const {user: placedBy, tstamp} = world[`${x}_${y}`] || {};
+    editorRef.current.title = getTitle(placedBy, tstamp, userIndex, x, y);
     if (selectedTileTypeId) {
       const s = ghostRef.current?.style;
       if (s) s.transform = `translate(${x * CSS_SIZE}px, ${y * CSS_SIZE}px)`;
       if (e.buttons) onClick(e);
     }
     setCursor(user, x, y, worldId, xCoord, yCoord, scale, onError);
+  };
+
+  const onDoubleClick = (e) => {
+    const {x, y} = getCoords(e, scale, xCoord, yCoord);
+    if (world[`${x}_${y}`]) setTileLogicCoords({x, y});
   };
 
   const cx = innerWidth / 2 - xCoord * CSS_SIZE;
@@ -138,10 +131,13 @@ export const WorldEditor = ({
     <div
       id="worldEditor"
       className="world"
+      ref={editorRef}
       onMouseDown={() => undoHistory.startStep()}
       onClick={onClick}
+      onDoubleClick={onDoubleClick}
       onMouseMove={onMouseMove}
     >
+      <TileCanvas {...{world, tileTypeIndex, xCoord, yCoord, scale}} />
       <div
         style={{
           transformOrigin: `${innerWidth / 2}px ${innerHeight / 2}px`,
@@ -149,8 +145,6 @@ export const WorldEditor = ({
         }}
       >
         <Cursors cursors={cursors} userIndex={userIndex} scale={scale} />
-
-        <TilesMemo {...{world, tileTypeIndex, userIndex, setTileLogicCoords}} />
 
         {selectedTileTypeId && (
           <div

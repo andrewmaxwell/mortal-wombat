@@ -37,6 +37,7 @@ A tile-based platformer (`src/game/`, plain DOM, no framework) and a collaborati
 
 ## Editor
 
+- The map is drawn on a canvas (`TileCanvas.jsx`), and `useWorld` listens to each tile with `listenChildren` rather than to the whole world, because the biggest worlds have over 30k tiles. Anything that changes on every pan or cursor update must not give `WorldEditor` new `world` or `tileTypes` objects (App memoizes the merged tile types), or the whole map redraws.
 - Ctrl/Cmd+Z undoes the last click or drag on the map, and Ctrl/Cmd+Shift+Z redoes it (`src/utils/undoHistory.js`, wired up in `useUndo`). Undo skips tiles another editor has changed since, and doesn't cover script, tile-type or config edits.
 
 ## Deploying

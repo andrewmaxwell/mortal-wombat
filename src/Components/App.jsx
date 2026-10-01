@@ -1,5 +1,5 @@
 import './App.css';
-import {useEffect, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 
 import {useErrors} from '../hooks/useErrors';
 import {useUser} from '../hooks/useUser';
@@ -109,7 +109,11 @@ export const App = () => {
       setCursor(user, null, null, worldId, xCoord, yCoord, scale, onError);
   }, [user, worldId, xCoord, yCoord, scale]);
 
-  const mergedTileTypes = mergeDeepLeft(tileTypes, defaultTileTypes);
+  // memoized so that panning and cursor updates don't redraw the map
+  const mergedTileTypes = useMemo(
+    () => mergeDeepLeft(tileTypes, defaultTileTypes),
+    [tileTypes],
+  );
 
   return (
     <>
