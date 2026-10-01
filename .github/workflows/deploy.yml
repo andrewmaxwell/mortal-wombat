@@ -1,0 +1,42 @@
+# Deploys every push to main to GitHub Pages (the gh-pages branch, served at mortalwombat.app),
+# if lint and tests pass. Run it by hand with `gh workflow run deploy.yml`.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write # to push the gh-pages branch
+
+concurrency:
+  group: deploy # one deploy at a time, in push order
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # vite.config.js counts commits for the version
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint -- --max-warnings 0
+      - run: npm test
+      - run: npm run build
+
+      - name: Publish build/ to gh-pages
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          npx gh-pages --dist build --message "Deploy ${GITHUB_SHA}" \
+            --repo "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+        env:
+          GH_TOKEN: ${{ github.token }}

@@ -12,7 +12,7 @@ A tile-based platformer (`src/game/`, plain DOM, no framework) and a collaborati
 - `/users` is keyed by uid: `{[uid]: {name, email}}`. Show editors with `editorName(userIndex, uid)`. `worlds/` is public, so never store emails there.
 - Worlds only store overrides. Both the game and the editor combine them with the defaults using `mergeDeepLeft(overrides, defaults)`.
 - `tileType` is a tile type's short `id` (`'g'` grass, `'w'` wombat, `'m'` magma, …), not its key in `tileTypes`. The wombat tile only marks the spawn point, and `Game.load` removes it from the world.
-- Access rules live in `database.rules.json`, which must match what's live. Deploy with `npx firebase deploy --only database`, and check `npx firebase database:get /.settings/rules` afterwards. Anyone can read `worlds/` and `worldIndex/`, and signed-in users can write to each world and its index entry. The rules also require any `user`/`lastEditedBy` being written to equal the writer's `auth.uid`. Only signed-in users can read `/users`, and nobody can write it from the app (profiles are edited in the Firebase console, keyed by the editor's uid from Authentication → Users). `listen()` in `firebase.js` shows read errors in the editor's error banner, so a hook that reads a protected path must wait for `user` (see `useUserIndex`). Otherwise logged-out visitors see a `permission_denied` banner.
+- Access rules live in `database.rules.json`, which must match what's live. Deploy with `npx firebase deploy --only database`, and check `npx firebase database:get /.settings/rules` afterwards. Anyone can read `worlds/` and `worldIndex/`. Signed-in users can create a world or index entry that doesn't exist yet, but after that they can only write its individual fields (single tiles, tile types, settings and cursors), so the app can't delete or replace a whole world, its `world` map or its index entry. A new kind of write from the app needs its own `.write` rule. The rules also require any `user`/`lastEditedBy` being written to equal the writer's `auth.uid`. Only signed-in users can read `/users`, and nobody can write it from the app (profiles are edited in the Firebase console, keyed by the editor's uid from Authentication → Users). `listen()` in `firebase.js` shows read errors in the editor's error banner, so a hook that reads a protected path must wait for `user` (see `useUserIndex`). Otherwise logged-out visitors see a `permission_denied` banner.
 - **Numbers are stored as strings** because the editor saves raw `<input>` values: `"0.005"`, and `""` when a field is cleared. `Game.load` converts them once with `normalizeWorld` (`src/worldSchema.js`, which also has JSDoc types for the schema), so engine code and tile scripts only see numbers. A blank game-config number becomes its default. A blank tile-type number becomes `0`, except `moveDelay`, which stays `undefined` (never moves), while `0` means it moves every frame. The editor keeps the raw strings. A new numeric field has to go in `worldSchema.js`'s key lists as well as the editor, and a test checks that they match. Tile-type `id`s can look numeric (`"10"`) but stay strings.
 
 ## Engine rules
@@ -31,8 +31,18 @@ A tile-based platformer (`src/game/`, plain DOM, no framework) and a collaborati
 - `npm test` (Vitest + jsdom) covers the engine. The tests mock `../firebase` and build worlds inline. Add a test here when fixing engine behavior.
 - To check the game in a browser, run `npm start` and open `localhost:3000` (the default world loads from the live DB and is read-only). Browsers pause `requestAnimationFrame` in hidden tabs, so an automated browser that isn't in the foreground shows a frozen game. Browser-automation console and network tools don't see inside the game's iframe, and the outer page can't reach into it: to debug the game, have it `parent.postMessage` its errors temporarily, or check with screenshots.
 - Automated input is unreliable in the game's iframe. Automated clicks reach it, but automated drags don't arrive at all. A synthetic key press releases before the next tick, so the game never sees it. Touch taps are latched until a tick reads them (`touchControls.js`), so a click on a touch button does register. The touch controls only appear on touch screens, so force them on temporarily to check them on a desktop.
+- To test rule changes, run them in the emulator with `npx firebase emulators:exec --only database` (it needs Java) before deploying.
 - The editor needs a login. The only way to create accounts is the Firebase console, so editor changes past the login screen need the user to test them.
 - The dev server must stay on port 3000: `firebase.js` exposes `window._update` only on `localhost:3000`.
+
+## Editor
+
+- Ctrl/Cmd+Z undoes the last click or drag on the map, and Ctrl/Cmd+Shift+Z redoes it (`src/utils/undoHistory.js`, wired up in `useUndo`). Undo skips tiles another editor has changed since, and doesn't cover script, tile-type or config edits.
+
+## Deploying
+
+- Every push to `main` deploys to GitHub Pages (the `gh-pages` branch) through `.github/workflows/deploy.yml`, but only if `npm run lint` (with no warnings) and `npm test` pass. Run it by hand with `gh workflow run deploy.yml`.
+- The game's version is package.json's major.minor, then the commit count (`vite.config.js`), so nothing needs bumping. Database rules are deployed separately (see Data model).
 
 ## Backups
 

@@ -9,6 +9,7 @@ import {useCoords} from '../hooks/useCoords';
 import {useWorld} from '../hooks/useWorld';
 import {useLocationHash} from '../hooks/useLocationHash';
 import {setCursor, useCursors} from '../hooks/useCursors';
+import {useUndo} from '../hooks/useUndo';
 
 import {Pane} from './common/Pane';
 import {makeButtons} from '../utils/makeButtons';
@@ -87,6 +88,7 @@ export const App = () => {
   const world = useWorld(onError, worldId);
   const cursors = useCursors(onError, worldId, user);
   useWorldThumbnail(worldId, world, tileTypes, onError);
+  const undoHistory = useUndo(worldId, world, onError);
 
   // pane toggles
   const Panes = makeButtons(paneConfigs);
@@ -153,6 +155,10 @@ export const App = () => {
                 Click a tile type at the bottom. Click on the map to place it.
               </p>
               <p>Shift+Click a tile to delete it.</p>
+              <p>
+                Ctrl+Z (Cmd+Z on a Mac) undoes your last click or drag, and
+                Ctrl+Shift+Z (Cmd+Shift+Z) redoes it.
+              </p>
               <p>
                 You can zoom in and out with{' '}
                 <i className="fa-solid fa-magnifying-glass-plus"></i> and{' '}
@@ -237,6 +243,7 @@ export const App = () => {
                   userIndex,
                   tileLogicCoords,
                   setTileLogicCoords,
+                  undoHistory,
                 }}
               />
             </div>

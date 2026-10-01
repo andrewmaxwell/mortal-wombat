@@ -7,18 +7,21 @@
     "worldIndex": {
       ".read": true,
       "$worldId": {
-        ".write": "auth != null",
+        ".write": "auth != null && !data.exists()",
         ".validate": "newData.parent().parent().child('worlds').child($worldId).exists()",
         "worldName": {
           ".validate": "newData.isString() && newData.val().length <= 1000"
         },
         "lastEdited": {
+          ".write": "auth != null",
           ".validate": "newData.isNumber()"
         },
         "lastEditedBy": {
+          ".write": "auth != null",
           ".validate": "newData.val() === auth.uid"
         },
         "thumbnail": {
+          ".write": "auth != null",
           ".validate": "newData.isString() && newData.val().beginsWith('data:image/png;base64,') && newData.val().length <= 500000"
         },
         "$other": {
@@ -29,19 +32,35 @@
     "worlds": {
       ".read": true,
       "$worldId": {
-        ".write": "auth != null",
+        ".write": "auth != null && !data.exists()",
+        "lastEdited": {
+          ".write": "auth != null"
+        },
         "lastEditedBy": {
+          ".write": "auth != null",
           ".validate": "newData.val() === auth.uid"
         },
         "world": {
           "$tile": {
+            ".write": "auth != null",
             "user": {
               ".validate": "newData.val() === auth.uid"
             }
           }
         },
+        "tileTypes": {
+          "$tileType": {
+            ".write": "auth != null"
+          }
+        },
+        "gameConfig": {
+          "$setting": {
+            ".write": "auth != null"
+          }
+        },
         "cursors": {
           "$session": {
+            ".write": "auth != null",
             "user": {
               ".validate": "newData.val() === auth.uid"
             }

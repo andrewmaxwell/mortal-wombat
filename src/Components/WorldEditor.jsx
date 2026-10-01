@@ -52,6 +52,7 @@ export const WorldEditor = ({
   userIndex,
   tileLogicCoords,
   setTileLogicCoords,
+  undoHistory,
 }) => {
   // using a ref is much more performant than keeping mouse coords in state
   const ghostRef = useRef();
@@ -89,10 +90,18 @@ export const WorldEditor = ({
       e.preventDefault();
       return false;
     } else {
-      const currentType = world[`${x}_${y}`]?.tileType;
+      const before = world[`${x}_${y}`];
+      const currentType = before?.tileType;
       const t = e.shiftKey ? '_delete' : selectedTileTypeId;
       if (t && (currentType || t !== '_delete') && currentType !== t) {
-        saveTile(worldId, {x, y, tileType: t}, onError);
+        const tile = {x, y, tileType: t};
+        undoHistory.record({
+          x,
+          y,
+          before,
+          after: t === '_delete' ? undefined : tile,
+        });
+        saveTile(worldId, tile, onError);
       }
     }
   };
@@ -129,6 +138,7 @@ export const WorldEditor = ({
     <div
       id="worldEditor"
       className="world"
+      onMouseDown={() => undoHistory.startStep()}
       onClick={onClick}
       onMouseMove={onMouseMove}
     >
