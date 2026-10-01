@@ -79,10 +79,10 @@ const getSupports = (game) => {
   const below = [...new Set([Math.floor(you.x), Math.ceil(you.x)])]
     .map((x) => game.getTile(x, you.y + 1))
     .filter(Boolean);
-  if (below.some((b) => b.type.healing < 0)) return [];
-  return below.filter(
+  const solid = below.filter(
     (b) => b.type.moveStyle !== 'liquid' && !b.type.collectible,
   );
+  return solid.some((b) => b.type.healing < 0) ? [] : solid;
 };
 
 export const moveWombat = (game, pressing) => {

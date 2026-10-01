@@ -387,3 +387,19 @@ test('a choice without an action just closes the dialog', async () => {
   expect(game.dialog.isOpen).toBe(false);
   expect(errorText(game)).toBe('');
 });
+
+test('the wombat can jump while standing half over magma', async () => {
+  const game = await makeGame({
+    ...floor(2, -5, 5),
+    '0_1': {x: 0, y: 1, tileType: 's'},
+    '1_1': {x: 1, y: 1, tileType: 'm'},
+    '2_1': {x: 2, y: 1, tileType: 's'},
+    w: {x: 0, y: 0, tileType: 'w'},
+  });
+  game.you.x = 0.5;
+  settle(game, 60);
+  expect(game.you.y).toBe(0);
+  game.iterate({up: true});
+  settle(game, 10);
+  expect(game.you.y).toBeLessThan(-0.3);
+});
