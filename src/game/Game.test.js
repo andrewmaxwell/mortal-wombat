@@ -321,6 +321,21 @@ test('a move delay of 0 moves every frame', async () => {
 
 const errorText = (game) => game.scriptErrors.el.textContent;
 
+test('scripts get their tile as this', async () => {
+  const game = await makeGame({
+    ...floor(1, -3, 3),
+    '1_0': {x: 1, y: 0, tileType: 's', onTouch: 'deleteTile(this)'},
+    '-1_0': {x: -1, y: 0, tileType: 's', onSpace: 'game.spaceTile = this'},
+    w: {x: 0, y: 0, tileType: 'w'},
+  });
+  settle(game, 30);
+  game.getTile(-1, 0).onSpace(game);
+  expect(game.spaceTile).toBe(game.getTile(-1, 0));
+  settle(game, 30, {right: true});
+  expect(game.getTile(1, 0)).toBeUndefined();
+  expect(errorText(game)).toBe('');
+});
+
 test('a script with a syntax error is reported and the tile still loads', async () => {
   const game = await makeGame({
     '1_0': {x: 1, y: 0, tileType: 's', name: 'sign', onSpace: '[say hi]'},

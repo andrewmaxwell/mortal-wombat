@@ -2,20 +2,23 @@ import {scriptParams, wrapScript} from '../scriptTemplate';
 
 // Compiles a tile script into a function of game. Syntax errors, and errors the script throws
 // (including in its choice and setTimeout callbacks), go to onError instead of stopping the game.
+// The script runs with `this` set to the tile it belongs to (see runOnTouch and Game.interact),
+// so these wrappers are regular functions that pass `this` through.
 export const compile = (str, onError) => {
   if (!str) return;
-  const guard =
-    (f) =>
-    (...args) => {
+  const guard = (f) =>
+    function (...args) {
       try {
-        return f(...args);
+        return f.apply(this, args);
       } catch (e) {
         onError(e);
       }
     };
   try {
     const run = new Function(...scriptParams, wrapScript(str));
-    return guard((game) => run(game, guard));
+    return guard(function (game) {
+      return run.call(this, game, guard);
+    });
   } catch (e) {
     onError(e);
   }
